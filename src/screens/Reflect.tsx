@@ -1,0 +1,411 @@
+import { useState, useRef, useEffect } from 'react'
+import { saveReflectionEntry } from '../utils/storage'
+
+type ReflectTab = 'guided' | 'library'
+
+interface PromptCategory {
+  id: string
+  title: string
+  prompts: string[]
+}
+
+const DRAFTS_STORAGE_KEY = 'nook:reflect-drafts'
+
+const CATEGORIES: PromptCategory[] = [
+  {
+    id: 'overwhelm',
+    title: 'De-escalation & Overwhelm',
+    prompts: [
+      'What is taking up the most weight in your mind right now?',
+      'If you could set down one expectation for the next hour, what would it be?',
+      'What does your body need at this exact moment to feel 5% more at ease?',
+    ],
+  },
+  {
+    id: 'boundaries',
+    title: 'Boundary & Energy Check',
+    prompts: [
+      'Name one thing you can let be unresolved today.',
+      'What is asking for your energy right now that does not deserve it?',
+      'Where in your day did you give more than you had to spare?',
+    ],
+  },
+  {
+    id: 'brainfog',
+    title: 'Untangling Brain Fog',
+    prompts: [
+      'What is the single smallest step that would make you feel lighter?',
+      'What are three facts about right now that are completely true and quiet?',
+      'What noise from the outside world can you gently tune out?',
+    ],
+  },
+  {
+    id: 'compassion',
+    title: 'Soft Self-Compassion',
+    prompts: [
+      'What expectation can you quietly set down?',
+      'What would you say to a dear friend experiencing this exact moment?',
+      'What is one small kindness you can offer yourself before this day ends?',
+    ],
+  },
+]
+
+const ALL_PROMPTS = CATEGORIES.flatMap(c => c.prompts)
+
+function loadDrafts(): Record<number, string> {
+  try {
+    return JSON.parse(localStorage.getItem(DRAFTS_STORAGE_KEY) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+function persistDrafts(drafts: Record<number, string>) {
+  localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts))
+}
+
+interface ReflectProps {
+  onBack: () => void
+}
+
+export default function Reflect({ onBack }: ReflectProps) {
+  const [activeTab, setActiveTab] = useState<ReflectTab>('guided')
+  const [currentPromptIndex, setCurrentPromptIndex] = useState<number>(0)
+  const [drafts, setDrafts] = useState<Record<number, string>>(() => loadDrafts())
+  const [isSaved, setIsSaved] = useState<boolean>(false)
+  const [isFadingPrompt, setIsFadingPrompt] = useState<boolean>(false)
+  const [openCategory, setOpenCategory] = useState<string>('overwhelm')
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  const currentPrompt = ALL_PROMPTS[currentPromptIndex] || ALL_PROMPTS[0]
+  const currentAnswer = drafts[currentPromptIndex] || ''
+
+  // Auto-expand textarea on answer change or prompt switch
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [currentAnswer, currentPromptIndex, activeTab])
+
+  function handleTextChange(val: string) {
+    const next = { ...drafts, [currentPromptIndex]: val }
+    setDrafts(next)
+    persistDrafts(next)
+  }
+
+  function handleNavigatePrompt(direction: 'prev' | 'next') {
+    setIsFadingPrompt(true)
+    setTimeout(() => {
+      if (direction === 'next') {
+        setCurrentPromptIndex(prev => (prev + 1) % ALL_PROMPTS.length)
+      } else {
+        setCurrentPromptIndex(prev => (prev - 1 + ALL_PROMPTS.length) % ALL_PROMPTS.length)
+      }
+      setIsFadingPrompt(false)
+    }, 200)
+  }
+
+  function handleSave() {
+    if (!currentAnswer.trim()) return
+    saveReflectionEntry(currentPrompt, currentAnswer.trim())
+    
+    // Clear only this prompt's draft
+    const next = { ...drafts }
+    delete next[currentPromptIndex]
+    setDrafts(next)
+    persistDrafts(next)
+
+    setIsSaved(true)
+    setTimeout(() => setIsSaved(false), 2200)
+  }
+
+  function handleClear() {
+    const next = { ...drafts }
+    delete next[currentPromptIndex]
+    setDrafts(next)
+    persistDrafts(next)
+  }
+
+  function selectPromptFromLibrary(prompt: string) {
+    const index = ALL_PROMPTS.indexOf(prompt)
+    if (index !== -1) {
+      setCurrentPromptIndex(index)
+    }
+    setActiveTab('guided')
+  }
+
+  return (
+    <main
+      id="reflect-screen"
+      className="
+        h-[100dvh] max-w-[420px] mx-auto
+        px-6 pt-10 pb-6
+        flex flex-col justify-between
+        overflow-hidden
+        bg-[#0E0E0E]
+        animate-fade-in
+      "
+    >
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* ── Header ─────────────────────────────────────────── */}
+        <header className="flex items-center justify-between mb-5 shrink-0">
+          <button
+            id="reflect-back"
+            onClick={onBack}
+            className="
+              flex items-center gap-1.5
+              font-sans text-[#52525B] text-[0.62rem]
+              tracking-[0.14em] uppercase
+              hover:text-[#71717A] transition-colors
+              focus:outline-none
+            "
+          >
+            <span className="text-[0.8rem] leading-none">←</span>
+            return
+          </button>
+
+          <div className="flex flex-col items-center gap-[2px]">
+            <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
+              Reflect
+            </h1>
+            <p className="font-sans text-[#3A3A3A] text-[0.58rem] tracking-[0.1em] text-center">
+              Gentle prompts, no pressure
+            </p>
+          </div>
+
+          <div className="w-[60px]" aria-hidden="true" />
+        </header>
+
+        {/* ── Sub-Navigation Tabs ─────────────────────────────── */}
+        <div
+          role="tablist"
+          aria-label="Reflection modes"
+          className="flex items-center mb-5 border-b border-[#1E1E1E] shrink-0"
+        >
+          <button
+            id="tab-guided"
+            role="tab"
+            aria-selected={activeTab === 'guided'}
+            onClick={() => setActiveTab('guided')}
+            className="
+              relative flex-1 pb-3
+              font-sans text-[0.58rem] tracking-[0.14em] uppercase
+              transition-colors duration-300 focus:outline-none
+            "
+          >
+            <span className={activeTab === 'guided' ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
+              Guided Flow
+            </span>
+            <span
+              className={`
+                absolute bottom-0 left-0 right-0 h-px transition-all duration-400
+                ${activeTab === 'guided' ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
+              `}
+              aria-hidden="true"
+            />
+          </button>
+
+          <button
+            id="tab-library"
+            role="tab"
+            aria-selected={activeTab === 'library'}
+            onClick={() => setActiveTab('library')}
+            className="
+              relative flex-1 pb-3
+              font-sans text-[0.58rem] tracking-[0.14em] uppercase
+              transition-colors duration-300 focus:outline-none
+            "
+          >
+            <span className={activeTab === 'library' ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
+              Library
+            </span>
+            <span
+              className={`
+                absolute bottom-0 left-0 right-0 h-px transition-all duration-400
+                ${activeTab === 'library' ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
+              `}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+
+        {/* ── Tab Panels ─────────────────────────────────────── */}
+        {activeTab === 'guided' ? (
+          /* Mode 1: Guided Flow */
+          <div className="flex flex-col flex-1 min-h-0 animate-fade-in justify-between">
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Prompt Header with Bidirectional Navigation & Draft Indicator */}
+              <div className="mb-5 shrink-0">
+                <div className="flex items-center justify-between mb-2">
+                  {/* Left: Prompt Counter & Auto-save status */}
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-[0.58rem] tracking-[0.18em] uppercase text-[#71717A]">
+                      {currentPromptIndex + 1} / {ALL_PROMPTS.length}
+                    </span>
+                    {currentAnswer.trim().length > 0 && (
+                      <span className="flex items-center gap-1 font-sans text-[0.55rem] tracking-[0.12em] uppercase text-[#C9B99A]/70">
+                        <span className="w-1 h-1 rounded-full bg-[#C9B99A] animate-pulse" />
+                        draft saved
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Right: Bidirectional Controls */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      id="prev-prompt-btn"
+                      onClick={() => handleNavigatePrompt('prev')}
+                      aria-label="Previous prompt"
+                      className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#52525B] hover:text-[#C9B99A] transition-colors focus:outline-none"
+                    >
+                      ‹ prev
+                    </button>
+                    <span className="text-[#333333] text-xs">|</span>
+                    <button
+                      id="next-prompt-btn"
+                      onClick={() => handleNavigatePrompt('next')}
+                      aria-label="Next prompt"
+                      className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#52525B] hover:text-[#C9B99A] transition-colors focus:outline-none"
+                    >
+                      next ›
+                    </button>
+                  </div>
+                </div>
+
+                {/* Prompt Card with smooth fade */}
+                <div
+                  className={`
+                    border border-[#1C1C1C] bg-[#111111]/70 p-5 rounded-sm
+                    transition-opacity duration-200 ease-in-out
+                    ${isFadingPrompt ? 'opacity-0' : 'opacity-100'}
+                  `}
+                >
+                  <p className="font-serif-nook text-[#E5E0D8] text-[1.25rem] font-light italic leading-snug">
+                    "{currentPrompt}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Distraction-free Writing Area (isolated per prompt) */}
+              <div className="flex-1 overflow-y-auto min-h-[120px] mb-4">
+                <textarea
+                  ref={textareaRef}
+                  id="reflect-textarea"
+                  value={currentAnswer}
+                  onChange={e => handleTextChange(e.target.value)}
+                  placeholder="Reflect quietly..."
+                  spellCheck={false}
+                  autoCorrect="off"
+                  autoCapitalize="sentences"
+                  className="
+                    w-full bg-transparent resize-none outline-none border-none
+                    font-sans text-[#E5E0D8]/90 text-[0.95rem] font-light leading-[1.85] tracking-wide
+                    placeholder:text-[#3A3A3A] min-h-[100px]
+                  "
+                  style={{ height: 'auto' }}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Actions & Confirmation */}
+            <div className="shrink-0 pt-3 border-t border-[#1C1C1C]">
+              {/* Feedback toast */}
+              <div
+                className={`
+                  text-center font-sans text-[0.6rem] tracking-[0.2em] uppercase transition-all duration-500 mb-3
+                  ${isSaved ? 'text-[#C9B99A] opacity-100' : 'opacity-0'}
+                `}
+                aria-live="polite"
+              >
+                kept in memory chest
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  id="reflect-clear-btn"
+                  onClick={handleClear}
+                  disabled={!currentAnswer}
+                  className="
+                    font-sans text-[#52525B] text-[0.62rem] tracking-[0.16em] uppercase
+                    hover:text-[#71717A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors
+                  "
+                >
+                  Clear / Let go
+                </button>
+
+                <button
+                  id="reflect-save-btn"
+                  onClick={handleSave}
+                  disabled={!currentAnswer.trim()}
+                  className="
+                    px-5 py-2 border border-[#2A2A2A]
+                    font-serif-nook text-[#E5E0D8] text-[0.95rem] font-light
+                    hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
+                    disabled:opacity-30 disabled:cursor-not-allowed
+                    transition-all duration-300 focus:outline-none
+                  "
+                >
+                  Save to Chest
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Mode 2: Reflection Library */
+          <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pb-4 animate-fade-in">
+            {CATEGORIES.map(cat => {
+              const isOpen = openCategory === cat.id
+              return (
+                <div key={cat.id} className="border border-[#1C1C1C] bg-[#0E0E0E] rounded-sm overflow-hidden">
+                  <button
+                    onClick={() => setOpenCategory(isOpen ? '' : cat.id)}
+                    className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-[#121212] transition-colors"
+                  >
+                    <span className="font-serif-nook text-[#E5E0D8] text-base font-light tracking-wide">
+                      {cat.title}
+                    </span>
+                    <span className="text-[#52525B] text-xs font-mono">
+                      {isOpen ? '−' : '+'}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="flex flex-col border-t border-[#181818] divide-y divide-[#181818] bg-[#0A0A0A]">
+                      {cat.prompts.map((p, idx) => {
+                        const promptIdx = ALL_PROMPTS.indexOf(p)
+                        const hasDraft = drafts[promptIdx]?.trim().length > 0
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => selectPromptFromLibrary(p)}
+                            className="w-full text-left p-4 hover:bg-[#141414] group transition-colors flex items-start justify-between gap-3"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <p className="font-serif-nook text-[#71717A] group-hover:text-[#E5E0D8] text-[0.98rem] font-light italic leading-snug transition-colors">
+                                "{p}"
+                              </p>
+                              {hasDraft && (
+                                <span className="font-sans text-[0.55rem] tracking-[0.12em] uppercase text-[#C9B99A]/80">
+                                  draft saved
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[#3A3A3A] group-hover:text-[#C9B99A] text-xs transition-colors shrink-0">
+                              →
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </main>
+  )
+}
