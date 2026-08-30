@@ -268,4 +268,43 @@
   animation: floatSlip4 7.2s ease-in-out infinite 0.4s;
 }
 
+/* ── Box Breathing Tracer: continuous clockwise loop ── */
+@keyframes boxBreatheTracer {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0;   }
+}
 
+/* ── Companion: slow organic breathing ── */
+@keyframes cat-breathe {
+  0%, 100% { transform: scale(1.0) translateY(0px); }
+  50%       { transform: scale(1.032) translateY(-2.5px); }
+}
+
+/* ── Companion: rare ambient ear flicker ── */
+@keyframes ear-twitch {
+  0%, 84%, 100% { transform: rotate(0deg) translateX(0px); }
+  87%            { transform: rotate(-1.8deg) translateX(-0.5px); }
+  91%            { transform: rotate(0.9deg)  translateX(0.3px); }
+  95%            { transform: rotate(-0.4deg) translateX(0px); }
+}
+
+/* ── Companion: tap glow pulse ── */
+@keyframes companion-tap-glow {
+  0%   { opacity: 0;    transform: scale(0.92); }
+  25%  { opacity: 0.18; transform: scale(1.06); }
+  100% { opacity: 0;    transform: scale(1.22); }
+}
+
+.animate-cat-breathe {
+  animation: cat-breathe 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-ear-twitch {
+  animation: ear-twitch 12s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.animate-companion-tap-glow {
+  animation: companion-tap-glow 900ms ease-out forwards;
+}

@@ -1,182 +1,309 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
-export type BreathingPatternId = 'box' | '478' | 'soft' | 'tactile-box'
+/* ─── Pattern Definitions ───────────────────────────────────── */
+export type PatternId = 'box' | '478' | 'soft'
 
-interface PhaseStep {
-  label: string
+type BoxEdge = 'top' | 'right' | 'bottom' | 'left'
+
+interface BoxPhase {
+  kind: 'box'
+  name: string
+  duration: number
+  edge: BoxEdge
+}
+
+interface OrbPhase {
+  kind: 'orb'
+  name: string
   duration: number
   scale: number
   opacity: number
 }
 
-interface PatternConfig {
-  id: BreathingPatternId
-  name: string
-  phases: PhaseStep[]
+type Phase = BoxPhase | OrbPhase
+
+interface Pattern {
+  id: PatternId
+  label: string
+  subline: string
+  phases: Phase[]
 }
 
-const PATTERNS: PatternConfig[] = [
+const PATTERNS: Pattern[] = [
   {
     id: 'box',
-    name: 'Box (4-4-4-4)',
+    label: 'BOX (4-4-4-4)',
+    subline: 'stabilizes autonomic nervous system · vagal brake engaged',
     phases: [
-      { label: 'breathe in', duration: 4, scale: 1.25, opacity: 0.95 },
-      { label: 'hold', duration: 4, scale: 1.25, opacity: 0.85 },
-      { label: 'breathe out', duration: 4, scale: 0.82, opacity: 0.45 },
-      { label: 'hold', duration: 4, scale: 0.82, opacity: 0.35 },
+      { kind: 'box', name: 'Inhale', duration: 4, edge: 'top'    },
+      { kind: 'box', name: 'Hold',   duration: 4, edge: 'right'  },
+      { kind: 'box', name: 'Exhale', duration: 4, edge: 'bottom' },
+      { kind: 'box', name: 'Hold',   duration: 4, edge: 'left'   },
     ],
   },
   {
     id: '478',
-    name: '4-7-8 Calm',
+    label: '4-7-8 CALM',
+    subline: 'downregulates sympathetic arousal · restores prefrontal calm',
     phases: [
-      { label: 'breathe in', duration: 4, scale: 1.3, opacity: 0.95 },
-      { label: 'hold', duration: 7, scale: 1.3, opacity: 0.85 },
-      { label: 'breathe out', duration: 8, scale: 0.8, opacity: 0.4 },
+      { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.45, opacity: 0.80 },
+      { kind: 'orb', name: 'Hold',   duration: 7, scale: 1.45, opacity: 0.80 },
+      { kind: 'orb', name: 'Exhale', duration: 8, scale: 1.00, opacity: 0.30 },
     ],
   },
   {
     id: 'soft',
-    name: 'Soft 4-4',
+    label: 'SOFT 4-4',
+    subline: 'regulates respiratory sinus arrhythmia · steady rhythm',
     phases: [
-      { label: 'breathe in', duration: 4, scale: 1.25, opacity: 0.95 },
-      { label: 'breathe out', duration: 4, scale: 0.85, opacity: 0.45 },
-    ],
-  },
-  {
-    id: 'tactile-box',
-    name: 'Tactile Box Frame',
-    phases: [
-      { label: 'breathe in', duration: 4, scale: 1.2, opacity: 0.95 },
-      { label: 'hold', duration: 4, scale: 1.2, opacity: 0.85 },
-      { label: 'breathe out', duration: 4, scale: 0.85, opacity: 0.5 },
-      { label: 'hold', duration: 4, scale: 0.85, opacity: 0.4 },
+      { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.35, opacity: 0.75 },
+      { kind: 'orb', name: 'Exhale', duration: 4, scale: 1.00, opacity: 0.30 },
     ],
   },
 ]
 
+/* ─── Rotating neuro-somatic cues (shared across all patterns) ─────── */
+const SOMATIC_CUES = [
+  'paced breathing stimulates the vagus nerve',
+  'stabilizes autonomic nervous system · vagal brake engaged',
+  'downregulates sympathetic arousal · fight-or-flight eases',
+  'restores prefrontal executive regulation & clarity',
+  'regulates respiratory sinus arrhythmia · steady heart rate',
+]
+
 export default function GuidedBreathing() {
-  const [patternId, setPatternId] = useState<BreathingPatternId>('box')
-  const [phaseIndex, setPhaseIndex] = useState<number>(0)
-  const [secondsLeft, setSecondsLeft] = useState<number>(4)
-  const [isActive, setIsActive] = useState<boolean>(false)
+  const [patternId, setPatternId] = useState<PatternId>('box')
+  const [phaseIndex, setPhaseIndex] = useState(0)
+  const [secondsLeft, setSecondsLeft] = useState(4)
+  const [isActive, setIsActive] = useState(false)
+  // Rotating somatic cue
+  const [cueIndex, setCueIndex] = useState(0)
+  const [cueVisible, setCueVisible] = useState(true)
 
-  const activePattern = PATTERNS.find(p => p.id === patternId) || PATTERNS[0]
-  const currentStep = activePattern.phases[phaseIndex] || activePattern.phases[0]
+  const phaseIndexRef = useRef(phaseIndex)
+  const secondsLeftRef = useRef(secondsLeft)
+  const isActiveRef = useRef(isActive)
+  const patternRef = useRef(PATTERNS[0])
 
-  // Reset phase and timer when pattern changes
-  function handleSelectPattern(id: BreathingPatternId) {
+  const activePattern = PATTERNS.find(p => p.id === patternId)!
+  const currentPhase = activePattern.phases[phaseIndex]
+
+  // Keep refs in sync
+  phaseIndexRef.current = phaseIndex
+  secondsLeftRef.current = secondsLeft
+  isActiveRef.current = isActive
+  patternRef.current = activePattern
+
+  /* ── Deterministic 1-second tick engine ───────────────────── */
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const stopTick = useCallback(() => {
+    if (tickRef.current) {
+      clearInterval(tickRef.current)
+      tickRef.current = null
+    }
+  }, [])
+
+  const startTick = useCallback(() => {
+    stopTick()
+    tickRef.current = setInterval(() => {
+      const pattern = patternRef.current
+      const prevSeconds = secondsLeftRef.current
+      const prevIndex = phaseIndexRef.current
+
+      if (prevSeconds > 1) {
+        const next = prevSeconds - 1
+        secondsLeftRef.current = next
+        setSecondsLeft(next)
+      } else {
+        // Advance to next phase
+        const nextIndex = (prevIndex + 1) % pattern.phases.length
+        const nextDuration = pattern.phases[nextIndex].duration
+        phaseIndexRef.current = nextIndex
+        secondsLeftRef.current = nextDuration
+        setPhaseIndex(nextIndex)
+        setSecondsLeft(nextDuration)
+      }
+    }, 1000)
+  }, [stopTick])
+
+  /* ── isActive toggle ──────────────────────────────────────── */
+  useEffect(() => {
+    if (isActive) {
+      startTick()
+    } else {
+      stopTick()
+    }
+    return stopTick
+  }, [isActive, startTick, stopTick])
+
+  /* ── Rotating somatic cue: cross-fade every 8s ───────────── */
+  useEffect(() => {
+    const rotateId = setInterval(() => {
+      setCueVisible(false)
+      setTimeout(() => {
+        setCueIndex(prev => (prev + 1) % SOMATIC_CUES.length)
+        setCueVisible(true)
+      }, 800)
+    }, 8000)
+    return () => clearInterval(rotateId)
+  }, [])
+
+  /* ── Pattern switch ───────────────────────────────────────── */
+  function handleSelectPattern(id: PatternId) {
+    if (id === patternId) return
+    stopTick()
+    const pat = PATTERNS.find(p => p.id === id)!
     setPatternId(id)
     setPhaseIndex(0)
-    const target = PATTERNS.find(p => p.id === id) || PATTERNS[0]
-    setSecondsLeft(target.phases[0].duration)
+    setSecondsLeft(pat.phases[0].duration)
+    phaseIndexRef.current = 0
+    secondsLeftRef.current = pat.phases[0].duration
+    patternRef.current = pat
+    setIsActive(false)
   }
 
-  // Timer interval
-  useEffect(() => {
-    if (!isActive) return
-
-    const interval = setInterval(() => {
-      setSecondsLeft(prev => {
-        if (prev <= 1) {
-          setPhaseIndex(prevIdx => {
-            const nextIdx = (prevIdx + 1) % activePattern.phases.length
-            setSecondsLeft(activePattern.phases[nextIdx].duration)
-            return nextIdx
-          })
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [isActive, activePattern])
-
-  function handleTogglePlay() {
+  /* ── Tap toggle ───────────────────────────────────────────── */
+  function handleTogglePlay(e: React.MouseEvent) {
+    e.stopPropagation()
     setIsActive(prev => !prev)
   }
 
-  function handleReset() {
+  /* ── Reset ────────────────────────────────────────────────── */
+  function handleReset(e: React.MouseEvent) {
+    e.stopPropagation()
+    stopTick()
     setIsActive(false)
     setPhaseIndex(0)
     setSecondsLeft(activePattern.phases[0].duration)
+    phaseIndexRef.current = 0
+    secondsLeftRef.current = activePattern.phases[0].duration
   }
 
-  // Progress within the active phase: 0 (start) to 1 (end)
-  const stepDuration = currentStep.duration
-  const fillPercentage = isActive ? Math.max(0, Math.min(100, ((stepDuration - secondsLeft + 1) / stepDuration) * 100)) : 0
+  /* ── Orb CSS transition duration (tied to phase duration) ─── */
+  function orbTransitionStyle(phase: OrbPhase) {
+    const durMs = phase.duration * 1000
+    const easing = phase.name === 'Inhale' ? 'ease-out'
+                 : phase.name === 'Exhale' ? 'ease-in-out'
+                 : 'linear' // Hold: instant, no re-scale
+    return {
+      transform: isActive ? `scale(${phase.scale})` : 'scale(1.0)',
+      opacity: isActive ? phase.opacity : 0.3,
+      transition: isActive
+        ? `transform ${durMs}ms ${easing}, opacity ${durMs}ms ease-in-out`
+        : 'transform 800ms ease-in-out, opacity 800ms ease-in-out',
+    }
+  }
 
+  /* ── Box tracer: CSS animation drives the loop seamlessly ── */
+  // The CSS @keyframes boxBreatheTracer (100 → 0 over 16s, infinite) handles
+  // the visual with zero JS involvement at cycle boundaries — no snap possible.
+  // animation-play-state pauses/resumes at the exact current frame.
+
+  /* ── Render ───────────────────────────────────────────────── */
   return (
-    <div className="flex flex-col items-center justify-between flex-1 py-4 animate-fade-in text-center min-h-0">
-      {/* ── Top Spacer (Quiet simplicity) ─────────────────────── */}
-      <div className="h-2" />
+    <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
 
-      {/* ── Main Breathing Canvas / Visualizer ────────────────── */}
-      <div className="relative my-auto flex flex-col items-center justify-center min-h-[220px]">
-        {patternId === 'tactile-box' ? (
-          /* ── Tactile 4-Pill Square Frame Visualizer ─────────── */
+      {/* ── 1. Pattern Switcher ───────────────────────────────── */}
+      <div className="w-full flex flex-col items-center pt-1 shrink-0">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          {PATTERNS.map(p => {
+            const sel = p.id === patternId
+            return (
+              <button
+                key={p.id}
+                id={`pattern-pill-${p.id}`}
+                onClick={() => handleSelectPattern(p.id)}
+                className={`
+                  px-3 py-1.5 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all duration-300 focus:outline-none cursor-pointer
+                  ${sel
+                    ? 'bg-neutral-800/90 text-neutral-200 border border-neutral-700/80 shadow-sm'
+                    : 'bg-neutral-900/40 text-neutral-500 border border-neutral-800/60 hover:text-neutral-300 hover:border-neutral-700/60'
+                  }
+                `}
+              >
+                {p.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Rotating somatic cue — cross-fades every 8s */}
+        <p
+          className="font-sans text-xs md:text-sm text-neutral-300 tracking-wide text-center font-normal mt-3 max-w-xs px-4 leading-snug"
+          style={{ transition: 'opacity 800ms ease', opacity: cueVisible ? 1 : 0 }}
+        >
+          {SOMATIC_CUES[cueIndex]}
+        </p>
+      </div>
+
+      {/* ── 2. Central Interactive Visualizer ────────────────── */}
+      <div className="relative my-auto flex flex-col items-center justify-center min-h-[240px]">
+
+        {patternId === 'box' ? (
+          /* ── BOX: Continuous Clockwise Progressive Rounded Tracer ── */
           <div
             onClick={handleTogglePlay}
-            className="relative w-56 h-56 rounded-3xl border border-[#1E1E26] bg-[#101014] p-5 flex items-center justify-center cursor-pointer select-none group"
+            className="relative flex items-center justify-center cursor-pointer group"
+            style={{ width: '220px', height: '220px' }}
+            role="button"
+            aria-label={isActive ? 'Pause breathing' : 'Start breathing'}
           >
-            {/* 1. Top Pill Segment (Inhale · Phase 0) */}
-            <div className="absolute top-3 left-8 right-8 h-2 rounded-full bg-[#1C1C24] overflow-hidden">
-              <div
-                className="h-full bg-[#C9B99A] rounded-full transition-all duration-700 ease-out"
+            <svg
+              viewBox="0 0 220 220"
+              width="220"
+              height="220"
+              style={{ overflow: 'visible', position: 'absolute', inset: 0 }}
+            >
+              {/* ── Background muted track ─────────────────────────── */}
+              <rect
+                x="10" y="10"
+                width="200" height="200"
+                rx="28" ry="28"
+                fill="transparent"
+                stroke="rgba(64,64,80,0.55)"
+                strokeWidth="3"
+              />
+
+              {/* ── Continuous clockwise glowing tracer (CSS-driven, no snap) ── */}
+              <rect
+                x="10" y="10"
+                width="200" height="200"
+                rx="28" ry="28"
+                fill="transparent"
+                stroke="#FEF3C7"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                pathLength="100"
+                strokeDasharray="100"
                 style={{
-                  width: phaseIndex === 0 && isActive ? `${fillPercentage}%` : phaseIndex > 0 && isActive ? '100%' : '0%',
+                  animationName: 'boxBreatheTracer',
+                  animationDuration: '16s',
+                  animationTimingFunction: 'linear',
+                  animationIterationCount: 'infinite',
+                  animationPlayState: isActive ? 'running' : 'paused',
+                  strokeDashoffset: isActive ? undefined : 100,
+                  filter: isActive
+                    ? 'drop-shadow(0 0 6px rgba(254,243,199,0.5)) drop-shadow(0 0 12px rgba(254,243,199,0.25))'
+                    : 'none',
+                  opacity: isActive ? 0.90 : 0,
+                  transition: 'opacity 0.5s ease',
                 }}
               />
-            </div>
+            </svg>
 
-            {/* 2. Right Pill Segment (Hold · Phase 1) */}
-            <div className="absolute top-8 right-3 bottom-8 w-2 rounded-full bg-[#1C1C24] overflow-hidden flex flex-col justify-start">
-              <div
-                className="w-full bg-[#C9B99A] rounded-full transition-all duration-700 ease-out"
-                style={{
-                  height: phaseIndex === 1 && isActive ? `${fillPercentage}%` : phaseIndex > 1 && isActive ? '100%' : '0%',
-                }}
-              />
-            </div>
-
-            {/* 3. Bottom Pill Segment (Exhale · Phase 2) */}
-            <div className="absolute bottom-3 left-8 right-8 h-2 rounded-full bg-[#1C1C24] overflow-hidden flex justify-end">
-              <div
-                className="h-full bg-[#C9B99A] rounded-full transition-all duration-700 ease-out"
-                style={{
-                  width: phaseIndex === 2 && isActive ? `${fillPercentage}%` : phaseIndex > 2 && isActive ? '100%' : '0%',
-                }}
-              />
-            </div>
-
-            {/* 4. Left Pill Segment (Hold · Phase 3) */}
-            <div className="absolute top-8 left-3 bottom-8 w-2 rounded-full bg-[#1C1C24] overflow-hidden flex flex-col justify-end">
-              <div
-                className="w-full bg-[#C9B99A] rounded-full transition-all duration-700 ease-out"
-                style={{
-                  height: phaseIndex === 3 && isActive ? `${fillPercentage}%` : '0%',
-                }}
-              />
-            </div>
-
-            {/* Center Core Display */}
-            <div className="flex flex-col items-center justify-center text-center">
-              {!isActive ? (
-                <>
-                  <span className="font-serif-nook text-neutral-300 text-lg font-light">
-                    Tap to Begin
-                  </span>
-                  <span className="font-sans text-[0.58rem] tracking-[0.16em] uppercase text-neutral-500 mt-1">
-                    box frame
-                  </span>
-                </>
+            {/* ── Center Dynamic Phase Display ─────────────────────── */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center gap-1">
+              {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
+                <span className="font-serif-nook text-neutral-400 text-base font-light italic group-hover:text-neutral-200 transition-colors duration-200">
+                  tap to begin
+                </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-neutral-200 text-xl font-light tracking-wide transition-all">
-                    {currentStep.label}
+                  <span className="font-serif-nook text-neutral-100 text-xl font-light tracking-wide capitalize">
+                    {currentPhase.name}
                   </span>
-                  <span className="font-sans text-[0.65rem] text-[#C9B99A] tabular-nums mt-1 font-medium">
+                  <span className="font-serif-nook text-amber-100/80 text-base italic font-normal tabular-nums">
                     {secondsLeft}s
                   </span>
                 </>
@@ -184,59 +311,63 @@ export default function GuidedBreathing() {
             </div>
           </div>
         ) : (
-          /* ── Radial Breathing Orb Visualizer ────────────────── */
+          /* ── ORB: Phase-Driven Expansion / Hold / Contraction ── */
           <div
             onClick={handleTogglePlay}
-            className="relative flex items-center justify-center w-60 h-60 cursor-pointer select-none group"
+            className="relative flex items-center justify-center w-64 h-64 cursor-pointer group"
+            role="button"
+            aria-label={isActive ? 'Pause breathing' : 'Start breathing'}
           >
-            {/* Ambient Radial Atmosphere Glow */}
+            {/* Ambient atmosphere */}
             <div
-              className="absolute w-52 h-52 rounded-full bg-[#C9B99A]/5 blur-3xl pointer-events-none transition-all duration-[3500ms] ease-in-out"
+              className="absolute w-56 h-56 rounded-full bg-[#C9B99A]/5 blur-3xl pointer-events-none"
               style={{
-                transform: `scale(${isActive ? currentStep.scale * 1.15 : 1})`,
-                opacity: isActive ? currentStep.opacity * 0.7 : 0.2,
+                transform: isActive
+                  ? `scale(${(currentPhase as OrbPhase).scale * 1.15})`
+                  : 'scale(1)',
+                opacity: isActive ? (currentPhase as OrbPhase).opacity * 0.6 : 0.1,
+                transition: isActive
+                  ? `transform ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out, opacity ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out`
+                  : 'all 800ms ease',
               }}
             />
 
-            {/* Outer Subtle Ring */}
+            {/* Outer breath ring */}
             <div
-              className="absolute w-44 h-44 rounded-full border border-[#C9B99A]/15 transition-all duration-[3500ms] ease-in-out pointer-events-none"
+              className="absolute w-48 h-48 rounded-full border border-[#C9B99A]/12 pointer-events-none"
               style={{
-                transform: `scale(${isActive ? currentStep.scale * 1.04 : 1})`,
-                opacity: isActive ? currentStep.opacity * 0.4 : 0.15,
+                transform: isActive
+                  ? `scale(${(currentPhase as OrbPhase).scale * 1.04})`
+                  : 'scale(1)',
+                opacity: isActive ? (currentPhase as OrbPhase).opacity * 0.35 : 0.12,
+                transition: isActive
+                  ? `transform ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out, opacity ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out`
+                  : 'all 800ms ease',
               }}
             />
 
-            {/* Core Breathing Orb */}
+            {/* Core breathing orb */}
             <div
               className="
                 w-36 h-36 rounded-full
-                border border-[#C9B99A]/30
                 bg-gradient-to-br from-[#181715] via-[#121214] to-[#0A0A0C]
+                border border-[#C9B99A]/25
                 flex flex-col items-center justify-center
-                transition-all duration-[3500ms] ease-in-out
-                shadow-2xl group-hover:border-[#C9B99A]/50
+                shadow-2xl group-hover:border-[#C9B99A]/45
+                pointer-events-none
               "
-              style={{
-                transform: `scale(${isActive ? currentStep.scale : 0.98})`,
-                borderColor: `rgba(201, 185, 154, ${isActive ? currentStep.opacity * 0.5 : 0.25})`,
-              }}
+              style={orbTransitionStyle(currentPhase as OrbPhase)}
             >
-              {!isActive ? (
-                <>
-                  <span className="font-serif-nook text-neutral-300 text-lg font-light">
-                    Tap to Begin
-                  </span>
-                  <span className="font-sans text-[0.55rem] tracking-[0.14em] uppercase text-neutral-500 mt-0.5">
-                    gentle breath
-                  </span>
-                </>
+              {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
+                <span className="font-serif-nook text-neutral-400 text-base font-light italic">
+                  tap to begin
+                </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-neutral-200 text-lg font-light tracking-wide transition-opacity duration-500">
-                    {currentStep.label}
+                  <span className="font-serif-nook text-neutral-100 text-lg font-light tracking-wide capitalize">
+                    {currentPhase.name}
                   </span>
-                  <span className="font-sans text-[0.62rem] text-[#C9B99A] tabular-nums mt-0.5 font-medium">
+                  <span className="font-serif-nook text-[#C9B99A]/90 text-sm italic font-normal mt-0.5 tabular-nums">
                     {secondsLeft}s
                   </span>
                 </>
@@ -246,56 +377,21 @@ export default function GuidedBreathing() {
         )}
       </div>
 
-      {/* ── Pattern Selector Pills ────────────────────────────── */}
-      <div className="w-full px-2 mb-3">
-        <div className="flex items-center justify-center gap-1.5 flex-wrap">
-          {PATTERNS.map(p => {
-            const isSelected = p.id === patternId
-            return (
-              <button
-                key={p.id}
-                id={`pattern-pill-${p.id}`}
-                onClick={() => handleSelectPattern(p.id)}
-                className={`
-                  px-3 py-1 rounded-full text-[0.58rem] font-sans tracking-wider uppercase transition-all duration-300 focus:outline-none
-                  ${isSelected
-                    ? 'bg-[#22222C] text-neutral-200 border border-[#C9B99A]/40 shadow-sm'
-                    : 'bg-[#141418] text-neutral-500 border border-[#1E1E24] hover:text-neutral-300 hover:border-[#2A2A36]'
-                  }
-                `}
-              >
-                {p.name}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* ── Bottom Controls ───────────────────────────────────── */}
-      <div className="flex items-center gap-3">
-        <button
-          id="breath-toggle-btn"
-          onClick={handleTogglePlay}
-          className="
-            px-5 py-2 border border-[#242430] bg-[#141418] rounded-xl
-            font-sans text-neutral-300 text-[0.62rem] tracking-[0.14em] uppercase
-            hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
-            transition-all duration-300 focus:outline-none
-          "
-        >
-          {isActive ? 'Pause' : 'Start'}
-        </button>
-
-        <button
-          id="breath-reset-btn"
-          onClick={handleReset}
-          className="
-            px-4 py-2 font-sans text-neutral-500 text-[0.60rem] tracking-[0.14em] uppercase
-            hover:text-neutral-300 transition-colors focus:outline-none
-          "
-        >
-          Reset
-        </button>
+      {/* ── 3. Quiet Reset ───────────────────────────────────── */}
+      <div className="h-8 flex items-center justify-center shrink-0">
+        {(isActive || phaseIndex > 0 || secondsLeft !== activePattern.phases[0].duration) ? (
+          <button
+            id="breath-reset-btn"
+            onClick={handleReset}
+            className="font-mono text-[10px] tracking-widest uppercase text-neutral-600 hover:text-neutral-400 transition-colors focus:outline-none cursor-pointer"
+          >
+            reset
+          </button>
+        ) : (
+          <span className="font-mono text-[10px] tracking-widest uppercase text-neutral-700/40 pointer-events-none">
+            tap visualizer to begin
+          </span>
+        )}
       </div>
     </div>
   )
