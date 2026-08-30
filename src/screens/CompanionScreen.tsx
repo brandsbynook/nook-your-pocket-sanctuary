@@ -1,283 +1,342 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getCompanionChoice, setCompanionChoice } from '../utils/storage'
+import {
+  getCompanionChoice,
+  setCompanionChoice,
+  type CompanionId,
+} from '../utils/storage'
+import ScreenHeader from '../components/ScreenHeader'
+import CompanionSelectorModal, { COMPANION_ROSTER } from '../components/CompanionSelectorModal'
+import DecelerationModal from '../components/DecelerationModal'
 
 interface CompanionScreenProps {
   onBack: () => void
 }
 
-/* ─────────────────────────────────────────────────────────────────────
-   SVG COMPANIONS
-   Each animal: crescent curl, minimal line-art, warm amber tones.
-───────────────────────────────────────────────────────────────────── */
+const TOTAL_POMODORO_SECONDS = 25 * 60 // 25:00
 
-function CurledCatSvg() {
-  return (
-    <svg viewBox="0 0 200 200" width="180" height="180" fill="none">
-      {/* Body: crescent C-curl, back arcing over top */}
-      <path
-        d="M 62,82 C 55,65 62,42 80,34 C 100,25 128,32 145,52 C 162,73 162,103 150,126 C 138,150 116,162 90,162 C 74,162 62,154 58,144 C 70,148 86,148 100,142 C 118,133 130,114 128,94 C 126,76 112,60 94,57 C 78,54 65,64 62,82 Z"
-        fill="rgba(254,243,199,0.06)"
-        stroke="rgba(254,243,199,0.68)"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Head: round, tucked low-left */}
-      <ellipse cx="58" cy="90" rx="21" ry="19" transform="rotate(-10 58 90)"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.7" />
-      {/* Left ear */}
-      <path className="animate-ear-twitch" d="M 41,76 L 36,60 L 52,70"
-        stroke="rgba(254,243,199,0.68)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"
-        style={{ transformOrigin: '46px 73px' }} />
-      {/* Right ear */}
-      <path d="M 60,72 L 64,57 L 74,68"
-        stroke="rgba(254,243,199,0.68)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      {/* Closed crescent eyes */}
-      <path d="M 47,88 C 50,91 54,91 57,88" stroke="rgba(254,243,199,0.72)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-      <path d="M 60,86 C 63,89 67,89 70,86" stroke="rgba(254,243,199,0.72)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-      {/* Tiny nose */}
-      <ellipse cx="58" cy="95" rx="2" ry="1.2" fill="rgba(254,243,199,0.65)" />
-      {/* Tail curling around front */}
-      <path d="M 90,162 C 100,172 102,182 88,184 C 72,186 52,174 46,158 C 42,148 46,136 54,134"
-        stroke="rgba(254,243,199,0.50)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
-    </svg>
-  )
-}
-
-function CurledFoxSvg() {
-  return (
-    <svg viewBox="0 0 200 200" width="180" height="180" fill="none">
-      {/* Body */}
-      <path
-        d="M 60,85 C 52,66 60,42 80,32 C 102,22 132,30 150,52 C 168,74 166,108 152,132 C 138,155 112,165 85,162 C 68,160 55,150 52,140 C 66,144 85,144 100,136 C 120,125 130,104 126,84 C 122,66 106,52 88,50 C 72,48 62,64 60,85 Z"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.7"
-        strokeLinecap="round" strokeLinejoin="round" />
-      {/* Head */}
-      <ellipse cx="56" cy="92" rx="22" ry="20" transform="rotate(-12 56 92)"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.7" />
-      {/* Fox ears: tall and pointed */}
-      <path className="animate-ear-twitch" d="M 36,76 L 28,52 L 50,68"
-        stroke="rgba(254,243,199,0.68)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"
-        style={{ transformOrigin: '43px 72px' }} />
-      <path d="M 58,70 L 62,48 L 78,65"
-        stroke="rgba(254,243,199,0.68)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      {/* Narrow fox muzzle */}
-      <path d="M 44,96 L 38,104 L 50,104"
-        stroke="rgba(254,243,199,0.45)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      {/* Closed eyes */}
-      <path d="M 45,88 C 48,91 52,91 55,88" stroke="rgba(254,243,199,0.72)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-      <path d="M 58,86 C 62,89 66,89 69,86" stroke="rgba(254,243,199,0.72)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-      {/* Big fluffy tail */}
-      <path d="M 85,162 C 100,178 106,192 90,196 C 70,200 44,184 36,164 C 30,150 36,136 48,134"
-        stroke="rgba(254,243,199,0.52)" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-      <path d="M 90,196 C 84,202 76,202 74,198"
-        stroke="rgba(254,243,199,0.28)" strokeWidth="3" strokeLinecap="round" fill="none" />
-    </svg>
-  )
-}
-
-function HunchedOwlSvg() {
-  return (
-    <svg viewBox="0 0 200 200" width="180" height="180" fill="none">
-      {/* Body: round puffed ball */}
-      <ellipse cx="100" cy="118" rx="52" ry="54"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.7" />
-      {/* Head */}
-      <ellipse cx="100" cy="70" rx="32" ry="30"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.7" />
-      {/* Ear tufts */}
-      <path className="animate-ear-twitch" d="M 76,44 L 70,28 L 84,40"
-        stroke="rgba(254,243,199,0.68)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"
-        style={{ transformOrigin: '77px 42px' }} />
-      <path d="M 116,40 L 124,26 L 130,40"
-        stroke="rgba(254,243,199,0.68)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      {/* Closed round eyes */}
-      <path d="M 84,68 C 88,72 94,72 98,68" stroke="rgba(254,243,199,0.72)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M 102,68 C 106,72 112,72 116,68" stroke="rgba(254,243,199,0.72)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      {/* Tiny hooked beak */}
-      <path d="M 97,76 C 97,82 103,82 103,76"
-        stroke="rgba(254,243,199,0.50)" strokeWidth="1.3" strokeLinecap="round" fill="none" />
-      {/* Wing feather lines */}
-      <path d="M 56,110 C 62,122 66,140 63,156" stroke="rgba(254,243,199,0.22)" strokeWidth="1.2" strokeLinecap="round" fill="none" strokeDasharray="2 5" />
-      <path d="M 144,110 C 138,122 134,140 137,156" stroke="rgba(254,243,199,0.22)" strokeWidth="1.2" strokeLinecap="round" fill="none" strokeDasharray="2 5" />
-      {/* Talons */}
-      <path d="M 82,170 C 78,177 72,177 70,174" stroke="rgba(254,243,199,0.38)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-      <path d="M 100,172 C 98,179 96,179 94,176" stroke="rgba(254,243,199,0.38)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-      <path d="M 118,170 C 122,177 128,177 130,174" stroke="rgba(254,243,199,0.38)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-    </svg>
-  )
-}
-
-function CurledBearSvg() {
-  return (
-    <svg viewBox="0 0 200 200" width="180" height="180" fill="none">
-      {/* Chunky body */}
-      <path
-        d="M 55,90 C 44,68 52,40 75,28 C 100,16 136,26 155,52 C 174,78 170,116 154,140 C 138,164 108,174 80,168 C 60,164 46,150 42,136 C 62,144 86,144 104,132 C 126,117 134,94 128,72 C 122,52 102,38 80,40 C 62,42 52,64 55,90 Z"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.9"
-        strokeLinecap="round" strokeLinejoin="round" />
-      {/* Head */}
-      <ellipse cx="52" cy="100" rx="25" ry="24" transform="rotate(-8 52 100)"
-        fill="rgba(254,243,199,0.06)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.9" />
-      {/* Round bear ears */}
-      <circle className="animate-ear-twitch" cx="36" cy="80" r="10"
-        fill="rgba(254,243,199,0.04)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.6"
-        style={{ transformOrigin: '42px 87px' }} />
-      <circle cx="60" cy="76" r="10"
-        fill="rgba(254,243,199,0.04)" stroke="rgba(254,243,199,0.68)" strokeWidth="1.6" />
-      {/* Muzzle */}
-      <ellipse cx="52" cy="108" rx="13" ry="9" stroke="rgba(254,243,199,0.38)" strokeWidth="1.2" fill="none" />
-      <ellipse cx="52" cy="106" rx="2.5" ry="1.5" fill="rgba(254,243,199,0.58)" />
-      {/* Closed eyes */}
-      <path d="M 38,96 C 41,99 45,99 48,96" stroke="rgba(254,243,199,0.72)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-      <path d="M 54,93 C 57,96 61,96 64,93" stroke="rgba(254,243,199,0.72)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-      {/* Little paw peeking */}
-      <path d="M 42,134 C 44,142 50,146 58,144"
-        stroke="rgba(254,243,199,0.40)" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-    </svg>
-  )
+function formatTimeRemaining(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Companion Registry
+   Gentle Singing Bowl Completion Chime
 ───────────────────────────────────────────────────────────── */
-const COMPANIONS = [
-  { id: 'cat',  label: 'CAT',  Svg: CurledCatSvg  },
-  { id: 'fox',  label: 'FOX',  Svg: CurledFoxSvg  },
-  { id: 'owl',  label: 'OWL',  Svg: HunchedOwlSvg },
-  { id: 'bear', label: 'BEAR', Svg: CurledBearSvg },
-]
+function playCompletionChime() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!AudioContextClass) return
+    const ctx = new AudioContextClass()
+    const now = ctx.currentTime
 
-/* ─────────────────────────────────────────────────────────────
-   Main Companion Screen
-───────────────────────────────────────────────────────────── */
+    const freqs = [392, 587.33, 784, 1174.66]
+    const gains = [0.25, 0.12, 0.08, 0.04]
+
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, now)
+
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(gains[i], now + 0.08)
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.8)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(now)
+      osc.stop(now + 3.9)
+    })
+  } catch {
+    // Audio context may be restricted
+  }
+}
+
 export default function CompanionScreen({ onBack }: CompanionScreenProps) {
-  const [companion, setCompanion] = useState<string>(
-    () => getCompanionChoice() || 'cat'
-  )
-  const [tapping, setTapping] = useState(false)
-  const [glowKey, setGlowKey] = useState(0)
-  const tapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Companion state persisted in localStorage
+  const [selectedCompanionId, setSelectedCompanionId] = useState<CompanionId>(() => getCompanionChoice())
+  const [isSelectorModalOpen, setIsSelectorModalOpen] = useState(false)
 
-  const activeCompanion = COMPANIONS.find(c => c.id === companion) ?? COMPANIONS[0]
-  const { Svg: ActiveSvg } = activeCompanion
+  // Pomodoro Timer States (25:00 countdown)
+  const [timeLeft, setTimeLeft] = useState(TOTAL_POMODORO_SECONDS)
+  const [isRunning, setIsRunning] = useState(false)
+  const [isCompleted, setIsCompleted] = useState(false)
 
-  function handleSelectCompanion(id: string) {
-    setCompanion(id)
+  // Mindful Friction-Exit Intercept Modal
+  const [isDecelerationOpen, setIsDecelerationOpen] = useState(false)
+
+  // Tap ripple effect
+  const [tapRippleKey, setTapRippleKey] = useState(0)
+  const [isRippling, setIsRippling] = useState(false)
+  const rippleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const activeCompanion = COMPANION_ROSTER.find(c => c.id === selectedCompanionId) ?? COMPANION_ROSTER[4] // default cat
+
+  // Select and persist companion
+  const handleSelectCompanion = (id: CompanionId) => {
+    setSelectedCompanionId(id)
     setCompanionChoice(id)
+    setIsSelectorModalOpen(false)
   }
 
-  const handleTap = useCallback(() => {
+  // Ring Tap: Toggle Start / Pause
+  const handleRingTap = useCallback(() => {
     if ('vibrate' in navigator) navigator.vibrate([18])
-    setGlowKey(k => k + 1)
-    setTapping(true)
-    if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current)
-    tapTimeoutRef.current = setTimeout(() => setTapping(false), 1000)
-  }, [])
 
+    setTapRippleKey(k => k + 1)
+    setIsRippling(true)
+    if (rippleTimeoutRef.current) clearTimeout(rippleTimeoutRef.current)
+    rippleTimeoutRef.current = setTimeout(() => setIsRippling(false), 900)
+
+    if (isCompleted || timeLeft === 0) {
+      // Restart session
+      setTimeLeft(TOTAL_POMODORO_SECONDS)
+      setIsCompleted(false)
+      setIsRunning(true)
+      return
+    }
+
+    setIsRunning(prev => !prev)
+  }, [isCompleted, timeLeft])
+
+  // Timer interval countdown
+  useEffect(() => {
+    if (isRunning && !isCompleted) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            setIsRunning(false)
+            setIsCompleted(true)
+            playCompletionChime()
+            if ('vibrate' in navigator) navigator.vibrate([40, 60, 80])
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+    }
+  }, [isRunning, isCompleted])
+
+  // Clean up ripple timer
   useEffect(() => {
     return () => {
-      if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current)
+      if (rippleTimeoutRef.current) clearTimeout(rippleTimeoutRef.current)
     }
   }, [])
 
+  // Back Navigation Handler with Friction Intercept
+  const handleBackAttempt = () => {
+    if (isRunning && timeLeft < TOTAL_POMODORO_SECONDS - 3) {
+      setIsDecelerationOpen(true)
+    } else {
+      onBack()
+    }
+  }
+
+  // Confirm Exit from Deceleration Modal
+  const handleConfirmExit = () => {
+    setIsRunning(false)
+    setIsDecelerationOpen(false)
+    onBack()
+  }
+
+  // SVG Dial Dimensions
+  const dialSize = 270
+  const trackStrokeWidth = 6.5
+  const radius = (dialSize - trackStrokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+
+  // Counter-clockwise depletion: Starts full (dashoffset = 0) and increases to circumference as timeLeft -> 0
+  const progressRatio = timeLeft / TOTAL_POMODORO_SECONDS
+  const strokeDashoffset = circumference * (1 - progressRatio)
+
   return (
-    <main className="flex flex-col h-full bg-[#0C0C0F] text-neutral-200 overflow-hidden">
+    <main
+      id="companion-screen"
+      className="
+        h-[100dvh] max-w-md mx-auto
+        px-6 pt-10 pb-6
+        flex flex-col justify-between
+        bg-[#0E0E0E] text-[#E5E0D8]
+        overflow-hidden select-none
+        animate-fade-in
+      "
+    >
+      {/* ── 1. Standard Nook Header (Wide-Tracked "C o m p a n i o n") ── */}
+      <ScreenHeader
+        id="companion-screen-header"
+        title="C o m p a n i o n"
+        subtitle="a quiet presence while you work"
+        onBack={handleBackAttempt}
+        rightElement={
+          timeLeft < TOTAL_POMODORO_SECONDS && !isRunning ? (
+            <button
+              id="companion-reset-btn"
+              onClick={() => {
+                setTimeLeft(TOTAL_POMODORO_SECONDS)
+                setIsCompleted(false)
+              }}
+              className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-neutral-500 hover:text-neutral-300 transition-colors focus:outline-none cursor-pointer py-1 px-1.5"
+            >
+              Reset
+            </button>
+          ) : undefined
+        }
+      />
 
-      {/* Back nav */}
-      <div className="flex items-center px-5 pt-5 pb-2 shrink-0">
-        <button
-          id="companion-back-btn"
-          onClick={onBack}
-          className="font-mono text-[10px] tracking-widest uppercase text-neutral-600 hover:text-neutral-400 transition-colors focus:outline-none cursor-pointer"
-        >
-          ← back
-        </button>
-      </div>
-
-      {/* Header */}
-      <div className="text-center px-6 pt-1 pb-0 shrink-0">
-        <h1 className="font-serif text-xl text-neutral-300 font-light tracking-wide lowercase">
-          companion
-        </h1>
-        <p className="text-xs text-neutral-500 font-serif italic font-normal mt-1 lowercase">
-          a quiet presence while you work or rest
-        </p>
-      </div>
-
-      {/* Companion Visual */}
-      <div className="flex-1 flex flex-col items-center justify-center min-h-0 px-6">
-
-        {/* Tap target + glow container */}
+      {/* ── 2. Minimalist Center Pomodoro Dial ────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 my-auto">
+        {/* Interactive Circular Dial Container */}
         <div
-          className="relative flex items-center justify-center cursor-pointer select-none"
-          style={{ width: 256, height: 256 }}
-          onClick={handleTap}
+          id="focus-timer-ring-touch-target"
+          onClick={handleRingTap}
           role="button"
-          aria-label={`Tap to greet your ${activeCompanion.label.toLowerCase()}`}
+          tabIndex={0}
+          aria-label={isRunning ? 'Pause focus session' : 'Start focus session'}
+          className="relative flex items-center justify-center cursor-pointer select-none group"
+          style={{ width: dialSize, height: dialSize }}
         >
-          {/* Ambient background glow */}
+          {/* Subtle Ambient Radial Glow */}
           <div
-            className="absolute inset-0 rounded-full pointer-events-none"
+            className={`
+              absolute inset-0 rounded-full pointer-events-none transition-opacity duration-1000
+              ${isRunning ? 'opacity-100' : 'opacity-35'}
+            `}
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(254,243,199,0.04) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse at center, rgba(201,185,154,0.06) 0%, rgba(201,185,154,0.01) 60%, transparent 80%)',
             }}
           />
 
-          {/* Tap pulse ring — key remount re-fires CSS animation */}
-          {tapping && (
+          {/* Tap Feedback Ripple */}
+          {isRippling && (
             <div
-              key={glowKey}
+              key={tapRippleKey}
               className="absolute inset-0 rounded-full pointer-events-none animate-companion-tap-glow"
               style={{
-                background: 'radial-gradient(ellipse at center, rgba(254,243,199,0.22) 0%, rgba(254,243,199,0.06) 55%, transparent 80%)',
+                background: 'radial-gradient(ellipse at center, rgba(201,185,154,0.2) 0%, rgba(201,185,154,0.04) 55%, transparent 80%)',
               }}
             />
           )}
 
-          {/* Breathing wrapper */}
-          <div className="animate-cat-breathe flex items-center justify-center">
-            <ActiveSvg />
+          {/* ── Circular Progress Ring Track (SVG) ── */}
+          <svg
+            width={dialSize}
+            height={dialSize}
+            className="absolute inset-0 pointer-events-none -rotate-90"
+          >
+            {/* Dark Muted Ring Track */}
+            <circle
+              cx={dialSize / 2}
+              cy={dialSize / 2}
+              r={radius}
+              stroke="rgba(255, 255, 255, 0.08)"
+              strokeWidth={trackStrokeWidth}
+              fill="none"
+            />
+
+            {/* Smooth Foreground Arc Depleting Toward Zero */}
+            <circle
+              cx={dialSize / 2}
+              cy={dialSize / 2}
+              r={radius}
+              stroke="#F2EDE4"
+              strokeWidth={trackStrokeWidth}
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+            />
+          </svg>
+
+          {/* ── Centered Selected Companion with 4s Breathing Animation ── */}
+          <div className="relative z-10 flex items-center justify-center pointer-events-none">
+            <img
+              src={activeCompanion.image}
+              alt={activeCompanion.name}
+              className="w-40 h-40 sm:w-44 sm:h-44 object-contain pointer-events-none select-none drop-shadow-md animate-companion-breathe-4s"
+            />
           </div>
         </div>
 
-        {/* Presence caption */}
-        <p
-          className="font-serif text-[11px] text-neutral-600 italic font-normal text-center mt-0.5 lowercase tracking-wide transition-all duration-500"
-          style={{ opacity: tapping ? 0.85 : 0.45 }}
-        >
-          {tapping
-            ? `your ${activeCompanion.label.toLowerCase()} stirs softly\u2026`
-            : 'sleeping peacefully'}
-        </p>
-      </div>
+        {/* ── 3. Subtle Remaining Time Readout in Serif Italics ──── */}
+        <div className="flex flex-col items-center mt-6 gap-1">
+          <p
+            id="focus-timer-time-readout"
+            className="font-serif-nook text-2xl sm:text-3xl text-neutral-200 font-light italic tracking-wider leading-none select-none"
+          >
+            {formatTimeRemaining(timeLeft)}
+          </p>
 
-      {/* Presence Selector */}
-      <div className="shrink-0 px-6 pb-10 flex flex-col items-center gap-3">
-        <div className="w-12 h-px bg-neutral-800/50 mb-1" />
-        <div className="flex items-center justify-center gap-2">
-          {COMPANIONS.map(c => {
-            const active = c.id === companion
-            return (
-              <button
-                key={c.id}
-                id={`companion-pill-${c.id}`}
-                onClick={() => handleSelectCompanion(c.id)}
-                className={`
-                  px-3.5 py-1.5 rounded-full font-mono text-[9px] tracking-widest uppercase
-                  transition-all duration-300 focus:outline-none cursor-pointer
-                  ${active
-                    ? 'bg-neutral-800/80 text-neutral-300 border border-neutral-700/70'
-                    : 'bg-transparent text-neutral-600 border border-neutral-800/40 hover:text-neutral-400 hover:border-neutral-700/50'
-                  }
-                `}
-              >
-                {c.label}
-              </button>
-            )
-          })}
+          <p className="font-serif-nook italic text-xs text-neutral-400 font-normal tracking-wide mt-1">
+            {isCompleted
+              ? 'Session Completed · Rest Well'
+              : isRunning
+              ? 'In Flow · Tap Ring to Pause'
+              : timeLeft < TOTAL_POMODORO_SECONDS
+              ? 'Paused · Tap Ring to Resume'
+              : 'Tap Ring to Begin'}
+          </p>
+        </div>
+
+        {/* ── 4. Quiet, Subtle Companion Selector Trigger ────────── */}
+        <div className="mt-7 flex items-center justify-center">
+          <button
+            id="open-companion-selector-btn"
+            onClick={() => setIsSelectorModalOpen(true)}
+            className="
+              flex items-center gap-2.5 px-4 py-1.5 rounded-full
+              bg-[#14141A] border border-[#22222C] hover:border-[#C9B99A]/50 hover:bg-[#1A1916]
+              transition-all duration-300 focus:outline-none cursor-pointer group shadow-sm
+            "
+            aria-label="Change companion"
+          >
+            {/* Miniature companion active dot */}
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C9B99A] group-hover:scale-110 transition-transform" />
+
+            <span className="font-serif-nook text-sm text-neutral-300 group-hover:text-[#FFFFFF] tracking-wide">
+              {activeCompanion.name}
+            </span>
+
+            {/* Subtle gear / switch glyph */}
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-500 group-hover:text-[#C9B99A] transition-colors">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* ── 5. Companion Roster Selection Modal ────────────────── */}
+      <CompanionSelectorModal
+        isOpen={isSelectorModalOpen}
+        selectedId={selectedCompanionId}
+        onSelect={handleSelectCompanion}
+        onClose={() => setIsSelectorModalOpen(false)}
+      />
+
+      {/* ── 6. Mindful Friction-Exit Intercept Modal ───────────── */}
+      <DecelerationModal
+        isOpen={isDecelerationOpen}
+        onClose={() => setIsDecelerationOpen(false)}
+        onConfirmExit={handleConfirmExit}
+      />
     </main>
   )
 }
