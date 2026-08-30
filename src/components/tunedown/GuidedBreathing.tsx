@@ -62,12 +62,26 @@ const PATTERNS: Pattern[] = [
   },
 ]
 
+/* ─── Single-Line Physiological Validation Cues ─────────────── */
+const PHYSIOLOGICAL_CUES = [
+  'Longer exhales engage the vagal brake.',
+  'Paced rhythm lowers sympathetic arousal.',
+  'Steady breath signals safety to the brainstem.',
+  'Balanced cadence stabilizes autonomic tone.',
+  'Controlled pacing eases nervous system strain.',
+  'A slower rhythm mechanically slows heart rate.',
+]
+
 export default function GuidedBreathing() {
   // Default active technique: Soft (4–4)
   const [patternId, setPatternId] = useState<PatternId>('soft')
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState(4)
   const [isActive, setIsActive] = useState(false)
+
+  // Physiological cue state with 15s cross-fade
+  const [cueIndex, setCueIndex] = useState(() => Math.floor(Math.random() * PHYSIOLOGICAL_CUES.length))
+  const [cueVisible, setCueVisible] = useState(true)
 
   const phaseIndexRef = useRef(phaseIndex)
   const secondsLeftRef = useRef(secondsLeft)
@@ -82,6 +96,18 @@ export default function GuidedBreathing() {
   secondsLeftRef.current = secondsLeft
   isActiveRef.current = isActive
   patternRef.current = activePattern
+
+  // 15-second gentle cross-fade rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCueVisible(false)
+      setTimeout(() => {
+        setCueIndex(prev => (prev + 1) % PHYSIOLOGICAL_CUES.length)
+        setCueVisible(true)
+      }, 1000)
+    }, 15000)
+    return () => clearInterval(interval)
+  }, [])
 
   /* ── Deterministic 1-second tick engine ───────────────────── */
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -204,10 +230,15 @@ export default function GuidedBreathing() {
           })}
         </div>
 
-        {/* Static subtle cue replacing rolling medical text */}
-        <p className="font-serif-nook text-xs md:text-sm text-stone-400/80 italic font-light text-center mt-3 max-w-xs px-4">
-          gentle rhythmic pacing
-        </p>
+        {/* Single-Line Physiological Validation Cue */}
+        <div className="mt-6 mb-8 max-w-xs mx-auto overflow-hidden px-2 w-full">
+          <p
+            className="font-serif-nook italic font-normal text-stone-400/80 text-sm tracking-wide text-center whitespace-nowrap truncate transition-opacity duration-1000"
+            style={{ opacity: cueVisible && !isActive ? 1 : 0 }}
+          >
+            {PHYSIOLOGICAL_CUES[cueIndex]}
+          </p>
+        </div>
       </div>
 
       {/* ── 2. Central Interactive Visualizer ────────────────── */}
@@ -352,7 +383,7 @@ export default function GuidedBreathing() {
 
       {/* ── 3. Quiet Reset ───────────────────────────────────── */}
       <div className="h-8 flex items-center justify-center shrink-0">
-        {(isActive || phaseIndex > 0 || secondsLeft !== activePattern.phases[0].duration) ? (
+        {(isActive || phaseIndex > 0 || secondsLeft !== activePattern.phases[0].duration) && (
           <button
             id="breath-reset-btn"
             onClick={handleReset}
@@ -360,10 +391,6 @@ export default function GuidedBreathing() {
           >
             Reset
           </button>
-        ) : (
-          <span className="font-serif-nook italic text-xs text-neutral-600/70 pointer-events-none">
-            tap visualizer to begin
-          </span>
         )}
       </div>
     </div>

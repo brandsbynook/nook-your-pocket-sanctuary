@@ -12,7 +12,53 @@ interface CompanionScreenProps {
   onBack: () => void
 }
 
-const TOTAL_POMODORO_SECONDS = 25 * 60 // 25:00
+type PresetId = '25/5' | '45/10' | '60/15' | 'custom'
+
+interface PresetOption {
+  id: PresetId
+  label: string
+  workMinutes: number
+  breakMinutes: number
+}
+
+const PRESETS: PresetOption[] = [
+  { id: '25/5', label: '25 / 5', workMinutes: 25, breakMinutes: 5 },
+  { id: '45/10', label: '45 / 10', workMinutes: 45, breakMinutes: 10 },
+  { id: '60/15', label: '60 / 15', workMinutes: 60, breakMinutes: 15 },
+  { id: 'custom', label: 'Custom', workMinutes: 25, breakMinutes: 5 },
+]
+
+const STORAGE_KEY_PRESET = 'nook:focus-preset'
+const STORAGE_KEY_CUSTOM_WORK = 'nook:focus-custom-work'
+const STORAGE_KEY_CUSTOM_BREAK = 'nook:focus-custom-break'
+
+function loadSavedPreset(): PresetId {
+  try {
+    const p = localStorage.getItem(STORAGE_KEY_PRESET)
+    if (p === '25/5' || p === '45/10' || p === '60/15' || p === 'custom') return p
+    return '25/5'
+  } catch {
+    return '25/5'
+  }
+}
+
+function loadSavedCustomWork(): number {
+  try {
+    const val = parseInt(localStorage.getItem(STORAGE_KEY_CUSTOM_WORK) || '25', 10)
+    return isNaN(val) ? 25 : Math.max(1, Math.min(120, val))
+  } catch {
+    return 25
+  }
+}
+
+function loadSavedCustomBreak(): number {
+  try {
+    const val = parseInt(localStorage.getItem(STORAGE_KEY_CUSTOM_BREAK) || '5', 10)
+    return isNaN(val) ? 5 : Math.max(1, Math.min(30, val))
+  } catch {
+    return 5
+  }
+}
 
 function formatTimeRemaining(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -60,8 +106,23 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
   const [selectedCompanionId, setSelectedCompanionId] = useState<CompanionId>(() => getCompanionChoice())
   const [isSelectorModalOpen, setIsSelectorModalOpen] = useState(false)
 
-  // Pomodoro Timer States (25:00 countdown)
-  const [timeLeft, setTimeLeft] = useState(TOTAL_POMODORO_SECONDS)
+  // Presets & Custom Interval States
+  const [activePreset, setActivePreset] = useState<PresetId>(() => loadSavedPreset())
+  const [customWorkMinutes, setCustomWorkMinutes] = useState<number>(() => loadSavedCustomWork())
+  const [customBreakMinutes, setCustomBreakMinutes] = useState<number>(() => loadSavedCustomBreak())
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false)
+
+  // Calculate current session work minutes based on preset
+  const getWorkMinutes = useCallback((): number => {
+    if (activePreset === 'custom') return customWorkMinutes
+    const found = PRESETS.find(p => p.id === activePreset)
+    return found ? found.workMinutes : 25
+  }, [activePreset, customWorkMinutes])
+
+  const totalSessionSeconds = getWorkMinutes() * 60
+
+  // Pomodoro Timer States
+  const [timeLeft, setTimeLeft] = useState(() => totalSessionSeconds)
   const [isRunning, setIsRunning] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
 
@@ -85,6 +146,43 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
     setIsSelectorModalOpen(false)
   }
 
+  // Preset Selection Handler
+  const handleSelectPreset = (id: PresetId) => {
+    if (isRunning) return
+    setActivePreset(id)
+    localStorage.setItem(STORAGE_KEY_PRESET, id)
+
+    if (id === 'custom') {
+      setIsCustomModalOpen(true)
+      const secs = customWorkMinutes * 60
+      setTimeLeft(secs)
+    } else {
+      const found = PRESETS.find(p => p.id === id)
+      if (found) {
+        setTimeLeft(found.workMinutes * 60)
+      }
+    }
+    setIsCompleted(false)
+  }
+
+  // Update Custom Duration
+  const handleSaveCustomIntervals = (work: number, rest: number) => {
+    const cleanWork = Math.max(1, Math.min(120, work))
+    const cleanRest = Math.max(1, Math.min(30, rest))
+    setCustomWorkMinutes(cleanWork)
+    setCustomBreakMinutes(cleanRest)
+    localStorage.setItem(STORAGE_KEY_CUSTOM_WORK, cleanWork.toString())
+    localStorage.setItem(STORAGE_KEY_CUSTOM_BREAK, cleanRest.toString())
+    setActivePreset('custom')
+    localStorage.setItem(STORAGE_KEY_PRESET, 'custom')
+
+    if (!isRunning) {
+      setTimeLeft(cleanWork * 60)
+      setIsCompleted(false)
+    }
+    setIsCustomModalOpen(false)
+  }
+
   // Ring Tap: Toggle Start / Pause
   const handleRingTap = useCallback(() => {
     if ('vibrate' in navigator) navigator.vibrate([18])
@@ -96,14 +194,14 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
 
     if (isCompleted || timeLeft === 0) {
       // Restart session
-      setTimeLeft(TOTAL_POMODORO_SECONDS)
+      setTimeLeft(totalSessionSeconds)
       setIsCompleted(false)
       setIsRunning(true)
       return
     }
 
     setIsRunning(prev => !prev)
-  }, [isCompleted, timeLeft])
+  }, [isCompleted, timeLeft, totalSessionSeconds])
 
   // Timer interval countdown
   useEffect(() => {
@@ -143,7 +241,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
 
   // Back Navigation Handler with Friction Intercept
   const handleBackAttempt = () => {
-    if (isRunning && timeLeft < TOTAL_POMODORO_SECONDS - 3) {
+    if (isRunning && timeLeft < totalSessionSeconds - 3) {
       setIsDecelerationOpen(true)
     } else {
       onBack()
@@ -164,7 +262,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
   const circumference = 2 * Math.PI * radius
 
   // Counter-clockwise depletion: Starts full (dashoffset = 0) and increases to circumference as timeLeft -> 0
-  const progressRatio = timeLeft / TOTAL_POMODORO_SECONDS
+  const progressRatio = totalSessionSeconds > 0 ? timeLeft / totalSessionSeconds : 0
   const strokeDashoffset = circumference * (1 - progressRatio)
 
   return (
@@ -186,11 +284,11 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         subtitle="a quiet presence while you work"
         onBack={handleBackAttempt}
         rightElement={
-          timeLeft < TOTAL_POMODORO_SECONDS && !isRunning ? (
+          timeLeft < totalSessionSeconds && !isRunning ? (
             <button
               id="companion-reset-btn"
               onClick={() => {
-                setTimeLeft(TOTAL_POMODORO_SECONDS)
+                setTimeLeft(totalSessionSeconds)
                 setIsCompleted(false)
               }}
               className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-neutral-500 hover:text-neutral-300 transition-colors focus:outline-none cursor-pointer py-1 px-1.5"
@@ -266,7 +364,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
             />
           </svg>
 
-          {/* ── Centered Selected Companion with 4s Breathing Animation & Image Error Fallback ── */}
+          {/* ── Centered Selected Companion with 4s Breathing Animation & Image Fallback ── */}
           <div className="relative z-10 flex items-center justify-center pointer-events-none">
             <img
               src={activeCompanion.imagePath || activeCompanion.image}
@@ -281,27 +379,60 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         </div>
 
         {/* ── 3. Subtle Remaining Time Readout in Serif Italics ──── */}
-        <div className="flex flex-col items-center mt-6 gap-1">
-          <p
+        <div className="flex flex-col items-center mt-5 gap-1">
+          <button
             id="focus-timer-time-readout"
-            className="font-serif-nook text-2xl sm:text-3xl text-neutral-200 font-light italic tracking-wider leading-none select-none"
+            onClick={() => {
+              if (!isRunning) setIsCustomModalOpen(true)
+            }}
+            disabled={isRunning}
+            title={!isRunning ? 'Tap to adjust custom duration' : undefined}
+            className="font-serif-nook text-2xl sm:text-3xl text-neutral-200 font-light italic tracking-wider leading-none select-none focus:outline-none cursor-pointer disabled:cursor-default"
           >
             {formatTimeRemaining(timeLeft)}
-          </p>
+          </button>
 
           <p className="font-serif-nook italic text-xs text-neutral-400 font-normal tracking-wide mt-1">
             {isCompleted
               ? 'Session Completed · Rest Well'
               : isRunning
               ? 'In Flow · Tap Ring to Pause'
-              : timeLeft < TOTAL_POMODORO_SECONDS
+              : timeLeft < totalSessionSeconds
               ? 'Paused · Tap Ring to Resume'
               : 'Tap Ring to Begin'}
           </p>
         </div>
 
-        {/* ── 4. Quiet, Subtle Companion Selector Trigger ────────── */}
-        <div className="mt-7 flex items-center justify-center">
+        {/* ── 4. Quiet Horizontal Focus Preset Selector ──────────── */}
+        <div
+          className={`
+            mt-4 flex items-center justify-center gap-1.5 transition-all duration-500
+            ${isRunning ? 'opacity-0 pointer-events-none -translate-y-1' : 'opacity-100 translate-y-0'}
+          `}
+        >
+          {PRESETS.map(p => {
+            const isSelected = activePreset === p.id
+            return (
+              <button
+                key={p.id}
+                id={`preset-btn-${p.id.replace('/', '-')}`}
+                onClick={() => handleSelectPreset(p.id)}
+                className={`
+                  px-3 py-1 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-200 focus:outline-none cursor-pointer
+                  ${isSelected
+                    ? 'bg-[#1D1B16] text-[#FFFFFF] border border-[#C9B99A]/50 shadow-sm'
+                    : 'bg-transparent text-stone-500 border border-[#222228] hover:text-stone-300 hover:border-[#33333C]'
+                  }
+                `}
+              >
+                {p.id === 'custom' ? `Custom (${customWorkMinutes}m)` : p.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* ── 5. Quiet Companion Selector Trigger ────────────────── */}
+        <div className="mt-5 flex items-center justify-center">
           <button
             id="open-companion-selector-btn"
             onClick={() => setIsSelectorModalOpen(true)}
@@ -328,7 +459,18 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         </div>
       </div>
 
-      {/* ── 5. Companion Roster Selection Modal ────────────────── */}
+      {/* ── 6. Manual Custom Focus & Break Intervals Modal ─────── */}
+      {isCustomModalOpen && (
+        <CustomIntervalModal
+          isOpen={isCustomModalOpen}
+          initialWork={customWorkMinutes}
+          initialBreak={customBreakMinutes}
+          onSave={handleSaveCustomIntervals}
+          onClose={() => setIsCustomModalOpen(false)}
+        />
+      )}
+
+      {/* ── 7. Companion Roster Selection Modal ────────────────── */}
       <CompanionSelectorModal
         isOpen={isSelectorModalOpen}
         selectedId={selectedCompanionId}
@@ -336,12 +478,146 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         onClose={() => setIsSelectorModalOpen(false)}
       />
 
-      {/* ── 6. Mindful Friction-Exit Intercept Modal ───────────── */}
+      {/* ── 8. Mindful Friction-Exit Intercept Modal ───────────── */}
       <DecelerationModal
         isOpen={isDecelerationOpen}
         onClose={() => setIsDecelerationOpen(false)}
         onConfirmExit={handleConfirmExit}
       />
     </main>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Custom Interval Settings Modal
+───────────────────────────────────────────────────────────── */
+interface CustomIntervalModalProps {
+  isOpen: boolean
+  initialWork: number
+  initialBreak: number
+  onSave: (work: number, rest: number) => void
+  onClose: () => void
+}
+
+function CustomIntervalModal({
+  isOpen,
+  initialWork,
+  initialBreak,
+  onSave,
+  onClose,
+}: CustomIntervalModalProps) {
+  const [work, setWork] = useState(initialWork)
+  const [rest, setRest] = useState(initialBreak)
+
+  if (!isOpen) return null
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[340px] bg-[#121216] border border-[#22222C] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl animate-scale-up"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="text-center">
+          <h3 className="font-serif-nook text-neutral-200 text-lg font-light tracking-wide">
+            Custom Interval
+          </h3>
+          <p className="font-sans text-stone-500 text-[0.62rem] tracking-[0.14em] uppercase mt-1">
+            tailor your focus and rest pacing
+          </p>
+        </div>
+
+        {/* Stepper Controls */}
+        <div className="flex flex-col gap-4">
+          {/* Focus Duration */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[#16161C] border border-[#22222A]">
+            <div className="flex flex-col">
+              <span className="font-serif-nook text-neutral-200 text-sm font-light">
+                Focus Duration
+              </span>
+              <span className="font-sans text-stone-500 text-[0.55rem] tracking-wider uppercase">
+                1 – 120 minutes
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setWork(w => Math.max(1, w - (w > 10 ? 5 : 1)))}
+                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+              >
+                −
+              </button>
+              <span className="font-serif-nook text-neutral-100 text-base font-normal tabular-nums min-w-[3rem] text-center">
+                {work} min
+              </span>
+              <button
+                type="button"
+                onClick={() => setWork(w => Math.min(120, w + (w >= 10 ? 5 : 1)))}
+                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Rest / Break Gap */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[#16161C] border border-[#22222A]">
+            <div className="flex flex-col">
+              <span className="font-serif-nook text-neutral-200 text-sm font-light">
+                Rest Gap
+              </span>
+              <span className="font-sans text-stone-500 text-[0.55rem] tracking-wider uppercase">
+                1 – 30 minutes
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setRest(r => Math.max(1, r - 1))}
+                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+              >
+                −
+              </button>
+              <span className="font-serif-nook text-neutral-100 text-base font-normal tabular-nums min-w-[3rem] text-center">
+                {rest} min
+              </span>
+              <button
+                type="button"
+                onClick={() => setRest(r => Math.min(30, r + 1))}
+                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-stone-500 hover:text-stone-300 transition-colors focus:outline-none cursor-pointer py-1.5 px-3"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSave(work, rest)}
+            className="px-4 py-1.5 rounded-full bg-[#1D1B16] border border-[#C9B99A]/60 text-[#FFFFFF] font-serif-nook text-xs font-light tracking-wide hover:bg-[#26231C] transition-all duration-200 focus:outline-none cursor-pointer shadow-sm"
+          >
+            Set Custom Interval
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

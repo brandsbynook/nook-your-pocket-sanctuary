@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useAudio } from '../context/AudioContext'
-import HeaderAudioShortcut from './HeaderAudioShortcut'
+import { proceduralAudio } from '../utils/proceduralAudio'
 
 interface QuietModeOverlayProps {
   isOpen: boolean
@@ -27,36 +26,36 @@ interface Ripple {
   alpha: number
 }
 
+const QUIET_MODE_VOLUME = 0.48
+
 export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayProps) {
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
-  const [textVisible, setTextVisible] = useState(true)
-
-  const { isAudioPlaying, volume, toggleAudio, setVolume, activeTrack, allPresets } = useAudio()
-  const originalVolumeRef = useRef<number>(volume)
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const animFrameRef = useRef<number | null>(null)
   const particlesRef = useRef<Particle[]>([])
   const ripplesRef = useRef<Ripple[]>([])
-  const textTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const previousVolumeRef = useRef<number>(0.5)
+  const previousPlayingRef = useRef<boolean>(false)
 
-  // Initialize Particles
+  // Initialize Particles (clearly visible, warm amber-tinted floating motes 2px - 4px)
   const initParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = []
-    const count = 16 // 12-16 soft dust motes
+    const count = 28 // Organic cluster of visible motes
 
     for (let i = 0; i < count; i++) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        radius: Math.random() * 1.6 + 0.8, // 0.8px to 2.4px
-        vx: (Math.random() - 0.5) * 0.2, // slow drift
-        vy: -(Math.random() * 0.25 + 0.08), // gentle upward float
-        alpha: Math.random() * 0.12 + 0.04,
-        baseAlpha: Math.random() * 0.14 + 0.06,
+        radius: Math.random() * 1.5 + 1.2, // 1.2px to 2.7px radius = 2.4px to 5.4px diameter
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: -(Math.random() * 0.35 + 0.1), // slow upward organic drift
+        alpha: Math.random() * 0.2 + 0.3, // clearly visible 0.30 - 0.50 opacity
+        baseAlpha: Math.random() * 0.15 + 0.32,
         phase: Math.random() * Math.PI * 2,
-        phaseSpeed: Math.random() * 0.02 + 0.01,
+        phaseSpeed: Math.random() * 0.02 + 0.008,
       })
     }
     particlesRef.current = particles
@@ -86,7 +85,7 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
     const render = () => {
       ctx.clearRect(0, 0, width, height)
 
-      // ── 1. Draw & Update Drifting Particles ──
+      // ── 1. Draw & Update Drifting Amber Dust Motes ──
       const particles = particlesRef.current
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i]
@@ -94,26 +93,32 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
         p.y += p.vy
         p.phase += p.phaseSpeed
 
-        // Soft breathing shimmer for each mote
-        p.alpha = p.baseAlpha + Math.sin(p.phase) * (p.baseAlpha * 0.45)
+        // Soft breathing shimmer for each particle
+        p.alpha = p.baseAlpha + Math.sin(p.phase) * (p.baseAlpha * 0.35)
 
         // Screen wrap
-        if (p.y < -10) p.y = height + 10
-        if (p.x < -10) p.x = width + 10
-        if (p.x > width + 10) p.x = -10
+        if (p.y < -15) p.y = height + 15
+        if (p.x < -15) p.x = width + 15
+        if (p.x > width + 15) p.x = -15
 
+        ctx.save()
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(229, 224, 216, ${Math.max(0, p.alpha)})`
+
+        // Soft warm amber particle glow
+        ctx.shadowBlur = 4
+        ctx.shadowColor = `rgba(245, 215, 170, ${Math.max(0, p.alpha * 0.7)})`
+        ctx.fillStyle = `rgba(245, 220, 185, ${Math.max(0, Math.min(1, p.alpha))})`
         ctx.fill()
+        ctx.restore()
       }
 
-      // ── 2. Draw & Update Fluid Ripples ──
+      // ── 2. Draw & Update Expanding Fluid Ripples ──
       const ripples = ripplesRef.current
       for (let i = ripples.length - 1; i >= 0; i--) {
         const r = ripples[i]
         r.radius += 2.2
-        r.alpha -= 0.007
+        r.alpha -= 0.006
 
         if (r.alpha <= 0 || r.radius >= r.maxRadius) {
           ripples.splice(i, 1)
@@ -128,11 +133,11 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
         ctx.stroke()
 
         // Inner secondary soft echo ring
-        if (r.radius > 20) {
+        if (r.radius > 24) {
           ctx.beginPath()
           ctx.arc(r.x, r.y, r.radius * 0.65, 0, Math.PI * 2)
           ctx.lineWidth = 0.8
-          ctx.strokeStyle = `rgba(229, 224, 216, ${r.alpha * 0.35})`
+          ctx.strokeStyle = `rgba(245, 220, 185, ${r.alpha * 0.35})`
           ctx.stroke()
         }
       }
@@ -148,43 +153,54 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
     }
   }, [mounted, initParticles])
 
-  // Lifecycle & Audio Volume Whisper Ramp
+  // Lifecycle & Audio Handling (Volume 0.48, 800ms fade-in / 500ms fade-out)
   useEffect(() => {
     if (isOpen) {
       setMounted(true)
-      setTextVisible(true)
-      originalVolumeRef.current = volume
+      previousVolumeRef.current = proceduralAudio.getVolume()
+      previousPlayingRef.current = proceduralAudio.getIsPlaying()
 
-      // Soft volume dip to whisper level when entering quiet stillness
-      if (isAudioPlaying) {
-        const whisperVolume = Math.min(volume * 0.65, 0.22)
-        setVolume(whisperVolume)
-      }
+      // Start warm ambient drone at calibrated audible volume ~0.48
+      proceduralAudio.setVolume(QUIET_MODE_VOLUME)
+      proceduralAudio.play('brown-noise', 0.8)
+      setIsPlayingAudio(true)
 
       const frame = requestAnimationFrame(() => {
         setVisible(true)
       })
 
-      // Fade out micro-copy after 4 seconds for pure stillness
-      textTimerRef.current = setTimeout(() => {
-        setTextVisible(false)
-      }, 4000)
-
       return () => {
         cancelAnimationFrame(frame)
-        if (textTimerRef.current) clearTimeout(textTimerRef.current)
       }
     } else {
       setVisible(false)
-      // Restore volume
-      setVolume(originalVolumeRef.current)
 
+      // Fade out audio over 500ms
+      proceduralAudio.stop(0.5)
+      setIsPlayingAudio(false)
       const timer = setTimeout(() => {
+        proceduralAudio.setVolume(previousVolumeRef.current)
+        if (previousPlayingRef.current) {
+          proceduralAudio.play('brown-noise', 0.8)
+        }
         setMounted(false)
-      }, 800)
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen])
+
+  // Toggle ambient audio on demand
+  const handleToggleAudio = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isPlayingAudio) {
+      proceduralAudio.stop(0.5)
+      setIsPlayingAudio(false)
+    } else {
+      proceduralAudio.setVolume(QUIET_MODE_VOLUME)
+      proceduralAudio.play('brown-noise', 0.8)
+      setIsPlayingAudio(true)
+    }
+  }
 
   // Spawn fluid ripple on touch/pointer down
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -195,137 +211,102 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
     ripplesRef.current.push({
       x,
       y,
-      radius: 6,
-      maxRadius: 190,
-      alpha: 0.4,
+      radius: 8,
+      maxRadius: 220,
+      alpha: 0.45,
     })
   }
 
-  function handleOverlayClick() {
+  function handleFullBleedTap() {
     onClose()
   }
 
   if (!mounted) return null
 
-  const currentTrackLabel = allPresets.find(p => p.id === activeTrack)?.subtitle || 'Quiet Calm'
-
   return (
     <div
       id="quiet-mode-overlay"
-      onClick={handleOverlayClick}
+      onClick={handleFullBleedTap}
       onPointerDown={handlePointerDown}
-      aria-label="Tap anywhere to exit quiet space"
+      role="button"
+      tabIndex={0}
+      aria-label="Quiet space active. Tap anywhere to return"
       className={`
         fixed inset-0 z-50
         bg-[#09090C]
         cursor-pointer select-none
-        transition-opacity duration-700 ease-out
+        transition-opacity duration-500 ease-out
         ${visible ? 'opacity-100' : 'opacity-0'}
       `}
     >
-      {/* ── Fullscreen Canvas for Dust Motes & Fluid Ripples ── */}
+      {/* ── 1. Fullscreen Canvas for Floating Dust Particles & Fluid Ripples ── */}
       <canvas
         ref={canvasRef}
         className="fixed inset-0 pointer-events-none z-0 w-full h-full"
       />
 
-      {/* ── Dead-Centered 8-Second Slow-Breathing Orb ────────── */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-        {/* Soft expanding atmospheric outer halo */}
-        <div
-          className="absolute w-80 h-80 rounded-full bg-[#C9B99A]/4 blur-3xl animate-breathe-8s"
-        />
-
-        {/* Outer 8s breathing ring (scale 0.98 to 1.04) */}
-        <div
-          className="
-            w-52 h-52 sm:w-56 sm:h-56 rounded-full
-            border border-[#C9B99A]/15
-            flex items-center justify-center
-            animate-breathe-8s transition-transform
-          "
-        >
-          {/* Secondary concentric subtle halo */}
-          <div className="w-36 h-36 rounded-full border border-[#C9B99A]/20 flex items-center justify-center">
-            {/* Inner core breathing light */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#181614] via-[#101010] to-[#080808] border border-[#C9B99A]/30 shadow-2xl flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-[#C9B99A]/70 blur-[1px] animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Centered Mobile UI Layer (max-w-md constraint) ──── */}
-      <div className="relative z-10 max-w-md mx-auto h-full flex flex-col justify-between p-6 pointer-events-auto">
-        {/* Top Header Row */}
-        <header className="w-full flex items-center justify-between shrink-0 pt-4">
-          <div className="flex items-center gap-2">
-            <span className="font-sans text-[0.55rem] tracking-[0.2em] uppercase text-[#52525B] opacity-70">
+      {/* ── 2. Locked Centered Mobile Frame Layer ── */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-20">
+        <div className="w-full max-w-[420px] h-[100dvh] mx-auto flex flex-col justify-between py-12 px-6 relative">
+          {/* Top Bar: Left "QUIET SPACE" · Right "PLAY AMBIENT" */}
+          <div className="flex items-center justify-between w-full pointer-events-auto shrink-0">
+            <span className="font-sans text-[10px] tracking-[0.25em] text-stone-600 uppercase select-none font-normal">
               Quiet Space
             </span>
-            {isAudioPlaying && (
-              <span className="flex items-center gap-1 font-sans text-[0.52rem] tracking-wider text-[#C9B99A]/60">
-                · {currentTrackLabel}
-              </span>
-            )}
-          </div>
 
-          {/* Audio controls group */}
-          <div
-            className="flex items-center gap-1.5"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Discrete Play/Mute Ambient Toggle */}
+            {/* Top Right Ambient Audio Toggle Pill */}
             <button
-              id="quiet-mode-audio-toggle"
-              onClick={toggleAudio}
-              title={isAudioPlaying ? 'Mute ambient whisper' : 'Play ambient whisper'}
+              id="quiet-mode-audio-pill"
+              onClick={handleToggleAudio}
+              title={isPlayingAudio ? 'Pause ambient drone' : 'Play ambient drone'}
               className="
-                px-2.5 py-1 rounded-full border border-[#22222C] bg-[#121218]/60
-                font-sans text-[0.55rem] tracking-[0.14em] uppercase text-[#71717A]
-                hover:text-[#E5E0D8] hover:border-[#33333E] transition-all focus:outline-none
-                flex items-center gap-1.5
+                px-3 py-1.5 rounded-full
+                border border-neutral-800/80 bg-neutral-900/60 hover:bg-neutral-800/80 hover:border-neutral-700
+                font-sans text-[10px] tracking-[0.14em] uppercase text-neutral-400 hover:text-neutral-200
+                transition-all duration-300 focus:outline-none cursor-pointer flex items-center gap-1.5 shadow-sm
               "
             >
-              {isAudioPlaying ? (
+              {isPlayingAudio ? (
                 <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9B99A] animate-pulse" />
-                  <span>Ambient Whisper</span>
+                  <span className="text-[0.65rem] text-[#C9B99A] leading-none">◼</span>
+                  <span>Pause Ambient</span>
+                  <span className="text-[0.7rem] leading-none ml-0.5">🎧</span>
                 </>
               ) : (
                 <>
-                  <span className="text-[0.65rem] leading-none">▶</span>
+                  <span className="text-[0.65rem] text-[#C9B99A] leading-none">▶</span>
                   <span>Play Ambient</span>
+                  <span className="text-[0.7rem] leading-none ml-0.5">🎧</span>
                 </>
               )}
             </button>
-
-            {/* Universal Header Audio Shortcut */}
-            <HeaderAudioShortcut />
           </div>
-        </header>
 
-        {/* Center Spacer */}
-        <div className="flex-1 pointer-events-none" />
+          {/* Central Ripple Visualizer (Centered in Mobile Frame w-64 h-64) */}
+          <div className="w-64 h-64 mx-auto my-auto relative flex items-center justify-center pointer-events-none">
+            {/* Outermost ring (w-64 / 256px) */}
+            <div className="w-64 h-64 rounded-full border border-white/[0.04] flex items-center justify-center">
+              {/* Third concentric ring (~192px) */}
+              <div className="w-48 h-48 rounded-full border border-white/[0.06] flex items-center justify-center">
+                {/* Second concentric ring (~128px) */}
+                <div className="w-32 h-32 rounded-full border border-[#C9B99A]/15 flex items-center justify-center">
+                  {/* Inner core circle (~70px) */}
+                  <div className="w-[70px] h-[70px] rounded-full border border-[#C9B99A]/25 bg-[#121216]/50 flex items-center justify-center shadow-2xl">
+                    {/* Soft breathing warm amber glowing center dot */}
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#E5D7BE] shadow-[0_0_14px_rgba(229,215,190,0.85)] animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Bottom Whisper & Return Prompt */}
-        <footer className="flex flex-col items-center gap-3 text-center shrink-0 pb-2">
-          {/* Fading Whisper Text */}
-          <p
-            className={`
-              font-serif-nook text-[#71717A] text-[1.1rem] font-light italic tracking-wide
-              transition-opacity duration-1000 ease-in-out
-              ${textVisible ? 'opacity-85' : 'opacity-0 pointer-events-none'}
-            `}
-          >
-            A quiet space. Nothing is required of you.
-          </p>
-
-          {/* Minimal return guide with soft hover */}
-          <span className="font-sans text-[0.58rem] tracking-[0.2em] uppercase text-[#52525B] hover:text-[#A1A1AA] transition-colors">
-            tap anywhere to return
-          </span>
-        </footer>
+          {/* Bottom Center: Faint "TAP ANYWHERE TO RETURN" cue */}
+          <div className="w-full flex justify-center text-center shrink-0">
+            <span className="font-sans text-[10px] tracking-[0.2em] text-stone-600 uppercase select-none font-normal">
+              Tap anywhere to return
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   )

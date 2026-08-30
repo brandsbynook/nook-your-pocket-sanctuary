@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import DeadlineModal from '../components/DeadlineModal'
+import QuietModeOverlay from '../components/QuietModeOverlay'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 import { loadDeadlines, loadSettings, type NookDeadline } from '../utils/storage'
 import { useGreeting } from '../hooks/useGreeting'
 
@@ -61,6 +63,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
   const [showGreetingSetting] = useState<boolean>(() => loadSettings().showGreeting ?? true)
   const [deadlines, setDeadlines] = useState<NookDeadline[]>([])
   const [isAnchorModalOpen, setIsAnchorModalOpen] = useState(false)
+  const [isQuietModeOpen, setIsQuietModeOpen] = useState(false)
 
   const refreshAnchors = useCallback(() => {
     const all = loadDeadlines()
@@ -88,24 +91,63 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           animate-fade-in
         "
       >
-        {/* ═══ Top Section (Brand Stack & Right Timeline Cluster) ═ */}
+        {/* ═══ Top Section (Brand Stack & Sub-row Cluster) ════════ */}
         <div className="flex flex-col shrink-0">
-          {/* ── 1. Isolated Brand Header ─────────────────────────── */}
-          <header className="flex flex-col items-start">
-            <h1 className="font-serif-nook text-lg text-neutral-200 tracking-wide lowercase font-normal leading-none">
-              nook.
-            </h1>
-            <p className="font-serif-nook text-xs text-neutral-500 italic lowercase font-normal mt-0.5">
-              your pocket sanctuary
-            </p>
+          {/* ── 1. Brand Header with Universal Audio Shortcut ─── */}
+          <header className="flex items-start justify-between w-full">
+            <div className="flex flex-col items-start">
+              <h1 className="font-serif-nook text-xl text-neutral-200 tracking-[0.14em] lowercase font-light leading-none">
+                nook.
+              </h1>
+              <p className="font-serif-nook text-xs text-neutral-500 italic lowercase font-normal mt-1">
+                your pocket sanctuary
+              </p>
+            </div>
+
+            <div className="flex items-center">
+              <HeaderAudioShortcut />
+            </div>
           </header>
 
-          {/* ── 2. Visual Deadline Reminder (Lowered on Right Side) ── */}
-          <div className="flex justify-end mt-6 mr-1">
+          {/* ── 2. Shared Baseline Sub-row: "Quiet" Toggle & Deadline Reminder ── */}
+          <div className="flex items-center justify-between mt-5 px-0.5">
+            {/* Minimalist Quiet Mode Toggle */}
+            <button
+              id="home-quiet-mode-toggle"
+              role="switch"
+              aria-checked={isQuietModeOpen}
+              onClick={() => setIsQuietModeOpen(prev => !prev)}
+              className="flex items-center gap-2 group cursor-pointer focus:outline-none py-1"
+              aria-label="Toggle Quiet Mode"
+            >
+              <span className="font-serif-nook italic text-xs text-stone-500 tracking-wider group-hover:text-stone-400 transition-colors">
+                Quiet
+              </span>
+
+              {/* Delicate Muted Switch */}
+              <span
+                className={`
+                  w-7 h-3.5 rounded-full p-[2px] transition-colors duration-300 ease-in-out relative flex items-center shrink-0
+                  ${isQuietModeOpen
+                    ? 'bg-[#383329] border border-[#5E523E]'
+                    : 'bg-[#18181E] border border-[#24242C]'
+                  }
+                `}
+              >
+                <span
+                  className={`
+                    w-2.5 h-2.5 rounded-full shadow-sm transform transition-transform duration-300 ease-in-out
+                    ${isQuietModeOpen ? 'translate-x-3.5 bg-[#C9B99A]' : 'translate-x-0 bg-[#52525B]'}
+                  `}
+                />
+              </span>
+            </button>
+
+            {/* Visual Deadline Reminder (Anchors) */}
             <button
               id="deadline-timeline-bars"
               onClick={() => setIsAnchorModalOpen(true)}
-              className="flex flex-col items-end gap-1.5 p-1 group cursor-pointer focus:outline-none"
+              className="flex flex-col items-end gap-1 p-1 group cursor-pointer focus:outline-none"
               title="Visual deadline anchors (tap to manage)"
               aria-label="Visual deadline anchors"
             >
@@ -115,11 +157,11 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                 return (
                   <div
                     key={index}
-                    className="w-12 h-[2.5px] rounded-full bg-neutral-800/90 overflow-hidden flex justify-start transition-all duration-300 group-hover:bg-neutral-700/80"
+                    className="w-10 h-[2px] rounded-full bg-neutral-800/90 overflow-hidden flex justify-start transition-all duration-300 group-hover:bg-neutral-700/80"
                   >
                     {deadline ? (
                       <div
-                        className="h-full bg-neutral-200/90 rounded-full transition-all duration-500"
+                        className="h-full bg-neutral-300/80 rounded-full transition-all duration-500"
                         style={{ width: `${fillPercent}%` }}
                       />
                     ) : null}
@@ -201,6 +243,12 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         isOpen={isAnchorModalOpen}
         onClose={() => setIsAnchorModalOpen(false)}
         onUpdate={refreshAnchors}
+      />
+
+      {/* ── Dedicated Home Quiet Mode Overlay ──────────────────── */}
+      <QuietModeOverlay
+        isOpen={isQuietModeOpen}
+        onClose={() => setIsQuietModeOpen(false)}
       />
     </>
   )
