@@ -4,23 +4,24 @@ export interface CompanionItem {
   id: CompanionId
   name: string
   image: string
+  imagePath: string
 }
 
 export const COMPANION_ROSTER: CompanionItem[] = [
-  { id: 'bear',     name: 'Bear',        image: '/companions/bear.png' },
-  { id: 'bear1',    name: 'Polar Bear',  image: '/companions/bear1.png' },
-  { id: 'bear2',    name: 'Sleepy Bear', image: '/companions/bear2.png' },
-  { id: 'bunny',    name: 'Bunny',       image: '/companions/bunny.png' },
-  { id: 'cat',      name: 'Cat',         image: '/companions/cat.png' },
-  { id: 'dog',      name: 'Dog',         image: '/companions/dog.png' },
-  { id: 'dog3',     name: 'Pup',         image: '/companions/dog3.png' },
-  { id: 'elephant', name: 'Elephant',    image: '/companions/elephant.png' },
-  { id: 'fox',      name: 'Fox',         image: '/companions/fox.png' },
-  { id: 'giraffe',  name: 'Giraffe',     image: '/companions/giraffe.png' },
-  { id: 'owl',      name: 'Owl',         image: '/companions/owl.png' },
-  { id: 'panda',    name: 'Panda',       image: '/companions/panda.png' },
-  { id: 'penguin',  name: 'Penguin',     image: '/companions/penguin.png' },
-  { id: 'rhino',    name: 'Rhino',       image: '/companions/rhino.png' },
+  { id: 'bear',     name: 'Bear',        image: '/companions/bear.png',      imagePath: '/companions/bear.png' },
+  { id: 'bear1',    name: 'Polar Bear',  image: '/companions/bear1.png',     imagePath: '/companions/bear1.png' },
+  { id: 'bear2',    name: 'Sleepy Bear', image: '/companions/bear2.png',     imagePath: '/companions/bear2.png' },
+  { id: 'bunny',    name: 'Bunny',       image: '/companions/bunny.png',     imagePath: '/companions/bunny.png' },
+  { id: 'cat',      name: 'Cat',         image: '/companions/cat.png',       imagePath: '/companions/cat.png' },
+  { id: 'dog',      name: 'Dog',         image: '/companions/dog.png',       imagePath: '/companions/dog.png' },
+  { id: 'dog3',     name: 'Pup',         image: '/companions/dog3.png',      imagePath: '/companions/dog3.png' },
+  { id: 'elephant', name: 'Elephant',    image: '/companions/elephant_.png', imagePath: '/companions/elephant_.png' },
+  { id: 'fox',      name: 'Fox',         image: '/companions/fox.png',       imagePath: '/companions/fox.png' },
+  { id: 'giraffe',  name: 'Giraffe',     image: '/companions/giraffe.png',   imagePath: '/companions/giraffe.png' },
+  { id: 'owl',      name: 'Owl',         image: '/companions/owl.png',       imagePath: '/companions/owl.png' },
+  { id: 'panda',    name: 'Panda',       image: '/companions/panda.png',     imagePath: '/companions/panda.png' },
+  { id: 'penguin',  name: 'Penguin',     image: '/companions/penguin.png',   imagePath: '/companions/penguin.png' },
+  { id: 'rhino',    name: 'Rhino',       image: '/companions/rhino.png',     imagePath: '/companions/rhino.png' },
 ]
 
 interface CompanionSelectorModalProps {
@@ -94,13 +95,17 @@ export default function CompanionSelectorModal({
                   }
                 `}
               >
-                {/* Companion Thumbnail */}
+                {/* Companion Thumbnail with Fallback Safety */}
                 <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-black/40 p-0.5">
                   <img
-                    src={comp.image}
+                    src={comp.imagePath || comp.image}
                     alt={comp.name}
                     className="w-full h-full object-contain pointer-events-none group-hover:scale-105 transition-transform"
                     loading="lazy"
+                    onError={e => {
+                      e.currentTarget.onerror = null
+                      e.currentTarget.src = '/companions/cat.png'
+                    }}
                   />
                 </div>
 

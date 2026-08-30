@@ -211,12 +211,34 @@ const DEFAULT_SETTINGS: NookSettings = {
   theme:        'obsidian',
 }
 
+export const THEME_CONFIGS: Record<ThemeId, { bg: string; border: string; label: string }> = {
+  'obsidian':    { bg: '#0E0E0E', border: '#242424', label: 'Obsidian' },
+  'warm-dusk':   { bg: '#141210', border: '#2E2824', label: 'Warm Dusk' },
+  'muted-slate': { bg: '#101316', border: '#242A30', label: 'Muted Slate' },
+}
+
+export function applyTheme(theme: ThemeId): void {
+  if (typeof document === 'undefined') return
+  const config = THEME_CONFIGS[theme] || THEME_CONFIGS['obsidian']
+  document.documentElement.setAttribute('data-theme', theme)
+  document.documentElement.style.backgroundColor = config.bg
+  if (document.body) {
+    document.body.style.backgroundColor = config.bg
+  }
+  const metaTheme = document.querySelector('meta[name="theme-color"]')
+  if (metaTheme) {
+    metaTheme.setAttribute('content', config.bg)
+  }
+  window.dispatchEvent(new CustomEvent('nook:theme-changed', { detail: theme }))
+}
+
 export function loadSettings(): NookSettings {
   try {
-    return {
+    const loaded = {
       ...DEFAULT_SETTINGS,
       ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}'),
     } as NookSettings
+    return loaded
   } catch {
     return { ...DEFAULT_SETTINGS }
   }
@@ -224,10 +246,24 @@ export function loadSettings(): NookSettings {
 
 export function saveSettings(settings: NookSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  if (settings.theme) {
+    applyTheme(settings.theme)
+  }
+}
+
+// Apply persisted theme immediately upon script evaluation
+if (typeof window !== 'undefined') {
+  try {
+    const currentTheme = loadSettings().theme
+    applyTheme(currentTheme)
+  } catch {
+    // Graceful fallback
+  }
 }
 
 export function resetApp(): void {
   localStorage.clear()
+  applyTheme('obsidian')
 }
 
 // ── Onboarding & Profile ──────────────────────────

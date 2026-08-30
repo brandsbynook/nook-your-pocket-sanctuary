@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import DeadlineModal from '../components/DeadlineModal'
-import { loadDeadlines, type NookDeadline } from '../utils/storage'
+import { loadDeadlines, loadSettings, type NookDeadline } from '../utils/storage'
+import { useGreeting } from '../hooks/useGreeting'
 
 export type Screen = 'home' | 'brain-dump' | 'reflect' | 'companion' | 'tune-down' | 'soundscapes' | 'cards' | 'settings' | 'memory-chest'
 
@@ -18,17 +19,17 @@ const PRIMARY_MENU: MenuItem[] = [
   {
     id: 'brain-dump',
     title: 'Brain Dump',
-    subtitle: "offload whatever's in your head",
+    subtitle: 'unload the stories — unfiltered, unjudged.',
   },
   {
     id: 'reflect',
     title: 'Reflect',
-    subtitle: 'gentle prompts, no pressure',
+    subtitle: 'unhurried prompts for quiet clarity',
   },
   {
     id: 'companion',
     title: 'Companion',
-    subtitle: 'a quiet presence when you need one',
+    subtitle: 'quiet company while you work',
   },
   {
     id: 'tune-down',
@@ -55,19 +56,9 @@ function getTimelineFillPercent(dueDateStr: string): number {
   return ratio * 100
 }
 
-function getCalmGreetingLine(): string {
-  const hour = new Date().getHours()
-  if (hour >= 5 && hour < 12) {
-    return 'The world is still quiet. So are we.'
-  } else if (hour >= 12 && hour < 18) {
-    return 'Take your time. There is no rush.'
-  } else {
-    return 'The quiet hours are yours.'
-  }
-}
-
 export default function HomeScreen({ onNavigate }: HomeScreenProps) {
-  const calmGreeting = getCalmGreetingLine()
+  const greeting = useGreeting()
+  const [showGreetingSetting] = useState<boolean>(() => loadSettings().showGreeting ?? true)
   const [deadlines, setDeadlines] = useState<NookDeadline[]>([])
   const [isAnchorModalOpen, setIsAnchorModalOpen] = useState(false)
 
@@ -142,11 +133,15 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         {/* ═══ Lifted Center Content (Greeting & 5 Core Rooms) ═══ */}
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full my-auto px-1">
           {/* ── 3. Faded & Re-centered Dynamic Greeting ─────────── */}
-          <div className="pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-            <p className="font-serif-nook text-sm text-neutral-500/80 font-normal italic tracking-wide leading-relaxed text-center">
-              {calmGreeting}
-            </p>
-          </div>
+          {showGreetingSetting && greeting ? (
+            <div className="pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+              <p className="font-serif-nook text-sm text-neutral-500/80 font-normal italic tracking-wide leading-relaxed text-center">
+                {greeting}
+              </p>
+            </div>
+          ) : (
+            <div className="pb-3" />
+          )}
 
           {/* ── 4. Lifted 5-Room Navigation List ────────────────── */}
           <nav aria-label="Sanctuary practices" className="flex flex-col w-full max-w-[300px] sm:max-w-[320px] mx-auto">

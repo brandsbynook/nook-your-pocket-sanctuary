@@ -75,7 +75,8 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const activeCompanion = COMPANION_ROSTER.find(c => c.id === selectedCompanionId) ?? COMPANION_ROSTER[4] // default cat
+  // Resolve active companion safely with fallback to Cat
+  const activeCompanion = COMPANION_ROSTER.find(c => c.id === selectedCompanionId) ?? COMPANION_ROSTER[4]
 
   // Select and persist companion
   const handleSelectCompanion = (id: CompanionId) => {
@@ -265,12 +266,16 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
             />
           </svg>
 
-          {/* ── Centered Selected Companion with 4s Breathing Animation ── */}
+          {/* ── Centered Selected Companion with 4s Breathing Animation & Image Error Fallback ── */}
           <div className="relative z-10 flex items-center justify-center pointer-events-none">
             <img
-              src={activeCompanion.image}
+              src={activeCompanion.imagePath || activeCompanion.image}
               alt={activeCompanion.name}
               className="w-40 h-40 sm:w-44 sm:h-44 object-contain pointer-events-none select-none drop-shadow-md animate-companion-breathe-4s"
+              onError={e => {
+                e.currentTarget.onerror = null
+                e.currentTarget.src = '/companions/cat.png'
+              }}
             />
           </div>
         </div>

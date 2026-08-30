@@ -181,19 +181,25 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
 
   function handleExport() {
     const data = {
-      dumps:       JSON.parse(localStorage.getItem('nook:dumps')        ?? '[]'),
-      reflections: JSON.parse(localStorage.getItem('nook:reflections')  ?? '[]'),
-      cards:       JSON.parse(localStorage.getItem('nook:custom-cards') ?? '[]'),
-      deadlines:   JSON.parse(localStorage.getItem('nook_deadlines')    ?? '[]'),
-      settings:    JSON.parse(localStorage.getItem('nook:settings')     ?? '{}'),
-      exported:    new Date().toISOString(),
+      dumps:              JSON.parse(localStorage.getItem('nook:dumps')                  ?? '[]'),
+      reflections:        JSON.parse(localStorage.getItem('nook:reflections')            ?? '[]'),
+      guidedReflections:  JSON.parse(localStorage.getItem('nook:guided-reflection-steps') ?? '{}'),
+      libraryReflections: JSON.parse(localStorage.getItem('nook:library-reflection-drafts') ?? '{}'),
+      cards:              JSON.parse(localStorage.getItem('nook:custom-cards')           ?? '[]'),
+      deadlines:          JSON.parse(localStorage.getItem('nook_deadlines')              ?? '[]'),
+      settings:           JSON.parse(localStorage.getItem('nook:settings')               ?? '{}'),
+      companion:          localStorage.getItem('nook_companion')                         ?? 'cat',
+      nickname:           localStorage.getItem('nook_nickname')                          ?? '',
+      exportedAt:         new Date().toISOString(),
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `nook-export-${Date.now()}.json`
+    a.download = 'nook-sanctuary-backup.json'
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 

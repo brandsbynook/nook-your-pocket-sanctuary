@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-/* ─── Pattern Definitions ───────────────────────────────────── */
-export type PatternId = 'box' | '478' | 'soft'
+/* ─── Pattern Definitions (Reordered Left to Right: Gentle to Deep) ─── */
+export type PatternId = 'soft' | '478' | 'box'
 
 type BoxEdge = 'top' | 'right' | 'bottom' | 'left'
 
@@ -31,20 +31,18 @@ interface Pattern {
 
 const PATTERNS: Pattern[] = [
   {
-    id: 'box',
-    label: 'BOX (4-4-4-4)',
-    subline: 'stabilizes autonomic nervous system · vagal brake engaged',
+    id: 'soft',
+    label: 'Soft (4–4)',
+    subline: 'gentle rhythmic pacing',
     phases: [
-      { kind: 'box', name: 'Inhale', duration: 4, edge: 'top'    },
-      { kind: 'box', name: 'Hold',   duration: 4, edge: 'right'  },
-      { kind: 'box', name: 'Exhale', duration: 4, edge: 'bottom' },
-      { kind: 'box', name: 'Hold',   duration: 4, edge: 'left'   },
+      { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.35, opacity: 0.75 },
+      { kind: 'orb', name: 'Exhale', duration: 4, scale: 1.00, opacity: 0.30 },
     ],
   },
   {
     id: '478',
-    label: '4-7-8 CALM',
-    subline: 'downregulates sympathetic arousal · restores prefrontal calm',
+    label: '4-7-8 Calm',
+    subline: 'grounding somatic release',
     phases: [
       { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.45, opacity: 0.80 },
       { kind: 'orb', name: 'Hold',   duration: 7, scale: 1.45, opacity: 0.80 },
@@ -52,40 +50,31 @@ const PATTERNS: Pattern[] = [
     ],
   },
   {
-    id: 'soft',
-    label: 'SOFT 4-4',
-    subline: 'regulates respiratory sinus arrhythmia · steady rhythm',
+    id: 'box',
+    label: 'Box Breathing (4-4-4-4)',
+    subline: 'equal-sided focus & still anchor',
     phases: [
-      { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.35, opacity: 0.75 },
-      { kind: 'orb', name: 'Exhale', duration: 4, scale: 1.00, opacity: 0.30 },
+      { kind: 'box', name: 'Inhale', duration: 4, edge: 'top'    },
+      { kind: 'box', name: 'Hold',   duration: 4, edge: 'right'  },
+      { kind: 'box', name: 'Exhale', duration: 4, edge: 'bottom' },
+      { kind: 'box', name: 'Hold',   duration: 4, edge: 'left'   },
     ],
   },
 ]
 
-/* ─── Rotating neuro-somatic cues (shared across all patterns) ─────── */
-const SOMATIC_CUES = [
-  'paced breathing stimulates the vagus nerve',
-  'stabilizes autonomic nervous system · vagal brake engaged',
-  'downregulates sympathetic arousal · fight-or-flight eases',
-  'restores prefrontal executive regulation & clarity',
-  'regulates respiratory sinus arrhythmia · steady heart rate',
-]
-
 export default function GuidedBreathing() {
-  const [patternId, setPatternId] = useState<PatternId>('box')
+  // Default active technique: Soft (4–4)
+  const [patternId, setPatternId] = useState<PatternId>('soft')
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState(4)
   const [isActive, setIsActive] = useState(false)
-  // Rotating somatic cue
-  const [cueIndex, setCueIndex] = useState(0)
-  const [cueVisible, setCueVisible] = useState(true)
 
   const phaseIndexRef = useRef(phaseIndex)
   const secondsLeftRef = useRef(secondsLeft)
   const isActiveRef = useRef(isActive)
   const patternRef = useRef(PATTERNS[0])
 
-  const activePattern = PATTERNS.find(p => p.id === patternId)!
+  const activePattern = PATTERNS.find(p => p.id === patternId) || PATTERNS[0]
   const currentPhase = activePattern.phases[phaseIndex]
 
   // Keep refs in sync
@@ -137,23 +126,11 @@ export default function GuidedBreathing() {
     return stopTick
   }, [isActive, startTick, stopTick])
 
-  /* ── Rotating somatic cue: cross-fade every 8s ───────────── */
-  useEffect(() => {
-    const rotateId = setInterval(() => {
-      setCueVisible(false)
-      setTimeout(() => {
-        setCueIndex(prev => (prev + 1) % SOMATIC_CUES.length)
-        setCueVisible(true)
-      }, 800)
-    }, 8000)
-    return () => clearInterval(rotateId)
-  }, [])
-
   /* ── Pattern switch ───────────────────────────────────────── */
   function handleSelectPattern(id: PatternId) {
     if (id === patternId) return
     stopTick()
-    const pat = PATTERNS.find(p => p.id === id)!
+    const pat = PATTERNS.find(p => p.id === id) || PATTERNS[0]
     setPatternId(id)
     setPhaseIndex(0)
     setSecondsLeft(pat.phases[0].duration)
@@ -195,17 +172,16 @@ export default function GuidedBreathing() {
     }
   }
 
-  /* ── Box tracer: CSS animation drives the loop seamlessly ── */
-  // The CSS @keyframes boxBreatheTracer (100 → 0 over 16s, infinite) handles
-  // the visual with zero JS involvement at cycle boundaries — no snap possible.
-  // animation-play-state pauses/resumes at the exact current frame.
-
-  /* ── Render ───────────────────────────────────────────────── */
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
 
-      {/* ── 1. Pattern Switcher ───────────────────────────────── */}
-      <div className="w-full flex flex-col items-center pt-1 shrink-0">
+      {/* ── 1. Pattern Switcher & Static Subtle Cue ────────────── */}
+      <div
+        className={`
+          w-full flex flex-col items-center pt-1 shrink-0 transition-all duration-700
+          ${isActive ? 'opacity-0 pointer-events-none -translate-y-2' : 'opacity-100 translate-y-0'}
+        `}
+      >
         <div className="flex items-center justify-center gap-2 flex-wrap">
           {PATTERNS.map(p => {
             const sel = p.id === patternId
@@ -215,10 +191,10 @@ export default function GuidedBreathing() {
                 id={`pattern-pill-${p.id}`}
                 onClick={() => handleSelectPattern(p.id)}
                 className={`
-                  px-3 py-1.5 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all duration-300 focus:outline-none cursor-pointer
+                  px-3.5 py-1.5 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-300 focus:outline-none cursor-pointer
                   ${sel
-                    ? 'bg-neutral-800/90 text-neutral-200 border border-neutral-700/80 shadow-sm'
-                    : 'bg-neutral-900/40 text-neutral-500 border border-neutral-800/60 hover:text-neutral-300 hover:border-neutral-700/60'
+                    ? 'bg-[#1D1B16] text-[#FFFFFF] border border-[#C9B99A]/50 shadow-sm'
+                    : 'bg-[#101014] text-neutral-500 border border-[#1E1E26] hover:text-neutral-300 hover:border-[#2A2A38]'
                   }
                 `}
               >
@@ -228,12 +204,9 @@ export default function GuidedBreathing() {
           })}
         </div>
 
-        {/* Rotating somatic cue — cross-fades every 8s */}
-        <p
-          className="font-sans text-xs md:text-sm text-neutral-300 tracking-wide text-center font-normal mt-3 max-w-xs px-4 leading-snug"
-          style={{ transition: 'opacity 800ms ease', opacity: cueVisible ? 1 : 0 }}
-        >
-          {SOMATIC_CUES[cueIndex]}
+        {/* Static subtle cue replacing rolling medical text */}
+        <p className="font-serif-nook text-xs md:text-sm text-stone-400/80 italic font-light text-center mt-3 max-w-xs px-4">
+          gentle rhythmic pacing
         </p>
       </div>
 
@@ -261,11 +234,11 @@ export default function GuidedBreathing() {
                 width="200" height="200"
                 rx="28" ry="28"
                 fill="transparent"
-                stroke="rgba(64,64,80,0.55)"
-                strokeWidth="3"
+                stroke="rgba(64,64,80,0.4)"
+                strokeWidth="2.5"
               />
 
-              {/* ── Continuous clockwise glowing tracer (CSS-driven, no snap) ── */}
+              {/* ── Continuous clockwise glowing tracer ── */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
@@ -292,18 +265,18 @@ export default function GuidedBreathing() {
               />
             </svg>
 
-            {/* ── Center Dynamic Phase Display ─────────────────────── */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center gap-1">
+            {/* ── Center Dynamic Phase Display (Muted Serif Typography) ── */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center gap-0.5 pointer-events-none">
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-neutral-400 text-base font-light italic group-hover:text-neutral-200 transition-colors duration-200">
+                <span className="font-serif-nook text-stone-400 text-base font-light italic group-hover:text-neutral-200 transition-colors duration-200">
                   tap to begin
                 </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-neutral-100 text-xl font-light tracking-wide capitalize">
+                  <span className="font-serif-nook text-neutral-100 text-2xl font-light tracking-wide capitalize">
                     {currentPhase.name}
                   </span>
-                  <span className="font-serif-nook text-amber-100/80 text-base italic font-normal tabular-nums">
+                  <span className="font-serif-nook text-stone-400 text-base italic font-normal tabular-nums mt-0.5">
                     {secondsLeft}s
                   </span>
                 </>
@@ -359,15 +332,15 @@ export default function GuidedBreathing() {
               style={orbTransitionStyle(currentPhase as OrbPhase)}
             >
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-neutral-400 text-base font-light italic">
+                <span className="font-serif-nook text-stone-400 text-base font-light italic">
                   tap to begin
                 </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-neutral-100 text-lg font-light tracking-wide capitalize">
+                  <span className="font-serif-nook text-neutral-100 text-xl font-light tracking-wide capitalize">
                     {currentPhase.name}
                   </span>
-                  <span className="font-serif-nook text-[#C9B99A]/90 text-sm italic font-normal mt-0.5 tabular-nums">
+                  <span className="font-serif-nook text-stone-400 text-sm italic font-normal mt-0.5 tabular-nums">
                     {secondsLeft}s
                   </span>
                 </>
@@ -383,12 +356,12 @@ export default function GuidedBreathing() {
           <button
             id="breath-reset-btn"
             onClick={handleReset}
-            className="font-mono text-[10px] tracking-widest uppercase text-neutral-600 hover:text-neutral-400 transition-colors focus:outline-none cursor-pointer"
+            className="font-serif-nook text-xs tracking-wider uppercase text-neutral-600 hover:text-neutral-400 transition-colors focus:outline-none cursor-pointer"
           >
-            reset
+            Reset
           </button>
         ) : (
-          <span className="font-mono text-[10px] tracking-widest uppercase text-neutral-700/40 pointer-events-none">
+          <span className="font-serif-nook italic text-xs text-neutral-600/70 pointer-events-none">
             tap visualizer to begin
           </span>
         )}

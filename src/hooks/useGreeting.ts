@@ -1,11 +1,8 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 
-interface Greeting {
-  headline: string
-  subline: string
-}
+export type TimeOfDay = 'dawn' | 'morning' | 'afternoon' | 'evening' | 'night'
 
-function getTimeOfDay(): 'dawn' | 'morning' | 'afternoon' | 'evening' | 'night' {
+function getTimeOfDay(): TimeOfDay {
   const hour = new Date().getHours()
   if (hour >= 4 && hour < 6)   return 'dawn'
   if (hour >= 6 && hour < 12)  return 'morning'
@@ -14,47 +11,53 @@ function getTimeOfDay(): 'dawn' | 'morning' | 'afternoon' | 'evening' | 'night' 
   return 'night'
 }
 
-const greetings: Record<string, Greeting[]> = {
+const GREETINGS_POOL: Record<TimeOfDay, string[]> = {
   dawn: [
-    { headline: "You're up early.", subline: "The world is still quiet. So are we." },
-    { headline: "The softest hour.", subline: "No one needs anything from you yet." },
+    "You're up early.",
+    "The world is quiet. So are we.",
+    "The day is still new.",
+    "",
   ],
   morning: [
-    { headline: "Whenever you're ready,", subline: "however you choose." },
-    { headline: "Good morning, gently.", subline: "There's no rush to begin." },
-    { headline: "The day is still new.", subline: "It can hold whatever you bring to it." },
+    "A clean page.",
+    "Morning. Start whenever you're ready.",
+    "Take what you need from here.",
+    "",
   ],
   afternoon: [
-    { headline: "You made it to midday.", subline: "That's enough." },
-    { headline: "Pause, just for a moment.", subline: "The afternoon doesn't need anything from you." },
-    { headline: "Still here.", subline: "Still okay." },
+    "A quiet pause.",
+    "Step away for a moment.",
+    "Midday.",
+    "",
   ],
   evening: [
-    { headline: "The day is winding down.", subline: "You can too." },
-    { headline: "Softly, now.", subline: "Let the evening carry what's left." },
-    { headline: "You did what you could.", subline: "That was enough." },
+    "Setting the day down.",
+    "Winding down.",
+    "Offline for the night.",
+    "",
   ],
   night: [
-    { headline: "It's late and quiet.", subline: "A good time to just… be." },
-    { headline: "No thoughts required.", subline: "Just rest here for a moment." },
-    { headline: "The world can wait.", subline: "This moment is yours." },
+    "Late hours. Quiet space.",
+    "Rest when you're ready.",
+    "The quiet hours are yours.",
+    "",
   ],
 }
 
-import { getUserNickname } from '../utils/storage'
-
-export function useGreeting(): Greeting {
-  return useMemo(() => {
+/**
+ * Returns a static time-of-day greeting selected once on mount.
+ * Stays completely static during the session (no mid-session flickering).
+ * Includes a 25% chance of returning "" for complete quietness.
+ */
+export function useGreeting(): string {
+  const [greeting] = useState<string>(() => {
     const tod = getTimeOfDay()
-    const pool = greetings[tod]
-    const base = pool[Math.floor(Math.random() * pool.length)]
-    const nickname = getUserNickname()
-    if (nickname && base.headline.endsWith(',')) {
-      return {
-        headline: `${base.headline.slice(0, -1)}, ${nickname},`,
-        subline: base.subline,
-      }
-    }
-    return base
-  }, [])
+    const pool = GREETINGS_POOL[tod]
+    const randomIndex = Math.floor(Math.random() * pool.length)
+    return pool[randomIndex]
+  })
+
+  return greeting
 }
+
+export default useGreeting
