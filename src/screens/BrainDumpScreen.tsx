@@ -2,6 +2,7 @@ import { useState } from 'react'
 import TextDump   from '../components/braindump/TextDump'
 import VoiceDump  from '../components/braindump/VoiceDump'
 import TodaysNote from '../components/braindump/TodaysNote'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 
 type Tab = 'text' | 'voice' | 'note'
 
@@ -58,8 +59,10 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
           Brain Dump
         </h1>
 
-        {/* Spacer to balance the back button */}
-        <div className="w-[60px]" aria-hidden="true" />
+        {/* Right action area with ambient audio shortcut */}
+        <div className="flex items-center justify-end min-w-[60px]">
+          <HeaderAudioShortcut />
+        </div>
       </header>
 
       {/* ── Mode switcher ────────────────────────────── */}

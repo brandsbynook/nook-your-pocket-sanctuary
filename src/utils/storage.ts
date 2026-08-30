@@ -233,13 +233,15 @@ export function resetApp(): void {
 // ── Onboarding & Profile ──────────────────────────
 
 export function isOnboarded(): boolean {
-  return localStorage.getItem('nook_onboarded') === 'true'
+  return localStorage.getItem('nook_onboarding_completed') === 'true' || localStorage.getItem('nook_onboarded') === 'true'
 }
 
 export function setOnboarded(val: boolean): void {
   if (val) {
+    localStorage.setItem('nook_onboarding_completed', 'true')
     localStorage.setItem('nook_onboarded', 'true')
   } else {
+    localStorage.removeItem('nook_onboarding_completed')
     localStorage.removeItem('nook_onboarded')
   }
 }
@@ -261,6 +263,47 @@ export function setUserNickname(name: string): void {
     localStorage.setItem('nook_nickname', name.trim())
   } else {
     localStorage.removeItem('nook_nickname')
+  }
+}
+
+// ── Shared Editor Typography ──────────────────────
+
+export type EditorFont = 'serif' | 'clean' | 'sans' | 'mono' | 'script' | 'typewriter' | 'humanist'
+
+export function getEditorFont(): EditorFont {
+  const font = localStorage.getItem('nook_editor_font') as EditorFont
+  if (
+    font === 'clean' ||
+    font === 'sans' ||
+    font === 'mono' ||
+    font === 'script' ||
+    font === 'typewriter' ||
+    font === 'humanist' ||
+    font === 'serif'
+  ) {
+    return font
+  }
+  return 'serif'
+}
+
+export function setEditorFont(font: EditorFont): void {
+  localStorage.setItem('nook_editor_font', font)
+  window.dispatchEvent(new CustomEvent('nook:editor-font-changed', { detail: font }))
+}
+
+// ── Sanctuary Key (Atelier Tier Unlock) ───────────
+
+const SANCTUARY_KEY_UNLOCKED = 'nook_sanctuary_key_unlocked'
+
+export function isSanctuaryUnlocked(): boolean {
+  return localStorage.getItem(SANCTUARY_KEY_UNLOCKED) === 'true'
+}
+
+export function setSanctuaryUnlocked(unlocked: boolean): void {
+  if (unlocked) {
+    localStorage.setItem(SANCTUARY_KEY_UNLOCKED, 'true')
+  } else {
+    localStorage.removeItem(SANCTUARY_KEY_UNLOCKED)
   }
 }
 

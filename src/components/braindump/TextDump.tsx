@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
-import { saveTextEntry } from '../../utils/storage'
+import { saveTextEntry, getEditorFont, type EditorFont } from '../../utils/storage'
+import TypefaceModal, { getFontFamilyClass } from '../TypefaceModal'
 
 type Status = 'idle' | 'saved' | 'cleared'
 
@@ -7,6 +8,8 @@ export default function TextDump() {
   const textareaRef  = useRef<HTMLTextAreaElement>(null)
   const [text, setText]     = useState('')
   const [status, setStatus] = useState<Status>('idle')
+  const [font, setFont]     = useState<EditorFont>(() => getEditorFont())
+  const [showTypefaceModal, setShowTypefaceModal] = useState(false)
 
   /* Auto-expand textarea height */
   useEffect(() => {
@@ -35,17 +38,17 @@ export default function TextDump() {
     setTimeout(() => setStatus('idle'), 1500)
   }
 
+  const activeFontClass = getFontFamilyClass(font)
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
 
       {/* Helper text */}
-      <p className="
-        font-serif-nook text-[#52525B] text-[0.95rem]
-        font-light italic leading-relaxed mb-5
-      ">
-        Everything can go here. The mess, the noise,
-        the things you can't say out loud.
-      </p>
+      <div className="mb-4">
+        <p className="font-serif-nook text-neutral-500 text-[0.92rem] font-light italic leading-snug">
+          Everything can go here.
+        </p>
+      </div>
 
       {/* Textarea — grows with content, scrollable inside its flex container */}
       <div className="flex-1 overflow-y-auto min-h-0 mb-5">
@@ -58,13 +61,13 @@ export default function TextDump() {
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
-          className="
+          className={`
             w-full bg-transparent resize-none outline-none border-none
-            font-sans text-[#E5E0D8]/90 text-[0.95rem]
+            ${activeFontClass} text-neutral-200/90 text-[0.98rem]
             font-light leading-[1.85] tracking-wide
-            placeholder:text-[#3A3A3A]
+            placeholder:text-neutral-700
             min-h-[120px]
-          "
+          `}
           style={{ height: 'auto' }}
         />
       </div>
@@ -86,20 +89,38 @@ export default function TextDump() {
 
       {/* Bottom actions */}
       <div className="flex items-center justify-between border-t border-[#1E1E1E] pt-4">
-        <button
-          id="text-dump-discard"
-          onClick={handleClear}
-          disabled={!text}
-          className="
-            font-sans text-[#52525B] text-[0.62rem]
-            tracking-[0.16em] uppercase
-            transition-colors duration-300
-            hover:text-[#71717A]
-            disabled:opacity-30 disabled:cursor-not-allowed
-          "
-        >
-          Clear page
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            id="text-dump-discard"
+            onClick={handleClear}
+            disabled={!text}
+            className="
+              font-sans text-[#52525B] text-[0.62rem]
+              tracking-[0.16em] uppercase
+              transition-colors duration-300
+              hover:text-[#71717A]
+              disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none
+            "
+          >
+            Clear page
+          </button>
+
+          <span className="text-neutral-800 text-xs">•</span>
+
+          <button
+            id="text-dump-typeface-btn"
+            type="button"
+            onClick={() => setShowTypefaceModal(true)}
+            className="
+              font-sans text-[#71717A] text-[0.62rem]
+              tracking-[0.16em] uppercase
+              transition-colors duration-300
+              hover:text-neutral-300 focus:outline-none flex items-center gap-1
+            "
+          >
+            <span>Typeface</span>
+          </button>
+        </div>
 
         <button
           id="text-dump-keep"
@@ -108,16 +129,23 @@ export default function TextDump() {
           className="
             font-serif-nook text-[#E5E0D8] text-[0.95rem]
             font-light tracking-wide
-            px-5 py-2
+            px-5 py-2 rounded-xl
             border border-[#2A2A2A]
             transition-all duration-300
             hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
-            disabled:opacity-30 disabled:cursor-not-allowed
+            disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none
           "
         >
           Keep this
         </button>
       </div>
+
+      {/* Typeface Selection Modal */}
+      <TypefaceModal
+        isOpen={showTypefaceModal}
+        onClose={() => setShowTypefaceModal(false)}
+        onSelectFont={setFont}
+      />
     </div>
   )
 }

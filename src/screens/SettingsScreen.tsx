@@ -8,6 +8,7 @@ import {
   type ThemeId,
 } from '../utils/storage'
 import FooterNav, { type NavTabId } from '../components/FooterNav'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 
 // ── Section wrapper ───────────────────────────────
 
@@ -230,7 +231,9 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
             Settings
           </h1>
 
-          <div className="w-[60px]" aria-hidden="true" />
+          <div className="flex items-center justify-end min-w-[60px]">
+            <HeaderAudioShortcut />
+          </div>
         </header>
 
         {/* Scrollable body */}

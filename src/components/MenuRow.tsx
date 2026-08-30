@@ -3,10 +3,11 @@ interface MenuRowProps {
   title: string
   subtitle?: string
   delay?: number
+  showDivider?: boolean
   onClick?: () => void
 }
 
-export default function MenuRow({ id, title, subtitle, delay = 0, onClick }: MenuRowProps) {
+export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = true, onClick }: MenuRowProps) {
   return (
     <div
       className="animate-row-reveal"
@@ -60,8 +61,8 @@ export default function MenuRow({ id, title, subtitle, delay = 0, onClick }: Men
         </span>
       </button>
 
-      {/* Soft divider — slightly more visible than #1C1C1C */}
-      <div className="h-px w-full bg-[#242424]" />
+      {/* Soft divider — only rendered between items */}
+      {showDivider && <div className="h-px w-full bg-[#242424]" />}
     </div>
   )
 }

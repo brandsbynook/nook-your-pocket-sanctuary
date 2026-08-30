@@ -11,6 +11,7 @@ import {
   type ReflectionEntry,
 } from '../utils/storage'
 import FooterNav, { type NavTabId } from '../components/FooterNav'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 
 type MemoryTab = 'dumps' | 'reflections' | 'jar'
 
@@ -363,7 +364,9 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
               </p>
             </div>
 
-            <div className="w-[60px]" aria-hidden="true" />
+            <div className="flex items-center justify-end min-w-[60px]">
+              <HeaderAudioShortcut />
+            </div>
           </header>
 
           {/* Sub-Navigation Tabs */}

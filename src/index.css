@@ -97,6 +97,14 @@
     animation: slowBreathe 6s ease-in-out infinite;
   }
 
+  .animate-breathe-4s {
+    animation: slowBreathe4s 4s ease-in-out infinite;
+  }
+
+  .animate-breathe-8s {
+    animation: slowBreathe8s 8s ease-in-out infinite;
+  }
+
   /* Explicit no-scrollbar utility */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -104,5 +112,27 @@
   .no-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+  }
+}
+
+@keyframes slowBreathe4s {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes slowBreathe8s {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.95;
   }
 }

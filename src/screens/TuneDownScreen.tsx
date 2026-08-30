@@ -1,24 +1,56 @@
 import { useState } from 'react'
+import SoundSanctuary from '../components/tunedown/SoundSanctuary'
 import GuidedBreathing from '../components/tunedown/GuidedBreathing'
 import FollowTheDot   from '../components/tunedown/FollowTheDot'
 import DoodlingCanvas from '../components/tunedown/DoodlingCanvas'
 import StimPad        from '../components/tunedown/StimPad'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 
-type TuneDownTab = 'breathe' | 'follow-dot' | 'doodle' | 'stim-pad'
+export type PracticeId = 'breathe' | 'sounds' | 'stim-pad' | 'doodle' | 'follow-dot'
+
+interface PracticeItem {
+  id: PracticeId
+  title: string
+  subtitle: string
+}
+
+const PRACTICES: PracticeItem[] = [
+  {
+    id: 'breathe',
+    title: 'Breathe',
+    subtitle: 'gentle somatic pacing',
+  },
+  {
+    id: 'sounds',
+    title: 'Soundscapes',
+    subtitle: 'generative atmospheric layers',
+  },
+  {
+    id: 'stim-pad',
+    title: 'Stim Pad',
+    subtitle: 'tactile touch canvas',
+  },
+  {
+    id: 'doodle',
+    title: 'Doodle',
+    subtitle: 'boundless quiet canvas',
+  },
+  {
+    id: 'follow-dot',
+    title: 'Follow Dot',
+    subtitle: 'visual grounding path',
+  },
+]
 
 interface TuneDownScreenProps {
   onBack: () => void
+  initialPractice?: PracticeId | null
 }
 
-const TABS: { id: TuneDownTab; label: string }[] = [
-  { id: 'breathe',    label: 'Breathe'    },
-  { id: 'follow-dot', label: 'Follow Dot' },
-  { id: 'doodle',     label: 'Doodle'     },
-  { id: 'stim-pad',   label: 'Stim Pad'   },
-]
+export default function TuneDownScreen({ onBack, initialPractice = null }: TuneDownScreenProps) {
+  const [activePractice, setActivePractice] = useState<PracticeId | null>(initialPractice)
 
-export default function TuneDownScreen({ onBack }: TuneDownScreenProps) {
-  const [activeTab, setActiveTab] = useState<TuneDownTab>('breathe')
+  const activeItem = PRACTICES.find(p => p.id === activePractice)
 
   return (
     <main
@@ -34,16 +66,16 @@ export default function TuneDownScreen({ onBack }: TuneDownScreenProps) {
     >
       <div className="flex flex-col flex-1 min-h-0">
         {/* ── Header ─────────────────────────────────────────── */}
-        <header className="flex items-center justify-between mb-5 shrink-0">
+        <header className="flex items-center justify-between mb-6 shrink-0">
           <button
             id="tune-down-back"
-            onClick={onBack}
+            onClick={activePractice ? () => setActivePractice(null) : onBack}
             className="
               flex items-center gap-1.5
-              font-sans text-[#52525B] text-[0.62rem]
+              font-sans text-neutral-500 text-[0.62rem]
               tracking-[0.14em] uppercase
-              hover:text-[#71717A] transition-colors
-              focus:outline-none
+              hover:text-neutral-300 transition-colors
+              focus:outline-none py-1
             "
           >
             <span className="text-[0.8rem] leading-none">←</span>
@@ -51,63 +83,90 @@ export default function TuneDownScreen({ onBack }: TuneDownScreenProps) {
           </button>
 
           <div className="flex flex-col items-center gap-[2px]">
-            <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
-              Tune Down
+            <h1 className="font-serif-nook text-neutral-300 text-xl font-light tracking-[0.18em] leading-none">
+              {activePractice && activeItem ? activeItem.title : 'Tune Down'}
             </h1>
-            <p className="font-sans text-[#3A3A3A] text-[0.58rem] tracking-[0.1em] text-center">
-              Sensory regulation & stillness
+            <p className="font-sans text-neutral-600 text-[0.58rem] tracking-[0.1em] text-center">
+              {activePractice && activeItem ? activeItem.subtitle : 'sensory regulation & stillness'}
             </p>
           </div>
 
-          <div className="w-[60px]" aria-hidden="true" />
+          <div className="flex items-center justify-end min-w-[60px]">
+            <HeaderAudioShortcut />
+          </div>
         </header>
 
-        {/* ── Sub-Navigation Tabs ─────────────────────────────── */}
-        <div
-          role="tablist"
-          aria-label="Tune down regulation modes"
-          className="flex items-center mb-4 border-b border-[#1E1E1E] shrink-0"
-        >
-          {TABS.map(tab => {
-            const isActive = tab.id === activeTab
-            return (
-              <button
-                key={tab.id}
-                id={`tab-${tab.id}`}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveTab(tab.id)}
-                className="
-                  relative flex-1 pb-3
-                  font-sans text-[0.56rem] tracking-[0.12em] uppercase
-                  transition-colors duration-300
-                  focus:outline-none
-                "
-              >
-                <span className={isActive ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
-                  {tab.label}
-                </span>
-                {/* Active underline */}
-                <span
-                  className={`
-                    absolute bottom-0 left-0 right-0 h-px
-                    transition-all duration-400
-                    ${isActive ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
-                  `}
-                  aria-hidden="true"
-                />
-              </button>
-            )
-          })}
-        </div>
+        {/* ── View 1: Spacious Practice List (When no exercise active) ── */}
+        {!activePractice ? (
+          <div className="flex-1 flex flex-col justify-center my-auto animate-fade-in">
+            <nav id="tune-down-practice-list" aria-label="Grounding practices" className="flex flex-col">
+              {PRACTICES.map((practice, index) => {
+                const showDivider = index < PRACTICES.length - 1
+                return (
+                  <div
+                    key={practice.id}
+                    className="animate-row-reveal"
+                    style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
+                  >
+                    <button
+                      id={`practice-${practice.id}`}
+                      onClick={() => setActivePractice(practice.id)}
+                      className="
+                        w-full flex items-center justify-between
+                        py-[1.3rem]
+                        group
+                        transition-all duration-300
+                        focus:outline-none
+                        text-left
+                      "
+                    >
+                      <div className="flex flex-col items-start gap-[3px]">
+                        <span className="
+                          font-serif-nook text-neutral-300 text-[1.15rem] font-light
+                          tracking-wide leading-snug
+                          group-hover:text-[#C9B99A] transition-colors duration-300
+                        ">
+                          {practice.title}
+                        </span>
+                        <span className="
+                          font-sans text-neutral-500 text-[0.68rem]
+                          font-light leading-none tracking-[0.06em]
+                          transition-colors duration-300
+                          group-hover:text-neutral-400
+                        ">
+                          {practice.subtitle}
+                        </span>
+                      </div>
 
-        {/* ── Active Module Content ───────────────────────────── */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {activeTab === 'breathe'    && <GuidedBreathing />}
-          {activeTab === 'follow-dot' && <FollowTheDot />}
-          {activeTab === 'doodle'     && <DoodlingCanvas />}
-          {activeTab === 'stim-pad'   && <StimPad />}
-        </div>
+                      <span
+                        className="
+                          text-neutral-600 text-sm font-light leading-none
+                          transition-all duration-300
+                          group-hover:text-[#C9B99A]/70 group-hover:translate-x-0.5
+                          ml-4 shrink-0
+                        "
+                        aria-hidden="true"
+                      >
+                        ›
+                      </span>
+                    </button>
+
+                    {showDivider && <div className="h-px w-full bg-[#1F1F24]" />}
+                  </div>
+                )
+              })}
+            </nav>
+          </div>
+        ) : (
+          /* ── View 2: Full-Frame Active Practice Exercise ─── */
+          <div className="flex-1 flex flex-col min-h-0 animate-fade-in">
+            {activePractice === 'breathe'    && <GuidedBreathing />}
+            {activePractice === 'sounds'     && <SoundSanctuary />}
+            {activePractice === 'stim-pad'   && <StimPad />}
+            {activePractice === 'doodle'     && <DoodlingCanvas />}
+            {activePractice === 'follow-dot' && <FollowTheDot />}
+          </div>
+        )}
       </div>
     </main>
   )

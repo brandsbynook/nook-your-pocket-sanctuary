@@ -10,6 +10,10 @@ import TuneDownScreen    from './screens/TuneDownScreen'
 import OnboardingScreen  from './screens/OnboardingScreen'
 import { isOnboarded }   from './utils/storage'
 
+import { AudioProvider } from './context/AudioContext'
+import QuickAudioSheet from './components/QuickAudioSheet'
+import SanctuaryKeyModal from './components/SanctuaryKeyModal'
+
 export type Screen =
   | 'onboarding'
   | 'home'
@@ -25,7 +29,7 @@ function App() {
   const [screen, setScreen] = useState<Screen>(() => (isOnboarded() ? 'home' : 'onboarding'))
 
   return (
-    <>
+    <AudioProvider>
       {screen === 'onboarding' && (
         <OnboardingScreen onComplete={() => setScreen('home')} />
       )}
@@ -63,7 +67,15 @@ function App() {
           onReplayOnboarding={() => setScreen('onboarding')}
         />
       )}
-    </>
+
+      {/* Global Quick Audio Sheet (Mini-Player) */}
+      <QuickAudioSheet
+        onNavigateSoundSanctuary={() => setScreen('tune-down')}
+      />
+
+      {/* Sanctuary Key Ethical Paywall Modal */}
+      <SanctuaryKeyModal />
+    </AudioProvider>
   )
 }
 

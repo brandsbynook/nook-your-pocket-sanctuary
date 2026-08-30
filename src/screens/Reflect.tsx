@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { saveReflectionEntry } from '../utils/storage'
+import { saveReflectionEntry, getEditorFont, type EditorFont } from '../utils/storage'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
+import TypefaceModal, { getFontFamilyClass } from '../components/TypefaceModal'
 
 type ReflectTab = 'guided' | 'library'
 
@@ -36,7 +38,6 @@ const CATEGORIES: PromptCategory[] = [
     prompts: [
       'What is the single smallest step that would make you feel lighter?',
       'What are three facts about right now that are completely true and quiet?',
-      'What noise from the outside world can you gently tune out?',
     ],
   },
   {
@@ -54,7 +55,7 @@ const ALL_PROMPTS = CATEGORIES.flatMap(c => c.prompts)
 
 function loadDrafts(): Record<number, string> {
   try {
-    return JSON.parse(localStorage.getItem(DRAFTS_STORAGE_KEY) ?? '{}')
+    return JSON.parse(localStorage.getItem(DRAFTS_STORAGE_KEY) || '{}')
   } catch {
     return {}
   }
@@ -75,6 +76,8 @@ export default function Reflect({ onBack }: ReflectProps) {
   const [isSaved, setIsSaved] = useState<boolean>(false)
   const [isFadingPrompt, setIsFadingPrompt] = useState<boolean>(false)
   const [openCategory, setOpenCategory] = useState<string>('overwhelm')
+  const [font, setFont] = useState<EditorFont>(() => getEditorFont())
+  const [showTypefaceModal, setShowTypefaceModal] = useState(false)
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -118,7 +121,7 @@ export default function Reflect({ onBack }: ReflectProps) {
     persistDrafts(next)
 
     setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 2200)
+    setTimeout(() => setIsSaved(false), 2400)
   }
 
   function handleClear() {
@@ -126,14 +129,6 @@ export default function Reflect({ onBack }: ReflectProps) {
     delete next[currentPromptIndex]
     setDrafts(next)
     persistDrafts(next)
-  }
-
-  function selectPromptFromLibrary(prompt: string) {
-    const index = ALL_PROMPTS.indexOf(prompt)
-    if (index !== -1) {
-      setCurrentPromptIndex(index)
-    }
-    setActiveTab('guided')
   }
 
   return (
@@ -149,7 +144,7 @@ export default function Reflect({ onBack }: ReflectProps) {
       "
     >
       <div className="flex flex-col flex-1 min-h-0">
-        {/* ── Header ─────────────────────────────────────────── */}
+        {/* ── Top Bar ─────────────────────────────────────────── */}
         <header className="flex items-center justify-between mb-5 shrink-0">
           <button
             id="reflect-back"
@@ -159,7 +154,7 @@ export default function Reflect({ onBack }: ReflectProps) {
               font-sans text-[#52525B] text-[0.62rem]
               tracking-[0.14em] uppercase
               hover:text-[#71717A] transition-colors
-              focus:outline-none
+              focus:outline-none py-1
             "
           >
             <span className="text-[0.8rem] leading-none">←</span>
@@ -167,18 +162,20 @@ export default function Reflect({ onBack }: ReflectProps) {
           </button>
 
           <div className="flex flex-col items-center gap-[2px]">
-            <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
+            <h1 className="font-serif-nook text-neutral-300 text-xl font-light tracking-[0.18em] leading-none">
               Reflect
             </h1>
-            <p className="font-sans text-[#3A3A3A] text-[0.58rem] tracking-[0.1em] text-center">
-              Gentle prompts, no pressure
+            <p className="font-sans text-neutral-600 text-[0.58rem] tracking-[0.1em] text-center">
+              gentle prompts, no pressure
             </p>
           </div>
 
-          <div className="w-[60px]" aria-hidden="true" />
+          <div className="flex items-center justify-end min-w-[60px]">
+            <HeaderAudioShortcut />
+          </div>
         </header>
 
-        {/* ── Sub-Navigation Tabs ─────────────────────────────── */}
+        {/* ── Tabs (Guided Flow vs Library) ───────────────────── */}
         <div
           role="tablist"
           aria-label="Reflection modes"
@@ -191,8 +188,9 @@ export default function Reflect({ onBack }: ReflectProps) {
             onClick={() => setActiveTab('guided')}
             className="
               relative flex-1 pb-3
-              font-sans text-[0.58rem] tracking-[0.14em] uppercase
-              transition-colors duration-300 focus:outline-none
+              font-sans text-[0.58rem] tracking-[0.16em] uppercase
+              transition-colors duration-300
+              focus:outline-none
             "
           >
             <span className={activeTab === 'guided' ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
@@ -200,7 +198,8 @@ export default function Reflect({ onBack }: ReflectProps) {
             </span>
             <span
               className={`
-                absolute bottom-0 left-0 right-0 h-px transition-all duration-400
+                absolute bottom-0 left-0 right-0 h-px
+                transition-all duration-400
                 ${activeTab === 'guided' ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
               `}
               aria-hidden="true"
@@ -214,16 +213,18 @@ export default function Reflect({ onBack }: ReflectProps) {
             onClick={() => setActiveTab('library')}
             className="
               relative flex-1 pb-3
-              font-sans text-[0.58rem] tracking-[0.14em] uppercase
-              transition-colors duration-300 focus:outline-none
+              font-sans text-[0.58rem] tracking-[0.16em] uppercase
+              transition-colors duration-300
+              focus:outline-none
             "
           >
             <span className={activeTab === 'library' ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
-              Library
+              Prompt Library
             </span>
             <span
               className={`
-                absolute bottom-0 left-0 right-0 h-px transition-all duration-400
+                absolute bottom-0 left-0 right-0 h-px
+                transition-all duration-400
                 ${activeTab === 'library' ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
               `}
               aria-hidden="true"
@@ -231,7 +232,7 @@ export default function Reflect({ onBack }: ReflectProps) {
           </button>
         </div>
 
-        {/* ── Tab Panels ─────────────────────────────────────── */}
+        {/* ── Tab Content ─────────────────────────────────────── */}
         {activeTab === 'guided' ? (
           /* Mode 1: Guided Flow */
           <div className="flex flex-col flex-1 min-h-0 animate-fade-in justify-between">
@@ -253,7 +254,7 @@ export default function Reflect({ onBack }: ReflectProps) {
                   </div>
 
                   {/* Right: Bidirectional Controls */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <button
                       id="prev-prompt-btn"
                       onClick={() => handleNavigatePrompt('prev')}
@@ -274,15 +275,14 @@ export default function Reflect({ onBack }: ReflectProps) {
                   </div>
                 </div>
 
-                {/* Prompt Card with smooth fade */}
+                {/* Prompt Card with smooth fade — soft breathing invitation */}
                 <div
                   className={`
-                    border border-[#1C1C1C] bg-[#111111]/70 p-5 rounded-sm
-                    transition-opacity duration-200 ease-in-out
+                    py-3 px-1 transition-opacity duration-300 ease-in-out
                     ${isFadingPrompt ? 'opacity-0' : 'opacity-100'}
                   `}
                 >
-                  <p className="font-serif-nook text-[#E5E0D8] text-[1.25rem] font-light italic leading-snug">
+                  <p className="font-serif-nook text-neutral-400 text-base md:text-lg font-normal italic leading-relaxed">
                     "{currentPrompt}"
                   </p>
                 </div>
@@ -299,11 +299,11 @@ export default function Reflect({ onBack }: ReflectProps) {
                   spellCheck={false}
                   autoCorrect="off"
                   autoCapitalize="sentences"
-                  className="
+                  className={`
                     w-full bg-transparent resize-none outline-none border-none
-                    font-sans text-[#E5E0D8]/90 text-[0.95rem] font-light leading-[1.85] tracking-wide
-                    placeholder:text-[#3A3A3A] min-h-[100px]
-                  "
+                    ${getFontFamilyClass(font)} text-neutral-200/90 text-[0.98rem] font-light leading-[1.85] tracking-wide
+                    placeholder:text-neutral-700 min-h-[100px]
+                  `}
                   style={{ height: 'auto' }}
                 />
               </div>
@@ -323,24 +323,42 @@ export default function Reflect({ onBack }: ReflectProps) {
               </div>
 
               <div className="flex items-center justify-between">
-                <button
-                  id="reflect-clear-btn"
-                  onClick={handleClear}
-                  disabled={!currentAnswer}
-                  className="
-                    font-sans text-[#52525B] text-[0.62rem] tracking-[0.16em] uppercase
-                    hover:text-[#71717A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors
-                  "
-                >
-                  Clear / Let go
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    id="reflect-clear-btn"
+                    onClick={handleClear}
+                    disabled={!currentAnswer}
+                    className="
+                      font-sans text-[#52525B] text-[0.62rem] tracking-[0.16em] uppercase
+                      hover:text-[#71717A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none
+                    "
+                  >
+                    Clear / Let go
+                  </button>
+
+                  <span className="text-neutral-800 text-xs">•</span>
+
+                  <button
+                    id="reflect-typeface-btn"
+                    type="button"
+                    onClick={() => setShowTypefaceModal(true)}
+                    className="
+                      font-sans text-[#71717A] text-[0.62rem]
+                      tracking-[0.16em] uppercase
+                      transition-colors duration-300
+                      hover:text-neutral-300 focus:outline-none flex items-center gap-1
+                    "
+                  >
+                    <span>Typeface</span>
+                  </button>
+                </div>
 
                 <button
                   id="reflect-save-btn"
                   onClick={handleSave}
                   disabled={!currentAnswer.trim()}
                   className="
-                    px-5 py-2 border border-[#2A2A2A]
+                    px-5 py-2 rounded-xl border border-[#2A2A2A]
                     font-serif-nook text-[#E5E0D8] text-[0.95rem] font-light
                     hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
                     disabled:opacity-30 disabled:cursor-not-allowed
@@ -353,59 +371,69 @@ export default function Reflect({ onBack }: ReflectProps) {
             </div>
           </div>
         ) : (
-          /* Mode 2: Reflection Library */
-          <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-3 pb-4 animate-fade-in">
-            {CATEGORIES.map(cat => {
-              const isOpen = openCategory === cat.id
-              return (
-                <div key={cat.id} className="border border-[#1C1C1C] bg-[#0E0E0E] rounded-sm overflow-hidden">
-                  <button
-                    onClick={() => setOpenCategory(isOpen ? '' : cat.id)}
-                    className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-[#121212] transition-colors"
+          /* Mode 2: Prompt Library */
+          <div className="flex-1 overflow-y-auto min-h-0 animate-fade-in pr-1">
+            <div className="flex flex-col gap-3 pb-4">
+              {CATEGORIES.map(cat => {
+                const isOpen = openCategory === cat.id
+                return (
+                  <div
+                    key={cat.id}
+                    className="border border-[#1E1E1E] rounded-xl overflow-hidden bg-[#111111]/40"
                   >
-                    <span className="font-serif-nook text-[#E5E0D8] text-base font-light tracking-wide">
-                      {cat.title}
-                    </span>
-                    <span className="text-[#52525B] text-xs font-mono">
-                      {isOpen ? '−' : '+'}
-                    </span>
-                  </button>
+                    <button
+                      onClick={() => setOpenCategory(isOpen ? '' : cat.id)}
+                      className="
+                        w-full px-4 py-3.5 flex items-center justify-between
+                        text-left font-serif-nook text-[#E5E0D8] text-[0.95rem]
+                        hover:bg-[#161616] transition-colors focus:outline-none
+                      "
+                    >
+                      <span>{cat.title}</span>
+                      <span className="text-xs text-[#52525B] font-mono">{isOpen ? '−' : '+'}</span>
+                    </button>
 
-                  {isOpen && (
-                    <div className="flex flex-col border-t border-[#181818] divide-y divide-[#181818] bg-[#0A0A0A]">
-                      {cat.prompts.map((p, idx) => {
-                        const promptIdx = ALL_PROMPTS.indexOf(p)
-                        const hasDraft = drafts[promptIdx]?.trim().length > 0
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => selectPromptFromLibrary(p)}
-                            className="w-full text-left p-4 hover:bg-[#141414] group transition-colors flex items-start justify-between gap-3"
+                    {isOpen && (
+                      <div className="px-4 pb-3 flex flex-col gap-2.5 border-t border-[#1A1A1A] pt-2.5">
+                        {cat.prompts.map((p, pIdx) => (
+                          <div
+                            key={pIdx}
+                            onClick={() => {
+                              const targetIdx = ALL_PROMPTS.indexOf(p)
+                              if (targetIdx !== -1) {
+                                setCurrentPromptIndex(targetIdx)
+                                setActiveTab('guided')
+                              }
+                            }}
+                            className="
+                              p-2.5 rounded bg-[#161616]/60 hover:bg-[#1E1E1E]
+                              cursor-pointer transition-colors group
+                            "
                           >
-                            <div className="flex flex-col gap-1">
-                              <p className="font-serif-nook text-[#71717A] group-hover:text-[#E5E0D8] text-[0.98rem] font-light italic leading-snug transition-colors">
-                                "{p}"
-                              </p>
-                              {hasDraft && (
-                                <span className="font-sans text-[0.55rem] tracking-[0.12em] uppercase text-[#C9B99A]/80">
-                                  draft saved
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[#3A3A3A] group-hover:text-[#C9B99A] text-xs transition-colors shrink-0">
-                              →
+                            <p className="font-serif-nook text-[#A1A1AA] text-xs font-light italic group-hover:text-[#E5E0D8]">
+                              "{p}"
+                            </p>
+                            <span className="font-sans text-[0.55rem] tracking-[0.14em] uppercase text-[#52525B] mt-1 block">
+                              Reflect with this →
                             </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
+
+      {/* Typeface Selection Modal */}
+      <TypefaceModal
+        isOpen={showTypefaceModal}
+        onClose={() => setShowTypefaceModal(false)}
+        onSelectFont={setFont}
+      />
     </main>
   )
 }
