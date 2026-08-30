@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import SoundSanctuary from '../components/tunedown/SoundSanctuary'
 import GuidedBreathing from '../components/tunedown/GuidedBreathing'
 import FollowTheDot   from '../components/tunedown/FollowTheDot'
 import DoodlingCanvas from '../components/tunedown/DoodlingCanvas'
 import StimPad        from '../components/tunedown/StimPad'
 import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 
-export type PracticeId = 'breathe' | 'sounds' | 'stim-pad' | 'doodle' | 'follow-dot'
+export type PracticeId = 'breathe' | 'stim-pad' | 'doodle' | 'follow-dot'
 
 interface PracticeItem {
   id: PracticeId
@@ -21,11 +20,6 @@ const PRACTICES: PracticeItem[] = [
     subtitle: 'gentle somatic pacing',
   },
   {
-    id: 'sounds',
-    title: 'Soundscapes',
-    subtitle: 'generative atmospheric layers',
-  },
-  {
     id: 'stim-pad',
     title: 'Stim Pad',
     subtitle: 'tactile touch canvas',
@@ -38,7 +32,7 @@ const PRACTICES: PracticeItem[] = [
   {
     id: 'follow-dot',
     title: 'Follow Dot',
-    subtitle: 'visual grounding path',
+    subtitle: 'visual tracking anchor',
   },
 ]
 
@@ -161,7 +155,6 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
           /* ── View 2: Full-Frame Active Practice Exercise ─── */
           <div className="flex-1 flex flex-col min-h-0 animate-fade-in">
             {activePractice === 'breathe'    && <GuidedBreathing />}
-            {activePractice === 'sounds'     && <SoundSanctuary />}
             {activePractice === 'stim-pad'   && <StimPad />}
             {activePractice === 'doodle'     && <DoodlingCanvas />}
             {activePractice === 'follow-dot' && <FollowTheDot />}

@@ -140,50 +140,46 @@ export default function VoiceDump() {
   return (
     <div className="flex flex-col flex-1 items-center justify-between min-h-0">
 
-      {/* Helper text */}
-      <p className="
-        w-full font-serif-nook text-[#52525B] text-[0.95rem]
-        font-light italic leading-relaxed mb-8
-      ">
-        Just speak. No one is listening but you.
-      </p>
-
       {/* Central record area */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full">
+      <div className="flex-1 flex flex-col items-center justify-center w-full my-auto">
 
         {/* ── idle / requesting ── */}
         {(state === 'idle' || state === 'requesting') && (
-          <button
-            id="voice-record-btn"
-            onClick={startRecording}
-            disabled={state === 'requesting'}
-            aria-label="Start recording"
-            className="
-              flex flex-col items-center gap-3
-              group focus:outline-none
-              disabled:opacity-50
-            "
-          >
-            {/* Mic circle */}
-            <span className="
-              flex items-center justify-center
-              w-16 h-16 rounded-full
-              border border-[#2A2A2A]
-              bg-[#141414]
-              transition-all duration-500
-              group-hover:border-[#E5E0D8]/20 group-hover:bg-[#1A1A1A]
-            ">
-              {/* Mic SVG */}
-              <svg width="22" height="26" viewBox="0 0 22 26" fill="none" className="text-[#71717A] group-hover:text-[#E5E0D8] transition-colors duration-300">
-                <rect x="6" y="1" width="10" height="15" rx="5" stroke="currentColor" strokeWidth="1.4"/>
-                <path d="M1 12C1 17.5 5.5 22 11 22C16.5 22 21 17.5 21 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                <line x1="11" y1="22" x2="11" y2="25" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-              </svg>
-            </span>
-            <span className="font-sans text-[#52525B] text-[0.6rem] tracking-[0.18em] uppercase">
-              {state === 'requesting' ? 'requesting...' : 'tap to record'}
-            </span>
-          </button>
+          <div className="flex flex-col items-center">
+            <button
+              id="voice-record-btn"
+              onClick={startRecording}
+              disabled={state === 'requesting'}
+              aria-label="Start recording"
+              className="
+                flex flex-col items-center
+                group focus:outline-none
+                disabled:opacity-50 cursor-pointer
+              "
+            >
+              {/* Warm Mic Presence */}
+              <span className="
+                flex items-center justify-center
+                w-20 h-20 rounded-full
+                border border-neutral-700/60 bg-neutral-900/40
+                transition-all duration-500
+                group-hover:border-neutral-500/80 group-hover:bg-neutral-800/60 group-hover:scale-105
+                shadow-lg
+              ">
+                {/* Mic SVG */}
+                <svg width="24" height="28" viewBox="0 0 22 26" fill="none" className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-300">
+                  <rect x="6" y="1" width="10" height="15" rx="5" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M1 12C1 17.5 5.5 22 11 22C16.5 22 21 17.5 21 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="11" y1="22" x2="11" y2="25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </span>
+            </button>
+
+            {/* Prompt text directly underneath central mic */}
+            <p className="text-xs md:text-sm text-neutral-400/80 font-serif-nook italic text-center max-w-xs mx-auto mt-6 font-normal leading-relaxed">
+              {state === 'requesting' ? 'Connecting microphone...' : 'Rant, vent out, scream. No one is listening but you.'}
+            </p>
+          </div>
         )}
 
         {/* ── recording ── */}
@@ -192,70 +188,68 @@ export default function VoiceDump() {
             id="voice-stop-btn"
             onClick={stopRecording}
             aria-label="Stop recording"
-            className="flex flex-col items-center gap-3 group focus:outline-none"
+            className="flex flex-col items-center gap-4 group focus:outline-none cursor-pointer animate-fade-in"
           >
-            {/* Pulsing stop button */}
+            {/* Warm Breathing Glow Ring */}
             <span className="
               relative flex items-center justify-center
-              w-16 h-16 rounded-full
-              border border-[#C9B99A]/30
-              bg-[#1A1517]
+              w-20 h-20 rounded-full
+              border border-amber-200/40 bg-neutral-900/80
+              ring-8 ring-amber-200/10 animate-pulse
+              transition-all duration-500
             ">
-              {/* Pulse ring */}
-              <span className="absolute inset-0 rounded-full border border-[#C9B99A]/20 animate-ping" style={{ animationDuration: '1.6s' }} />
-              {/* Stop square */}
-              <span className="w-5 h-5 bg-[#C9B99A]/80 rounded-sm" />
+              {/* Stop Square */}
+              <span className="w-6 h-6 bg-amber-100/90 rounded-md shadow-md" />
             </span>
-            {/* Elapsed time */}
-            <span className="font-sans text-[#C9B99A] text-[0.72rem] tracking-[0.12em] tabular-nums">
-              {formatDuration(elapsed)}
-            </span>
-            <span className="font-sans text-[#52525B] text-[0.58rem] tracking-[0.16em] uppercase">
-              tap to stop
-            </span>
+            {/* Elapsed time and prompt */}
+            <div className="flex flex-col items-center gap-1">
+              <span className="font-mono text-neutral-200 text-sm tracking-widest tabular-nums">
+                {formatDuration(elapsed)}
+              </span>
+              <span className="text-xs text-neutral-400/80 font-serif-nook italic mt-2">
+                Tap again to stop
+              </span>
+            </div>
           </button>
         )}
 
         {/* ── preview ── */}
         {state === 'preview' && audio.url && (
-          <div className="w-full flex flex-col items-center gap-5">
+          <div className="w-full flex flex-col items-center gap-6 animate-fade-in">
             {/* Duration */}
-            <span className="font-sans text-[#71717A] text-[0.68rem] tracking-widest">
+            <span className="font-mono text-neutral-400 text-xs tracking-widest">
               {formatDuration(audio.duration)}
             </span>
 
-            {/* Native audio player — styled via accent-color */}
+            {/* Native audio player */}
             <audio
               id="voice-preview-player"
               src={audio.url}
               controls
-              className="w-full h-8 opacity-70 hover:opacity-100 transition-opacity"
+              className="w-full h-9 opacity-80 hover:opacity-100 transition-opacity"
               style={{ accentColor: '#C9B99A' }}
             />
 
             {/* Actions */}
-            <div className="flex items-center justify-between w-full border-t border-[#1E1E1E] pt-4">
+            <div className="flex items-center justify-between w-full border-t border-neutral-800/80 pt-4">
               <button
                 id="voice-discard-btn"
                 onClick={handleDiscard}
                 className="
-                  font-sans text-[#52525B] text-[0.62rem]
-                  tracking-[0.16em] uppercase
-                  transition-colors hover:text-[#71717A]
+                  font-mono text-[11px] tracking-widest uppercase
+                  text-neutral-500 hover:text-neutral-300
+                  transition-colors duration-200 focus:outline-none cursor-pointer
                 "
               >
-                Discard
+                Clear / Let go
               </button>
               <button
                 id="voice-keep-btn"
                 onClick={handleKeep}
                 className="
-                  font-serif-nook text-[#E5E0D8] text-[0.95rem]
-                  font-light tracking-wide
-                  px-5 py-2
-                  border border-[#2A2A2A]
-                  transition-all duration-300
-                  hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
+                  font-mono text-[11px] tracking-widest uppercase
+                  text-neutral-500 hover:text-neutral-300
+                  transition-colors duration-200 focus:outline-none cursor-pointer
                 "
               >
                 Keep this
@@ -266,33 +260,35 @@ export default function VoiceDump() {
 
         {/* ── saving ── */}
         {state === 'saving' && (
-          <span className="font-sans text-[#52525B] text-[0.62rem] tracking-[0.18em] uppercase animate-pulse">
-            saving…
+          <span className="font-sans text-neutral-400 text-xs tracking-wider animate-pulse">
+            saving...
           </span>
         )}
 
         {/* ── saved ── */}
         {state === 'saved' && (
-          <span className="font-sans text-[#C9B99A] text-[0.62rem] tracking-[0.18em] uppercase animate-fade-in">
-            kept. it's safe now.
+          <span className="font-serif-nook text-neutral-300 text-sm italic animate-fade-in">
+            kept in memory chest
           </span>
         )}
 
         {/* ── error ── */}
         {state === 'error' && (
-          <div className="flex flex-col items-center gap-4">
-            <p className="font-sans text-[#52525B] text-[0.72rem] text-center tracking-wide">
-              {errorMsg}
+          <div className="flex flex-col items-center gap-4 text-center px-4">
+            <p className="font-sans text-neutral-400 text-xs tracking-wide">
+              {errorMsg || 'Could not access microphone.'}
             </p>
             <button
               onClick={() => { setState('idle'); setErrorMsg('') }}
-              className="font-sans text-[#71717A] text-[0.58rem] tracking-[0.16em] uppercase hover:text-[#E5E0D8] transition-colors"
+              className="font-mono text-[11px] tracking-widest uppercase text-neutral-500 hover:text-neutral-300 transition-colors"
             >
               Try again
             </button>
           </div>
         )}
       </div>
+
+      <div className="h-4" />
     </div>
   )
 }

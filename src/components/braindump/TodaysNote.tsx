@@ -1,8 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
 import { saveTextEntry, getEditorFont, type EditorFont } from '../../utils/storage'
+import { playPaperCrumpleSound } from '../../utils/crumpleSound'
 import TypefaceModal, { getFontFamilyClass } from '../TypefaceModal'
 
-type Status = 'idle' | 'saved'
+type Status = 'idle' | 'saved' | 'cleared'
 
 const MAX_CHARS = 280
 
@@ -12,7 +13,8 @@ export default function TodaysNote() {
   const [status, setStatus] = useState<Status>('idle')
   const [font, setFont]     = useState<EditorFont>(() => getEditorFont())
   const [showTypefaceModal, setShowTypefaceModal] = useState(false)
-  const remaining = MAX_CHARS - text.length
+  const [isCrumpling, setIsCrumpling] = useState(false)
+  const [showPuff, setShowPuff] = useState(false)
 
   /* Auto-expand */
   useEffect(() => {
@@ -35,10 +37,30 @@ export default function TodaysNote() {
     setTimeout(() => setStatus('idle'), 2200)
   }
 
+  function handleClear() {
+    if (!text || isCrumpling) return
+    setIsCrumpling(true)
+    playPaperCrumpleSound()
+
+    // Trigger soft smoke / particle puff at Stage 3
+    setTimeout(() => {
+      setShowPuff(true)
+      setTimeout(() => setShowPuff(false), 500)
+    }, 550)
+
+    // Complete full 900ms choreographic release
+    setTimeout(() => {
+      setText('')
+      setIsCrumpling(false)
+      setStatus('cleared')
+      setTimeout(() => setStatus('idle'), 1500)
+    }, 900)
+  }
+
   const activeFontClass = getFontFamilyClass(font)
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 relative">
 
       {/* Date stamp */}
       <div className="mb-4">
@@ -49,88 +71,88 @@ export default function TodaysNote() {
         </p>
       </div>
 
-      {/* Helper text */}
-      <p className="font-serif-nook text-neutral-500 text-[0.92rem] font-light italic leading-snug mb-4">
-        One note for today. No more, no less.
-      </p>
-
-      {/* Textarea */}
-      <div className="flex-1 overflow-y-auto min-h-0 mb-5">
+      {/* Textarea with Multi-Stage Physics Crumple Animation */}
+      <div className={`flex-1 overflow-y-auto min-h-0 mb-5 relative ${isCrumpling ? 'animate-crumple-discard' : 'animate-fade-in'}`}>
         <textarea
           ref={textareaRef}
           id="todays-note-input"
           value={text}
           onChange={e => setText(e.target.value.slice(0, MAX_CHARS))}
-          placeholder="What's the one thing you want to hold onto today?"
+          placeholder="Something you want to remember from today."
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="sentences"
+          disabled={isCrumpling}
           className={`
             w-full bg-transparent resize-none outline-none border-none
             ${activeFontClass} text-neutral-200/90 text-[0.98rem]
             font-light leading-[1.85] tracking-wide
-            placeholder:text-neutral-700
-            min-h-[100px]
+            placeholder:text-neutral-500/60 placeholder:italic placeholder:font-serif-nook
+            min-h-[100px] transition-all duration-300
           `}
           style={{ height: 'auto' }}
         />
       </div>
 
+      {/* Soft Particle Puff at Release Point */}
+      {showPuff && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div className="w-20 h-20 rounded-full border border-neutral-500/30 bg-neutral-700/20 backdrop-blur-xs animate-puff-fade" />
+        </div>
+      )}
+
       {/* Feedback */}
       <div
         className={`
-          text-center font-sans text-[0.6rem] tracking-[0.2em] uppercase
-          transition-all duration-500 mb-3
-          ${status === 'saved' ? 'text-[#C9B99A] opacity-100' : 'opacity-0'}
+          text-center font-serif-nook text-xs italic tracking-wider transition-all duration-500 mb-3
+          ${status === 'saved'   ? 'text-[#C9B99A] opacity-100' :
+            status === 'cleared' ? 'text-neutral-500 font-sans uppercase text-[0.6rem] tracking-[0.2em] opacity-100' :
+                                   'opacity-0'}
         `}
         aria-live="polite"
       >
-        {status === 'saved' && 'noted. it stays with you.'}
+        {status === 'saved'   && 'Folded and placed into your Notes Jar.'}
+        {status === 'cleared' && 'note cleared.'}
       </div>
 
-      {/* Bottom actions */}
-      <div className="flex items-center justify-between border-t border-[#1E1E1E] pt-4">
-        <div className="flex items-center gap-3">
-          <button
-            id="note-typeface-btn"
-            type="button"
-            onClick={() => setShowTypefaceModal(true)}
-            className="
-              font-sans text-[#71717A] text-[0.62rem]
-              tracking-[0.16em] uppercase
-              transition-colors duration-300
-              hover:text-neutral-300 focus:outline-none flex items-center gap-1
-            "
-          >
-            <span>Typeface</span>
-          </button>
+      {/* Equalized Bottom actions */}
+      <div className="flex items-center justify-between border-t border-neutral-800/80 pt-4">
+        <button
+          id="todays-note-clear-btn"
+          onClick={handleClear}
+          disabled={!text || isCrumpling}
+          className="
+            font-mono text-[11px] tracking-widest uppercase
+            text-neutral-500 hover:text-neutral-300
+            disabled:opacity-30 disabled:cursor-not-allowed
+            transition-colors duration-200 focus:outline-none cursor-pointer
+          "
+        >
+          Clear / Let go
+        </button>
 
-          {/* Character count — only shows when close to limit */}
-          {remaining <= 40 && (
-            <span
-              className={`
-                font-sans text-[0.6rem] tracking-wide tabular-nums
-                transition-colors duration-300
-                ${remaining <= 10 ? 'text-[#C9B99A]' : 'text-[#52525B]'}
-              `}
-            >
-              {remaining} left
-            </span>
-          )}
-        </div>
+        <button
+          id="note-typeface-btn"
+          type="button"
+          onClick={() => setShowTypefaceModal(true)}
+          className="
+            font-mono text-[11px] tracking-widest uppercase
+            text-neutral-500 hover:text-neutral-300
+            transition-colors duration-200 focus:outline-none cursor-pointer
+          "
+        >
+          Typeface
+        </button>
 
         <button
           id="note-keep-btn"
           onClick={handleKeep}
-          disabled={!text.trim()}
+          disabled={!text.trim() || isCrumpling}
           className="
-            font-serif-nook text-[#E5E0D8] text-[0.95rem]
-            font-light tracking-wide
-            px-5 py-2 rounded-xl
-            border border-[#2A2A2A]
-            transition-all duration-300
-            hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
-            disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none
+            font-mono text-[11px] tracking-widest uppercase
+            text-neutral-500 hover:text-neutral-300
+            disabled:opacity-30 disabled:cursor-not-allowed
+            transition-colors duration-200 focus:outline-none cursor-pointer
           "
         >
           Keep this

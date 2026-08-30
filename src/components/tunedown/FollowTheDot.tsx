@@ -39,14 +39,14 @@ export default function FollowTheDot() {
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-4 animate-fade-in text-center min-h-0 w-full">
       {/* Subtitle */}
-      <p className="font-serif-nook text-[#71717A] text-[0.95rem] font-light italic px-4">
+      <p className="font-serif-nook text-neutral-400 text-xs font-light italic px-4">
         Rest your eyes here. Follow the light at your own pace.
       </p>
 
-      {/* Floating Canvas / Container Area */}
+      {/* Floating Canvas / Container Area (Clean, without crosshair artifact) */}
       <div
         ref={containerRef}
-        className="relative my-auto w-full h-[280px] border border-[#1A1A1A] bg-[#0C0C0C] rounded-sm overflow-hidden"
+        className="relative my-auto w-full h-[280px] border border-neutral-800/60 bg-[#0B0B0E] rounded-2xl overflow-hidden shadow-inner"
       >
         {/* Soft floating orb */}
         <div
@@ -61,20 +61,14 @@ export default function FollowTheDot() {
 
           {/* Core Dot */}
           <div className="relative w-8 h-8 rounded-full bg-gradient-to-r from-[#E5E0D8] to-[#C9B99A] shadow-lg flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-white opacity-80 animate-ping" style={{ animationDuration: '3s' }} />
+            <div className="w-3 h-3 rounded-full bg-white/80 animate-ping" style={{ animationDuration: '3s' }} />
           </div>
-        </div>
-
-        {/* Delicate center guide crosshair (very low opacity) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-          <div className="w-16 h-px bg-white" />
-          <div className="h-16 w-px bg-white absolute" />
         </div>
       </div>
 
       {/* Speed Controls */}
       <div className="flex items-center gap-2">
-        <span className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#52525B] mr-1">
+        <span className="font-mono text-[10px] tracking-[0.14em] uppercase text-neutral-500 mr-1">
           Speed:
         </span>
         {(['gentle', 'slower', 'still'] as DotSpeed[]).map(s => (
@@ -83,11 +77,11 @@ export default function FollowTheDot() {
             id={`speed-${s}-btn`}
             onClick={() => setSpeed(s)}
             className={`
-              px-3 py-1 border font-sans text-[0.62rem] tracking-wider uppercase
-              transition-all duration-300 focus:outline-none
+              px-3 py-1.5 rounded-xl border font-mono text-[10px] tracking-wider uppercase
+              transition-all duration-200 focus:outline-none cursor-pointer
               ${speed === s
-                ? 'border-[#C9B99A]/50 text-[#C9B99A] bg-[#C9B99A]/8'
-                : 'border-[#222222] text-[#52525B] hover:border-[#333333]'
+                ? 'border-[#C9B99A]/50 text-[#C9B99A] bg-[#C9B99A]/10'
+                : 'border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400'
               }
             `}
           >

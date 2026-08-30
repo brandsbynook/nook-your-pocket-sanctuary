@@ -310,7 +310,7 @@ export default function Reflect({ onBack }: ReflectProps) {
             </div>
 
             {/* Bottom Actions & Confirmation */}
-            <div className="shrink-0 pt-3 border-t border-[#1C1C1C]">
+            <div className="shrink-0 pt-3 border-t border-neutral-800/80">
               {/* Feedback toast */}
               <div
                 className={`
@@ -323,46 +323,42 @@ export default function Reflect({ onBack }: ReflectProps) {
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    id="reflect-clear-btn"
-                    onClick={handleClear}
-                    disabled={!currentAnswer}
-                    className="
-                      font-sans text-[#52525B] text-[0.62rem] tracking-[0.16em] uppercase
-                      hover:text-[#71717A] disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus:outline-none
-                    "
-                  >
-                    Clear / Let go
-                  </button>
+                <button
+                  id="reflect-clear-btn"
+                  onClick={handleClear}
+                  disabled={!currentAnswer}
+                  className="
+                    font-mono text-[11px] tracking-widest uppercase
+                    text-neutral-500 hover:text-neutral-300
+                    disabled:opacity-30 disabled:cursor-not-allowed
+                    transition-colors duration-200 focus:outline-none cursor-pointer
+                  "
+                >
+                  Clear / Let go
+                </button>
 
-                  <span className="text-neutral-800 text-xs">•</span>
-
-                  <button
-                    id="reflect-typeface-btn"
-                    type="button"
-                    onClick={() => setShowTypefaceModal(true)}
-                    className="
-                      font-sans text-[#71717A] text-[0.62rem]
-                      tracking-[0.16em] uppercase
-                      transition-colors duration-300
-                      hover:text-neutral-300 focus:outline-none flex items-center gap-1
-                    "
-                  >
-                    <span>Typeface</span>
-                  </button>
-                </div>
+                <button
+                  id="reflect-typeface-btn"
+                  type="button"
+                  onClick={() => setShowTypefaceModal(true)}
+                  className="
+                    font-mono text-[11px] tracking-widest uppercase
+                    text-neutral-500 hover:text-neutral-300
+                    transition-colors duration-200 focus:outline-none cursor-pointer
+                  "
+                >
+                  Typeface
+                </button>
 
                 <button
                   id="reflect-save-btn"
                   onClick={handleSave}
                   disabled={!currentAnswer.trim()}
                   className="
-                    px-5 py-2 rounded-xl border border-[#2A2A2A]
-                    font-serif-nook text-[#E5E0D8] text-[0.95rem] font-light
-                    hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
+                    font-mono text-[11px] tracking-widest uppercase
+                    text-neutral-500 hover:text-neutral-300
                     disabled:opacity-30 disabled:cursor-not-allowed
-                    transition-all duration-300 focus:outline-none
+                    transition-colors duration-200 focus:outline-none cursor-pointer
                   "
                 >
                   Save to Chest

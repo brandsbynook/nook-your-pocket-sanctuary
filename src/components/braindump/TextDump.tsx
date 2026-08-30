@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { saveTextEntry, getEditorFont, type EditorFont } from '../../utils/storage'
+import { playPaperCrumpleSound } from '../../utils/crumpleSound'
 import TypefaceModal, { getFontFamilyClass } from '../TypefaceModal'
 
 type Status = 'idle' | 'saved' | 'cleared'
@@ -10,6 +11,8 @@ export default function TextDump() {
   const [status, setStatus] = useState<Status>('idle')
   const [font, setFont]     = useState<EditorFont>(() => getEditorFont())
   const [showTypefaceModal, setShowTypefaceModal] = useState(false)
+  const [isCrumpling, setIsCrumpling] = useState(false)
+  const [showPuff, setShowPuff] = useState(false)
 
   /* Auto-expand textarea height */
   useEffect(() => {
@@ -33,15 +36,29 @@ export default function TextDump() {
   }
 
   function handleClear() {
-    setText('')
-    setStatus('cleared')
-    setTimeout(() => setStatus('idle'), 1500)
+    if (!text || isCrumpling) return
+    setIsCrumpling(true)
+    playPaperCrumpleSound()
+
+    // Trigger soft smoke / particle puff at Stage 3
+    setTimeout(() => {
+      setShowPuff(true)
+      setTimeout(() => setShowPuff(false), 500)
+    }, 550)
+
+    // Complete full 900ms choreographic release
+    setTimeout(() => {
+      setText('')
+      setIsCrumpling(false)
+      setStatus('cleared')
+      setTimeout(() => setStatus('idle'), 1500)
+    }, 900)
   }
 
   const activeFontClass = getFontFamilyClass(font)
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 relative">
 
       {/* Helper text */}
       <div className="mb-4">
@@ -50,8 +67,8 @@ export default function TextDump() {
         </p>
       </div>
 
-      {/* Textarea — grows with content, scrollable inside its flex container */}
-      <div className="flex-1 overflow-y-auto min-h-0 mb-5">
+      {/* Textarea with Multi-Stage Physics Crumple Animation */}
+      <div className={`flex-1 overflow-y-auto min-h-0 mb-5 relative ${isCrumpling ? 'animate-crumple-discard' : 'animate-fade-in'}`}>
         <textarea
           ref={textareaRef}
           id="text-dump-input"
@@ -61,16 +78,24 @@ export default function TextDump() {
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
+          disabled={isCrumpling}
           className={`
             w-full bg-transparent resize-none outline-none border-none
             ${activeFontClass} text-neutral-200/90 text-[0.98rem]
             font-light leading-[1.85] tracking-wide
             placeholder:text-neutral-700
-            min-h-[120px]
+            min-h-[120px] transition-all duration-300
           `}
           style={{ height: 'auto' }}
         />
       </div>
+
+      {/* Soft Particle Puff at Release Point */}
+      {showPuff && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div className="w-20 h-20 rounded-full border border-neutral-500/30 bg-neutral-700/20 backdrop-blur-xs animate-puff-fade" />
+        </div>
+      )}
 
       {/* Confirmation feedback */}
       <div
@@ -87,53 +112,44 @@ export default function TextDump() {
         {status === 'cleared' && 'page cleared.'}
       </div>
 
-      {/* Bottom actions */}
-      <div className="flex items-center justify-between border-t border-[#1E1E1E] pt-4">
-        <div className="flex items-center gap-4">
-          <button
-            id="text-dump-discard"
-            onClick={handleClear}
-            disabled={!text}
-            className="
-              font-sans text-[#52525B] text-[0.62rem]
-              tracking-[0.16em] uppercase
-              transition-colors duration-300
-              hover:text-[#71717A]
-              disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none
-            "
-          >
-            Clear page
-          </button>
+      {/* Equalized Bottom actions */}
+      <div className="flex items-center justify-between border-t border-neutral-800/80 pt-4">
+        <button
+          id="text-dump-discard"
+          onClick={handleClear}
+          disabled={!text || isCrumpling}
+          className="
+            font-mono text-[11px] tracking-widest uppercase
+            text-neutral-500 hover:text-neutral-300
+            disabled:opacity-30 disabled:cursor-not-allowed
+            transition-colors duration-200 focus:outline-none cursor-pointer
+          "
+        >
+          Clear / Let go
+        </button>
 
-          <span className="text-neutral-800 text-xs">•</span>
-
-          <button
-            id="text-dump-typeface-btn"
-            type="button"
-            onClick={() => setShowTypefaceModal(true)}
-            className="
-              font-sans text-[#71717A] text-[0.62rem]
-              tracking-[0.16em] uppercase
-              transition-colors duration-300
-              hover:text-neutral-300 focus:outline-none flex items-center gap-1
-            "
-          >
-            <span>Typeface</span>
-          </button>
-        </div>
+        <button
+          id="text-dump-typeface-btn"
+          type="button"
+          onClick={() => setShowTypefaceModal(true)}
+          className="
+            font-mono text-[11px] tracking-widest uppercase
+            text-neutral-500 hover:text-neutral-300
+            transition-colors duration-200 focus:outline-none cursor-pointer
+          "
+        >
+          Typeface
+        </button>
 
         <button
           id="text-dump-keep"
           onClick={handleKeep}
-          disabled={!text.trim()}
+          disabled={!text.trim() || isCrumpling}
           className="
-            font-serif-nook text-[#E5E0D8] text-[0.95rem]
-            font-light tracking-wide
-            px-5 py-2 rounded-xl
-            border border-[#2A2A2A]
-            transition-all duration-300
-            hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
-            disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none
+            font-mono text-[11px] tracking-widest uppercase
+            text-neutral-500 hover:text-neutral-300
+            disabled:opacity-30 disabled:cursor-not-allowed
+            transition-colors duration-200 focus:outline-none cursor-pointer
           "
         >
           Keep this

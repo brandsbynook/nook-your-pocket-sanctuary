@@ -65,11 +65,11 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
         </div>
       </header>
 
-      {/* ── Mode switcher ────────────────────────────── */}
+      {/* ── Mode switcher (Softened Horizontal Sub-Tabs) ──────── */}
       <div
         role="tablist"
         aria-label="Brain dump modes"
-        className="flex items-center gap-0 mb-7 border-b border-[#1E1E1E]"
+        className="flex items-center justify-between mb-6 border-b border-neutral-800/60 pb-2.5"
       >
         {tabs.map(tab => {
           const isActive = tab.id === activeTab
@@ -82,30 +82,19 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
               aria-controls={`panel-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
               className="
-                relative flex-1 pb-3
-                font-sans text-[0.58rem] tracking-[0.14em] uppercase
-                transition-colors duration-300
-                focus:outline-none
+                flex-1 text-center font-mono text-[11px] tracking-widest uppercase
+                transition-colors duration-200 focus:outline-none cursor-pointer
               "
             >
-              <span className={isActive ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
+              <span className={isActive ? 'text-neutral-200 font-medium' : 'text-neutral-500 hover:text-neutral-400 font-normal'}>
                 {tab.label}
               </span>
-              {/* Active underline */}
-              <span
-                className={`
-                  absolute bottom-0 left-0 right-0 h-px
-                  transition-all duration-400
-                  ${isActive ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
-                `}
-                aria-hidden="true"
-              />
             </button>
           )
         })}
       </div>
 
-      {/* ── Tab panels ───────────────────────────────── */}
+      {/* ── Tab panels with gentle fade ─────────────────────── */}
       <div
         id={`panel-${activeTab}`}
         role="tabpanel"

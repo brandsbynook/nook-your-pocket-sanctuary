@@ -7,6 +7,7 @@ import SettingsScreen    from './screens/SettingsScreen'
 import MemoryChestScreen from './screens/MemoryChestScreen'
 import CompanionScreen   from './screens/CompanionScreen'
 import TuneDownScreen    from './screens/TuneDownScreen'
+import SoundscapesScreen from './screens/SoundscapesScreen'
 import OnboardingScreen  from './screens/OnboardingScreen'
 import { isOnboarded }   from './utils/storage'
 
@@ -21,6 +22,7 @@ export type Screen =
   | 'reflect'
   | 'companion'
   | 'tune-down'
+  | 'soundscapes'
   | 'cards'
   | 'settings'
   | 'memory-chest'
@@ -48,6 +50,9 @@ function App() {
       {screen === 'tune-down' && (
         <TuneDownScreen onBack={() => setScreen('home')} />
       )}
+      {screen === 'soundscapes' && (
+        <SoundscapesScreen onBack={() => setScreen('home')} />
+      )}
       {screen === 'cards' && (
         <CardsScreen
           onBack={() => setScreen('home')}
@@ -70,7 +75,7 @@ function App() {
 
       {/* Global Quick Audio Sheet (Mini-Player) */}
       <QuickAudioSheet
-        onNavigateSoundSanctuary={() => setScreen('tune-down')}
+        onNavigateSoundSanctuary={() => setScreen('soundscapes')}
       />
 
       {/* Sanctuary Key Ethical Paywall Modal */}

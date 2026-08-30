@@ -82,15 +82,15 @@ function CreateCardModal({ onSave, onCancel }: CreateCardModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 animate-fade-in">
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
       <div className="
-        w-full max-w-[420px] bg-[#111111]
-        border-t border-[#1E1E1E]
+        w-full max-w-[420px] bg-neutral-950/95
+        border border-neutral-800/80 rounded-t-3xl
         px-6 pt-6 pb-10
         flex flex-col gap-4
-        animate-lift-in
+        animate-lift-in shadow-2xl
       ">
-        <h2 className="font-serif-nook text-[#E5E0D8] text-lg font-light tracking-wide">
+        <h2 className="font-serif-nook text-neutral-200 text-lg font-light tracking-wide">
           New card
         </h2>
 
@@ -100,10 +100,10 @@ function CreateCardModal({ onSave, onCancel }: CreateCardModalProps) {
           onChange={e => setTitle(e.target.value)}
           placeholder="Short label (e.g. Too Loud)"
           className="
-            w-full bg-transparent border-b border-[#242424]
-            font-sans text-[#E5E0D8] text-sm font-light
-            placeholder:text-[#3A3A3A] py-2
-            focus:outline-none focus:border-[#52525B]
+            w-full bg-transparent border-b border-neutral-800
+            font-sans text-neutral-200 text-sm font-light
+            placeholder:text-neutral-600 py-2
+            focus:outline-none focus:border-neutral-500
             transition-colors
           "
         />
@@ -115,10 +115,10 @@ function CreateCardModal({ onSave, onCancel }: CreateCardModalProps) {
           placeholder="What this card says..."
           rows={3}
           className="
-            w-full bg-transparent border-b border-[#242424]
-            font-sans text-[#E5E0D8] text-sm font-light
-            placeholder:text-[#3A3A3A] py-2 resize-none
-            focus:outline-none focus:border-[#52525B]
+            w-full bg-transparent border-b border-neutral-800
+            font-sans text-neutral-200 text-sm font-light
+            placeholder:text-neutral-600 py-2 resize-none
+            focus:outline-none focus:border-neutral-500
             transition-colors leading-relaxed
           "
         />
@@ -126,7 +126,7 @@ function CreateCardModal({ onSave, onCancel }: CreateCardModalProps) {
         <div className="flex items-center justify-between pt-2">
           <button
             onClick={onCancel}
-            className="font-sans text-[#52525B] text-[0.62rem] tracking-[0.16em] uppercase hover:text-[#71717A] transition-colors"
+            className="font-sans text-neutral-500 text-[0.62rem] tracking-[0.16em] uppercase hover:text-neutral-300 transition-colors focus:outline-none"
           >
             Cancel
           </button>
@@ -135,11 +135,10 @@ function CreateCardModal({ onSave, onCancel }: CreateCardModalProps) {
             onClick={handleSave}
             disabled={!title.trim() || !body.trim()}
             className="
-              font-serif-nook text-[#E5E0D8] text-[0.95rem] font-light
-              px-5 py-2 border border-[#2A2A2A]
-              hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
+              font-sans text-xs tracking-widest uppercase
+              text-neutral-300 hover:text-neutral-100 font-medium
               disabled:opacity-30 disabled:cursor-not-allowed
-              transition-all duration-300
+              transition-all focus:outline-none
             "
           >
             Save card
@@ -166,17 +165,17 @@ function CardTile({ title, body, onTap, onDelete }: CardTileProps) {
         onClick={onTap}
         className="
           w-full text-left
-          border border-[#1C1C1C] bg-[#0E0E0E]
-          px-4 py-4
-          hover:border-[#2A2A2A] hover:bg-[#111]
+          border border-neutral-800/60 bg-neutral-900/30
+          p-4 rounded-2xl
+          hover:border-neutral-700/80 hover:bg-neutral-900/60
           transition-all duration-300
-          focus:outline-none
+          focus:outline-none cursor-pointer
         "
       >
-        <p className="font-serif-nook text-[#E5E0D8] text-base font-light tracking-wide leading-snug mb-1">
+        <p className="font-serif-nook text-neutral-200 text-base font-normal tracking-wide leading-snug">
           {title}
         </p>
-        <p className="font-sans text-[#52525B] text-[0.68rem] font-light leading-snug tracking-wide line-clamp-2">
+        <p className="text-xs text-neutral-400 font-normal mt-1 leading-relaxed line-clamp-2">
           {body}
         </p>
       </button>
@@ -186,12 +185,12 @@ function CardTile({ title, body, onTap, onDelete }: CardTileProps) {
           onClick={onDelete}
           aria-label={`Delete ${title}`}
           className="
-            absolute top-3 right-3
-            text-[#3A3A3A] text-[0.7rem]
+            absolute top-3.5 right-3.5
+            text-neutral-600 text-sm
             opacity-0 group-hover:opacity-100
             transition-opacity duration-200
-            hover:text-[#71717A]
-            focus:outline-none
+            hover:text-neutral-300
+            focus:outline-none p-1
           "
         >
           ×
@@ -229,7 +228,7 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
       <main
         id="cards-screen"
         className="
-          h-[100dvh] max-w-[420px] mx-auto
+          h-[100dvh] max-w-md mx-auto
           px-6 pt-10 pb-6
           flex flex-col justify-between
           overflow-hidden
@@ -245,10 +244,10 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
               onClick={onBack}
               className="
                 flex items-center gap-1.5
-                font-sans text-[#52525B] text-[0.62rem]
+                font-sans text-neutral-500 text-[0.62rem]
                 tracking-[0.14em] uppercase
-                hover:text-[#71717A] transition-colors
-                focus:outline-none
+                hover:text-neutral-300 transition-colors
+                focus:outline-none py-1
               "
             >
               <span className="text-[0.8rem] leading-none">←</span>
@@ -256,10 +255,10 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
             </button>
 
             <div className="flex flex-col items-center gap-[3px]">
-              <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
+              <h1 className="font-serif-nook text-neutral-200 text-xl font-light tracking-[0.18em] leading-none">
                 Cards
               </h1>
-              <p className="font-sans text-[#3A3A3A] text-[0.58rem] tracking-[0.1em] text-center">
+              <p className="font-sans text-neutral-500 text-[0.58rem] tracking-[0.1em] text-center">
                 Show this to someone when words are hard.
               </p>
             </div>
@@ -270,7 +269,7 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
           </header>
 
           {/* Scrollable card list */}
-          <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pb-4">
+          <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2.5 pb-4 pr-0.5">
 
             {/* Default cards */}
             {DEFAULT_CARDS.map(card => (
@@ -284,7 +283,7 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
 
             {/* Divider before custom cards */}
             {customCards.length > 0 && (
-              <div className="h-px w-full bg-[#1C1C1C] my-2" />
+              <div className="h-px w-full bg-neutral-800/60 my-1" />
             )}
 
             {/* Custom cards */}
@@ -303,13 +302,13 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
               id="create-card-btn"
               onClick={() => setCreating(true)}
               className="
-                w-full mt-2 py-4
-                border border-dashed border-[#242424]
-                font-sans text-[#3A3A3A] text-[0.6rem]
-                tracking-[0.18em] uppercase
-                hover:border-[#52525B] hover:text-[#52525B]
+                w-full mt-1.5 py-3.5 rounded-2xl
+                border border-dashed border-neutral-800/70
+                font-sans text-neutral-500 text-[0.62rem]
+                tracking-widest uppercase
+                hover:border-neutral-600 hover:text-neutral-300
                 transition-all duration-300
-                focus:outline-none
+                focus:outline-none cursor-pointer
               "
             >
               + Create new card

@@ -13,7 +13,7 @@ import {
 import FooterNav, { type NavTabId } from '../components/FooterNav'
 import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 
-type MemoryTab = 'dumps' | 'reflections' | 'jar'
+export type MemoryTab = 'dumps' | 'reflections' | 'jar'
 
 interface MemoryChestScreenProps {
   onBack: () => void
@@ -21,9 +21,9 @@ interface MemoryChestScreenProps {
 }
 
 const TABS: { id: MemoryTab; label: string }[] = [
-  { id: 'dumps',       label: 'Dumps' },
+  { id: 'dumps',       label: 'Dumps'       },
   { id: 'reflections', label: 'Reflections' },
-  { id: 'jar',         label: 'Notes Jar' },
+  { id: 'jar',         label: 'Notes Jar'   },
 ]
 
 function formatDate(ts: number): string {
@@ -106,9 +106,9 @@ function VoiceDumpItem({
   }
 
   return (
-    <div className="border border-[#1C1C1C] bg-[#0E0E0E] p-4 transition-all duration-300 hover:border-[#2A2A2A] group">
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-sans text-[0.6rem] tracking-[0.16em] uppercase text-[#71717A]">
+    <div className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
           Voice Recording · {formatDate(record.timestamp)}
         </span>
 
@@ -116,13 +116,13 @@ function VoiceDumpItem({
           <div className="flex items-center gap-2">
             <button
               onClick={onDelete}
-              className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#C9B99A] hover:underline"
+              className="text-[10px] tracking-wider uppercase text-rose-400 hover:underline"
             >
-              Delete
+              Let go
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#52525B]"
+              className="text-[10px] tracking-wider uppercase text-neutral-500 hover:text-neutral-300"
             >
               Cancel
             </button>
@@ -131,42 +131,42 @@ function VoiceDumpItem({
           <button
             onClick={() => setConfirmDelete(true)}
             aria-label="Delete recording"
-            className="text-[#3A3A3A] text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#71717A]"
+            className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
           >
-            ×
+            Let go
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-3 mt-1">
+      <div className="flex items-center gap-3.5 mt-1">
         {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
-          className="w-8 h-8 rounded-full border border-[#2A2A2A] bg-[#141414] flex items-center justify-center text-[#E5E0D8] hover:border-[#C9B99A]/40 transition-colors shrink-0 focus:outline-none"
+          className="w-9 h-9 rounded-full border border-neutral-700/80 bg-neutral-800/80 flex items-center justify-center text-neutral-200 hover:border-[#C9B99A]/50 transition-colors shrink-0 focus:outline-none"
           aria-label={isPlaying ? 'Pause recording' : 'Play recording'}
         >
           {isPlaying ? (
             <span className="flex gap-[3px]">
-              <span className="w-[2.5px] h-3 bg-[#E5E0D8]" />
-              <span className="w-[2.5px] h-3 bg-[#E5E0D8]" />
+              <span className="w-[2.5px] h-3.5 bg-neutral-200 rounded-sm" />
+              <span className="w-[2.5px] h-3.5 bg-neutral-200 rounded-sm" />
             </span>
           ) : (
-            <span className="text-[0.7rem] ml-0.5 leading-none">▶</span>
+            <span className="text-[0.75rem] ml-0.5 leading-none text-neutral-200">▶</span>
           )}
         </button>
 
-        {/* Minimal custom scrubber */}
+        {/* Scrubber */}
         <div className="flex-1 flex flex-col gap-1.5">
           <div
             onClick={handleSeek}
-            className="w-full h-2 bg-[#1A1A1A] rounded-full cursor-pointer relative flex items-center overflow-hidden"
+            className="w-full h-2 bg-neutral-800 rounded-full cursor-pointer relative flex items-center overflow-hidden"
           >
             <div
-              className="h-full bg-[#C9B99A]/70 transition-all duration-100"
+              className="h-full bg-[#C9B99A] rounded-full transition-all duration-100"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex justify-between font-sans text-[0.58rem] text-[#52525B] tabular-nums">
+          <div className="flex justify-between font-mono text-[10px] text-neutral-500 tabular-nums">
             <span>{isPlaying ? formatDuration(currentTime) : '0:00'}</span>
             <span>{formatDuration(record.durationMs)}</span>
           </div>
@@ -177,7 +177,7 @@ function VoiceDumpItem({
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Notes Jar View
+   Apothecary Notes Jar (The Time Capsule Ritual)
 ───────────────────────────────────────────────────────────── */
 const SANCTUARY_NOTES = [
   "You don't have to carry everything all at once.",
@@ -188,448 +188,475 @@ const SANCTUARY_NOTES = [
   "Whatever you did today, it was enough.",
   "Breathe. You are safe in this quiet moment.",
   "Let go of what you cannot change today.",
+  "Nothing to fix, nowhere to be.",
 ]
+
+interface NoteSlip {
+  text: string
+  source: string
+  date?: string
+}
 
 function NotesJarView({
   userNotes,
+  onDeleteNote,
 }: {
   userNotes: DumpEntry[]
+  onDeleteNote: (id: string) => void
 }) {
-  const allPool = useMemo(() => {
-    const fromUser = userNotes.map(n => n.content)
-    return fromUser.length > 0 ? fromUser : SANCTUARY_NOTES
+  const [viewMode, setViewMode] = useState<'jar' | 'list'>('jar')
+
+  const allSlips: NoteSlip[] = useMemo(() => {
+    if (userNotes.length > 0) {
+      return userNotes.map(n => ({
+        text: n.content,
+        source: "Today's Note",
+        date: formatDate(n.timestamp),
+      }))
+    }
+    return SANCTUARY_NOTES.map(quote => ({
+      text: quote,
+      source: 'Sanctuary Keepsake',
+      date: 'timeless',
+    }))
   }, [userNotes])
 
-  const [currentNote, setCurrentNote] = useState<string>(() => {
-    return allPool[Math.floor(Math.random() * allPool.length)]
-  })
-  const [isShaking, setIsShaking] = useState(false)
+  const [activeSlip, setActiveSlip] = useState<NoteSlip | null>(null)
+  const [isRattling, setIsRattling] = useState(false)
 
-  function drawNewNote() {
-    setIsShaking(true)
+  function handleDraw() {
+    setIsRattling(true)
     setTimeout(() => {
-      let next = currentNote
-      if (allPool.length > 1) {
-        while (next === currentNote) {
-          next = allPool[Math.floor(Math.random() * allPool.length)]
-        }
-      }
-      setCurrentNote(next)
-      setIsShaking(false)
-    }, 400)
+      const randomIdx = Math.floor(Math.random() * allSlips.length)
+      setActiveSlip(allSlips[randomIdx] || allSlips[0])
+      setIsRattling(false)
+    }, 450)
   }
 
+  function handleFoldBack() {
+    setActiveSlip(null)
+  }
+
+  // ── "View All Notes" List Mode ─────────────────────
+  if (viewMode === 'list') {
+    return (
+      <div className="flex flex-col flex-1 animate-fade-in pb-4">
+        <div className="flex items-center justify-between mb-4 border-b border-neutral-800/80 pb-2.5">
+          <button
+            onClick={() => setViewMode('jar')}
+            className="font-mono text-[10px] tracking-widest uppercase text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none cursor-pointer flex items-center gap-1"
+          >
+            <span>←</span>
+            <span>draw from jar</span>
+          </button>
+          <span className="font-mono text-[10px] text-neutral-500">
+            {userNotes.length} {userNotes.length === 1 ? 'note' : 'notes'}
+          </span>
+        </div>
+
+        {userNotes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <p className="font-serif-nook text-neutral-500 text-sm font-light italic">
+              The jar is currently empty.
+            </p>
+            <p className="font-sans text-neutral-600 text-[0.58rem] tracking-wider uppercase mt-1">
+              Save today's note in Brain Dump to place memories in the jar.
+            </p>
+          </div>
+        ) : (
+          userNotes.map(note => (
+            <div
+              key={note.id}
+              className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+                  Daily Note · {formatDate(note.timestamp)}
+                </span>
+                <button
+                  onClick={() => onDeleteNote(note.id)}
+                  aria-label="Let go of note"
+                  className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
+                >
+                  Let go
+                </button>
+              </div>
+              <p className="font-serif-nook text-neutral-200 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
+                {note.content}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    )
+  }
+
+  // ── "Hero Jar" Draw Mode ───────────────────────────
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-4 animate-fade-in text-center">
-      {/* Top hint */}
-      <p className="font-sans text-[#52525B] text-[0.65rem] tracking-[0.14em] uppercase">
-        Tap the jar to draw a quiet thought
-      </p>
-
-      {/* Center Jar / Note Display */}
+      {/* Center Vessel & Paper Slip */}
       <div className="flex flex-col items-center my-auto w-full px-2">
-        {/* Tactile Jar Emblem */}
-        <button
-          onClick={drawNewNote}
-          aria-label="Draw note from jar"
-          className={`
-            mb-6 p-4 rounded-full border border-[#222222] bg-[#121212]
-            hover:border-[#C9B99A]/40 transition-all duration-300 focus:outline-none
-            ${isShaking ? 'scale-95 rotate-3' : 'hover:scale-105'}
-          `}
-        >
-          {/* Stylized Sanctuary Vessel SVG */}
-          <svg width="36" height="42" viewBox="0 0 36 42" fill="none" className="text-[#C9B99A]/80">
-            <path d="M12 4H24M14 4V8M22 4V8M10 8H26C29 8 31 10.5 31 13.5V33C31 37 28 39 24 39H12C8 39 5 37 5 33V13.5C5 10.5 7 8 10 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M10 18C14 20 22 20 26 18" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" strokeLinecap="round"/>
-            <circle cx="18" cy="27" r="2" fill="currentColor" fillOpacity="0.7"/>
-          </svg>
-        </button>
+        {!activeSlip ? (
+          /* Large Handcrafted Apothecary Jar */
+          <div className="flex flex-col items-center gap-4">
+            <button
+              onClick={handleDraw}
+              id="apothecary-jar-button"
+              aria-label="Draw note from apothecary jar"
+              className={`
+                group cursor-pointer focus:outline-none transition-all duration-300 p-2
+                ${isRattling ? 'animate-bounce scale-95 rotate-3' : 'hover:scale-105'}
+              `}
+            >
+              {/* Handcrafted Organic Apothecary Jar SVG */}
+              <svg width="115" height="145" viewBox="0 0 115 145" fill="none" className="text-neutral-500 group-hover:text-neutral-300 transition-colors drop-shadow-md">
+                {/* Cork Stopper with subtle line */}
+                <path d="M39 12 C39 10 42 8 46 8 H69 C73 8 76 10 76 12 V19 H39 Z" fill="#201D1A" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                <line x1="44" y1="14" x2="71" y2="14" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.4" />
+                
+                {/* Rounded Jar Lip */}
+                <rect x="33" y="19" width="49" height="7" rx="3" fill="#141416" stroke="currentColor" strokeWidth="1.5" />
+                
+                {/* Soft Organic Jar Silhouette (smooth shoulders & body) */}
+                <path d="M38 26 C38 34 22 42 16 54 C10 66 12 118 16 126 C22 138 34 140 57.5 140 C81 140 93 138 99 126 C103 118 105 66 99 54 C93 42 77 34 77 26" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                
+                {/* Subtle Specular Highlights */}
+                <path d="M22 62 C20 75 20 110 24 122 C27 128 34 133 44 134" stroke="currentColor" strokeWidth="0.9" strokeOpacity="0.25" strokeLinecap="round" />
+                <path d="M92 64 C94 74 94 98 90 108" stroke="currentColor" strokeWidth="0.9" strokeOpacity="0.2" strokeLinecap="round" />
 
-        {/* Drawn Note Card */}
-        <div
-          className={`
-            border border-[#1E1E1E] bg-[#111111]/80 px-6 py-7 w-full max-w-[340px]
-            transition-all duration-500
-            ${isShaking ? 'opacity-20 translate-y-2' : 'opacity-100 translate-y-0 animate-lift-in'}
-          `}
-        >
-          <p className="font-serif-nook text-[#E5E0D8] text-[1.25rem] font-light italic leading-relaxed">
-            "{currentNote}"
-          </p>
-        </div>
+                {/* Floating Folded Paper Slip 1 (-15deg) */}
+                <g className="animate-float-slip-1 origin-[44px_82px]">
+                  <rect x="32" y="76" width="25" height="13" rx="2" fill="#E8E2D8" fillOpacity="0.1" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.75" />
+                  <line x1="36" y1="82" x2="52" y2="82" stroke="#D1C7B7" strokeWidth="0.7" strokeOpacity="0.5" />
+                </g>
+
+                {/* Floating Folded Paper Slip 2 (8deg) */}
+                <g className="animate-float-slip-2 origin-[64px_106px]">
+                  <rect x="52" y="100" width="28" height="14" rx="2" fill="#E8E2D8" fillOpacity="0.12" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.8" />
+                  <line x1="56" y1="107" x2="74" y2="107" stroke="#D1C7B7" strokeWidth="0.7" strokeOpacity="0.5" />
+                </g>
+
+                {/* Floating Folded Paper Slip 3 (-6deg) */}
+                <g className="animate-float-slip-3 origin-[42px_110px]">
+                  <rect x="30" y="104" width="24" height="13" rx="2" fill="#E8E2D8" fillOpacity="0.09" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.65" />
+                </g>
+
+                {/* Floating Folded Paper Slip 4 (22deg) */}
+                <g className="animate-float-slip-4 origin-[72px_78px]">
+                  <rect x="62" y="72" width="22" height="12" rx="2" fill="#E8E2D8" fillOpacity="0.1" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.7" />
+                </g>
+              </svg>
+            </button>
+            <span className="font-serif-nook text-neutral-400 text-xs italic">
+              Contains {userNotes.length} preserved {userNotes.length === 1 ? 'memory' : 'memories'} from your days.
+            </span>
+          </div>
+        ) : (
+          /* Unfolded Drawn Paper Slip */
+          <div className="w-full max-w-[340px] rounded-2xl bg-neutral-900/90 border border-neutral-700/80 p-6 shadow-2xl backdrop-blur-md animate-lift-in flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-neutral-800/80 pb-2">
+              <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono truncate max-w-[200px]">
+                {activeSlip.source}
+              </span>
+              {activeSlip.date && (
+                <span className="text-[10px] text-neutral-500 font-mono">
+                  {activeSlip.date}
+                </span>
+              )}
+            </div>
+
+            <p className="font-serif-nook text-neutral-100 text-lg md:text-xl font-light italic leading-relaxed py-2 text-left">
+              "{activeSlip.text}"
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Action Button */}
-      <button
-        onClick={drawNewNote}
-        className="
-          font-serif-nook text-[#E5E0D8] text-[0.95rem] font-light
-          px-6 py-2.5 border border-[#2A2A2A]
-          hover:border-[#C9B99A]/40 hover:text-[#C9B99A]
-          transition-all duration-300 focus:outline-none
-        "
-      >
-        Draw another
-      </button>
+      {/* Bottom Action & View All Link */}
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center gap-3">
+          {activeSlip ? (
+            <>
+              <button
+                onClick={handleFoldBack}
+                className="
+                  font-mono text-[11px] tracking-widest uppercase
+                  text-neutral-500 hover:text-neutral-300 transition-colors duration-200 focus:outline-none px-3 py-2
+                "
+              >
+                Fold back into jar
+              </button>
+              <button
+                onClick={handleDraw}
+                className="
+                  font-mono text-[11px] tracking-widest uppercase
+                  text-neutral-200 hover:text-white font-medium transition-colors duration-200 focus:outline-none px-4 py-2 rounded-xl bg-neutral-800/70 border border-neutral-700/80
+                "
+              >
+                Draw another
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleDraw}
+              id="jar-draw-btn"
+              className="
+                font-mono text-[11px] tracking-widest uppercase
+                text-neutral-300 hover:text-white font-medium
+                px-6 py-2.5 rounded-2xl border border-neutral-700/80 bg-neutral-900/60 hover:bg-neutral-800/70
+                transition-all duration-200 focus:outline-none cursor-pointer
+              "
+            >
+              Draw a memory
+            </button>
+          )}
+        </div>
+
+        {/* Quiet toggle to view all notes */}
+        {!activeSlip && userNotes.length > 0 && (
+          <button
+            onClick={() => setViewMode('list')}
+            className="font-mono text-[10px] tracking-widest uppercase text-neutral-500 hover:text-neutral-300 transition-colors focus:outline-none cursor-pointer pt-1"
+          >
+            view all notes ({userNotes.length}) →
+          </button>
+        )}
+      </div>
     </div>
   )
 }
 
-function isDoodleEntry(dump: DumpEntry): boolean {
-  return (
-    dump.type === 'doodle' ||
-    dump.content.startsWith('data:image/') ||
-    dump.content.startsWith('[Doodle]')
-  )
-}
-
-function getDoodleImageUrl(dump: DumpEntry): string {
-  return dump.content.replace(/^\[Doodle\]\s*/, '')
-}
-
 /* ─────────────────────────────────────────────────────────────
-   Main MemoryChestScreen
+   Main Memory Chest Screen
 ───────────────────────────────────────────────────────────── */
 export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScreenProps) {
   const [activeTab, setActiveTab] = useState<MemoryTab>('dumps')
-  const [textDumps, setTextDumps] = useState<DumpEntry[]>(() => getAllEntries())
+  const [entries, setEntries] = useState<DumpEntry[]>([])
   const [voiceRecords, setVoiceRecords] = useState<VoiceRecord[]>([])
-  const [reflections, setReflections] = useState<ReflectionEntry[]>(() => loadReflections())
-  const [expandedTextId, setExpandedTextId] = useState<string | null>(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const [selectedDoodleUrl, setSelectedDoodleUrl] = useState<string | null>(null)
+  const [reflections, setReflections] = useState<ReflectionEntry[]>([])
 
   useEffect(() => {
-    getAllVoiceRecords().then(records => {
-      setVoiceRecords(records)
-    })
+    setEntries(getAllEntries())
+    getAllVoiceRecords().then(setVoiceRecords).catch(() => {})
+    setReflections(loadReflections())
   }, [])
 
-  function handleDeleteDump(id: string) {
+  // Segregated data pools
+  const dumps = useMemo(() => {
+    return entries.filter(e => e.type === 'text' || e.type === 'voice' || e.type === 'doodle')
+  }, [entries])
+
+  const dailyNotes = useMemo(() => {
+    return entries.filter(e => e.type === 'note')
+  }, [entries])
+
+  function handleDeleteEntry(id: string) {
     deleteEntry(id)
-    setTextDumps(prev => prev.filter(d => d.id !== id))
-    setConfirmDeleteId(null)
+    setEntries(getAllEntries())
   }
 
   function handleDeleteVoice(id: string) {
     deleteVoiceRecord(id).then(() => {
-      setVoiceRecords(prev => prev.filter(v => v.id !== id))
+      getAllVoiceRecords().then(setVoiceRecords).catch(() => {})
     })
   }
 
   function handleDeleteReflection(id: string) {
     deleteReflectionEntry(id)
-    setReflections(prev => prev.filter(r => r.id !== id))
-    setConfirmDeleteId(null)
+    setReflections(loadReflections())
   }
 
   return (
-    <>
-      <main
-        id="memory-chest-screen"
-        className="
-          h-[100dvh] max-w-[420px] mx-auto
-          px-6 pt-10 pb-6
-          flex flex-col justify-between
-          overflow-hidden
-          bg-[#0E0E0E]
-          animate-fade-in
-        "
-      >
-        <div className="flex flex-col flex-1 min-h-0">
-          {/* Header */}
-          <header className="flex items-center justify-between mb-6 shrink-0">
-            <button
-              id="memory-chest-back"
-              onClick={onBack}
-              className="
-                flex items-center gap-1.5
-                font-sans text-[#52525B] text-[0.62rem]
-                tracking-[0.14em] uppercase
-                hover:text-[#71717A] transition-colors
-                focus:outline-none
-              "
-            >
-              <span className="text-[0.8rem] leading-none">←</span>
-              return
-            </button>
-
-            <div className="flex flex-col items-center gap-[3px]">
-              <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
-                Memory Chest
-              </h1>
-              <p className="font-sans text-[#3A3A3A] text-[0.58rem] tracking-[0.1em] text-center">
-                Things you chose to keep.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end min-w-[60px]">
-              <HeaderAudioShortcut />
-            </div>
-          </header>
-
-          {/* Sub-Navigation Tabs */}
-          <div
-            role="tablist"
-            aria-label="Memory Chest views"
-            className="flex items-center mb-5 border-b border-[#1E1E1E] shrink-0"
+    <main
+      id="memory-chest-screen"
+      className="
+        h-[100dvh] max-w-md mx-auto
+        px-6 pt-10 pb-6
+        flex flex-col justify-between
+        overflow-hidden
+        bg-[#0E0E0E]
+        animate-fade-in
+      "
+    >
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* ── Top Bar ─────────────────────────────────────────── */}
+        <header className="flex items-center justify-between mb-6 shrink-0">
+          <button
+            id="memory-chest-back"
+            onClick={onBack}
+            className="
+              flex items-center gap-1.5
+              font-sans text-neutral-500 text-[0.62rem]
+              tracking-[0.14em] uppercase
+              hover:text-neutral-300 transition-colors
+              focus:outline-none py-1
+            "
           >
-            {TABS.map(tab => {
-              const isActive = tab.id === activeTab
-              return (
-                <button
-                  key={tab.id}
-                  id={`tab-${tab.id}`}
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="
-                    relative flex-1 pb-3
-                    font-sans text-[0.58rem] tracking-[0.14em] uppercase
-                    transition-colors duration-300
-                    focus:outline-none
-                  "
-                >
-                  <span className={isActive ? 'text-[#E5E0D8]' : 'text-[#3A3A3A] hover:text-[#52525B]'}>
-                    {tab.label}
-                  </span>
-                  {/* Active underline */}
-                  <span
-                    className={`
-                      absolute bottom-0 left-0 right-0 h-px
-                      transition-all duration-400
-                      ${isActive ? 'bg-[#C9B99A] opacity-80' : 'bg-transparent'}
-                    `}
-                    aria-hidden="true"
-                  />
-                </button>
-              )
-            })}
+            <span className="text-[0.8rem] leading-none">←</span>
+            return
+          </button>
+
+          <div className="flex flex-col items-center gap-[2px]">
+            <h1 className="font-serif-nook text-neutral-200 text-xl font-light tracking-[0.18em] leading-none">
+              Memory Chest
+            </h1>
+            <p className="font-sans text-neutral-500 text-[0.58rem] tracking-[0.1em] text-center">
+              everything you chose to keep
+            </p>
           </div>
 
-          {/* Tab Content Container */}
-          <div className="flex-1 overflow-y-auto min-h-0 pb-4">
-            {/* ── Dumps Tab ── */}
-            {activeTab === 'dumps' && (
-              <div className="flex flex-col gap-3 animate-fade-in">
-                {textDumps.length === 0 && voiceRecords.length === 0 ? (
-                  <div className="py-14 px-6 text-center">
-                    <p className="font-serif-nook text-[#71717A] text-[1.05rem] font-light italic leading-relaxed">
-                      Nothing stored here yet. Your chest will hold things whenever you choose to keep them.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Text Dumps & Doodles */}
-                    {textDumps.map(dump => {
-                      const isExpanded = expandedTextId === dump.id
-                      const isConfirming = confirmDeleteId === dump.id
-                      const isDoodle = isDoodleEntry(dump)
-                      const typeLabel = isDoodle
-                        ? 'DOODLE'
-                        : dump.type === 'note'
-                        ? "TODAY'S NOTE"
-                        : 'TEXT DUMP'
-
-                      return (
-                        <div
-                          key={dump.id}
-                          className="border border-[#1C1C1C] bg-[#0E0E0E] p-4 transition-all duration-300 hover:border-[#2A2A2A] group rounded-sm"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-sans text-[0.6rem] tracking-[0.16em] uppercase text-[#71717A]">
-                              {typeLabel} · {formatDate(dump.timestamp)}
-                            </span>
-
-                            {isConfirming ? (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleDeleteDump(dump.id)}
-                                  className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#C9B99A] hover:underline"
-                                >
-                                  Delete
-                                </button>
-                                <button
-                                  onClick={() => setConfirmDeleteId(null)}
-                                  className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#52525B]"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmDeleteId(dump.id)}
-                                aria-label="Delete entry"
-                                className="text-[#3A3A3A] text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#71717A] p-1"
-                              >
-                                ×
-                              </button>
-                            )}
-                          </div>
-
-                          {isDoodle ? (
-                            <div className="my-2">
-                              <img
-                                src={getDoodleImageUrl(dump)}
-                                alt="Saved doodle"
-                                onClick={() => setSelectedDoodleUrl(getDoodleImageUrl(dump))}
-                                className="w-full h-40 object-contain bg-[#111111] rounded-lg border border-[#222222] cursor-pointer hover:border-[#383838] transition-colors"
-                              />
-                            </div>
-                          ) : (
-                            <>
-                              <p className={`font-sans text-[#E5E0D8]/90 text-[0.88rem] font-light leading-relaxed ${isExpanded ? '' : 'line-clamp-3'}`}>
-                                {dump.content}
-                              </p>
-
-                              {dump.content.length > 120 && (
-                                <button
-                                  onClick={() => setExpandedTextId(isExpanded ? null : dump.id)}
-                                  className="mt-2 font-sans text-[0.6rem] tracking-[0.12em] uppercase text-[#52525B] hover:text-[#C9B99A] transition-colors"
-                                >
-                                  {isExpanded ? 'Show less' : 'Read more'}
-                                </button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
-
-                    {/* Voice Records */}
-                    {voiceRecords.map(record => (
-                      <VoiceDumpItem
-                        key={record.id}
-                        record={record}
-                        onDelete={() => handleDeleteVoice(record.id)}
-                      />
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* ── Reflections Tab ── */}
-            {activeTab === 'reflections' && (
-              <div className="flex flex-col gap-3 animate-fade-in">
-                {reflections.length === 0 ? (
-                  <div className="py-14 px-6 text-center">
-                    <p className="font-serif-nook text-[#71717A] text-[1.05rem] font-light italic leading-relaxed">
-                      Nothing stored here yet. Your reflections will rest here whenever you take time to reflect.
-                    </p>
-                  </div>
-                ) : (
-                  reflections.map(ref => {
-                    const isConfirming = confirmDeleteId === ref.id
-                    return (
-                      <div
-                        key={ref.id}
-                        className="border border-[#1C1C1C] bg-[#0E0E0E] p-4 transition-all duration-300 hover:border-[#2A2A2A] group rounded-sm"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-sans text-[0.6rem] tracking-[0.16em] uppercase text-[#71717A]">
-                            Reflection · {formatDate(ref.timestamp)}
-                          </span>
-
-                          {isConfirming ? (
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleDeleteReflection(ref.id)}
-                                className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#C9B99A] hover:underline"
-                              >
-                                Delete
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#52525B]"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setConfirmDeleteId(ref.id)}
-                              aria-label="Delete reflection"
-                              className="text-[#3A3A3A] text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#71717A] p-1"
-                            >
-                              ×
-                            </button>
-                          )}
-                        </div>
-
-                        <p className="font-serif-nook text-[#E5E0D8] text-[1.05rem] font-light italic mb-2">
-                          "{ref.prompt}"
-                        </p>
-                        <p className="font-sans text-[#A1A1AA] text-[0.85rem] font-light leading-relaxed">
-                          {ref.response}
-                        </p>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            )}
-
-            {/* ── Notes Jar Tab ── */}
-            {activeTab === 'jar' && (
-              <NotesJarView userNotes={textDumps} />
-            )}
+          <div className="flex items-center justify-end min-w-[60px]">
+            <HeaderAudioShortcut />
           </div>
-        </div>
+        </header>
 
-        {/* Footer Navigation */}
-        <FooterNav active="memory-chest" onSelect={onNavigate} />
-      </main>
-
-      {/* ── Fullscreen Doodle Lightbox Viewer ── */}
-      {selectedDoodleUrl && (
+        {/* ── 3 Consolidated Tabs ─────────────────────────────── */}
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 animate-fade-in"
-          onClick={() => setSelectedDoodleUrl(null)}
+          role="tablist"
+          aria-label="Keepsake categories"
+          className="flex items-center mb-5 border-b border-neutral-800/80 shrink-0"
         >
-          <div
-            className="relative max-w-[380px] w-full bg-[#111111] border border-[#262626] rounded-2xl p-4 flex flex-col items-center shadow-2xl animate-lift-in"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="w-full flex items-center justify-between mb-3 border-b border-[#222222] pb-2">
-              <span className="font-serif-nook text-sm text-[#E5E0D8] font-light">
-                Doodle
-              </span>
+          {TABS.map(tab => {
+            const isActive = tab.id === activeTab
+            return (
               <button
-                onClick={() => setSelectedDoodleUrl(null)}
-                aria-label="Close viewer"
-                className="text-[#71717A] hover:text-[#E5E0D8] p-1 text-sm rounded-md transition-colors"
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveTab(tab.id)}
+                className="
+                  relative flex-1 pb-3
+                  font-sans text-[0.56rem] tracking-[0.12em] uppercase
+                  transition-colors duration-300
+                  focus:outline-none cursor-pointer
+                "
               >
-                ✕
+                <span className={isActive ? 'text-neutral-200 font-medium' : 'text-neutral-500 hover:text-neutral-400'}>
+                  {tab.label}
+                </span>
+                <span
+                  className={`
+                    absolute bottom-0 left-0 right-0 h-px
+                    transition-all duration-400
+                    ${isActive ? 'bg-[#C9B99A] opacity-90' : 'bg-transparent'}
+                  `}
+                  aria-hidden="true"
+                />
               </button>
-            </div>
-
-            <img
-              src={selectedDoodleUrl}
-              alt="Full resolution doodle"
-              className="w-full max-h-[320px] object-contain rounded-lg bg-[#0C0C0C] border border-[#202020]"
-            />
-
-            <div className="flex items-center justify-between w-full mt-4 pt-2 border-t border-[#1C1C1C]">
-              <button
-                onClick={() => setSelectedDoodleUrl(null)}
-                className="font-sans text-xs text-[#71717A] hover:text-[#E5E0D8] transition-colors"
-              >
-                Close
-              </button>
-
-              <a
-                href={selectedDoodleUrl}
-                download={`nook-doodle-${Date.now()}.png`}
-                className="px-4 py-1.5 bg-[#E5E0D8] hover:bg-[#F0ECE1] text-[#141414] text-xs font-medium rounded-lg transition-colors"
-              >
-                Download / Export
-              </a>
-            </div>
-          </div>
+            )
+          })}
         </div>
-      )}
-    </>
+
+        {/* ── Tab Panels ──────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto min-h-0 pr-0.5">
+          {/* TAB 1: DUMPS */}
+          {activeTab === 'dumps' && (
+            <div className="flex flex-col animate-fade-in pb-4">
+              {dumps.length === 0 && voiceRecords.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="font-serif-nook text-neutral-500 text-sm font-light italic">
+                    The chest is empty.
+                  </p>
+                  <p className="font-sans text-neutral-600 text-[0.58rem] tracking-wider uppercase mt-1">
+                    Offload thoughts in Brain Dump to preserve them here.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Voice recordings */}
+                  {voiceRecords.map(rec => (
+                    <VoiceDumpItem
+                      key={rec.id}
+                      record={rec}
+                      onDelete={() => handleDeleteVoice(rec.id)}
+                    />
+                  ))}
+
+                  {/* Text Dumps */}
+                  {dumps.map(entry => (
+                    <div
+                      key={entry.id}
+                      className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+                          Text Dump · {formatDate(entry.timestamp)}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          aria-label="Let go of entry"
+                          className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
+                        >
+                          Let go
+                        </button>
+                      </div>
+                      <p className="font-serif-nook text-neutral-200 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
+                        {entry.content}
+                      </p>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: REFLECTIONS */}
+          {activeTab === 'reflections' && (
+            <div className="flex flex-col animate-fade-in pb-4">
+              {reflections.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="font-serif-nook text-neutral-500 text-sm font-light italic">
+                    No reflections saved yet.
+                  </p>
+                  <p className="font-sans text-neutral-600 text-[0.58rem] tracking-wider uppercase mt-1">
+                    Complete a guided prompt in Reflect to preserve it here.
+                  </p>
+                </div>
+              ) : (
+                reflections.map(ref => (
+                  <div
+                    key={ref.id}
+                    className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+                        Reflection · {formatDate(ref.timestamp)}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteReflection(ref.id)}
+                        aria-label="Let go of reflection"
+                        className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
+                      >
+                        Let go
+                      </button>
+                    </div>
+                    {/* Prompt Header Quote */}
+                    <p className="text-xs text-neutral-400 font-serif-nook italic mb-3 leading-relaxed border-l-2 border-neutral-800 pl-3 py-0.5">
+                      "{ref.prompt}"
+                    </p>
+                    {/* Response */}
+                    <p className="font-serif-nook text-neutral-200 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
+                      {ref.response}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: NOTES JAR (Primary Home for Daily Notes) */}
+          {activeTab === 'jar' && (
+            <NotesJarView
+              userNotes={dailyNotes}
+              onDeleteNote={handleDeleteEntry}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Footer Navigation */}
+      <FooterNav active="memory-chest" onSelect={onNavigate} />
+    </main>
   )
 }
