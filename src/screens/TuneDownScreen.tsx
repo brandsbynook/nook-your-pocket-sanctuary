@@ -17,7 +17,7 @@ interface TuneDownScreenProps {
 
 export default function TuneDownScreen({ onBack, initialPractice = null }: TuneDownScreenProps) {
   const [openSection, setOpenSection] = useState<AccordionSectionId | null>(null)
-  const [isTactileOpen, setIsTactileOpen] = useState<boolean>(true)
+  const [isTactileView, setIsTactileView] = useState<boolean>(false)
   const [activePractice, setActivePractice] = useState<PracticeId | null>(initialPractice)
   const [breathePattern, setBreathePattern] = useState<PatternId>('soft')
   const [dotPattern, setDotPattern] = useState<DotMovementPattern>('horizontal')
@@ -46,9 +46,25 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
     setActivePractice('doodle')
   }
 
+  function handleOpenTactileView() {
+    triggerHaptic(12)
+    setIsTactileView(true)
+  }
+
   function handleLaunchStim(id: 'bubble-lattice' | 'stim-pad') {
     triggerHaptic(15)
     setActivePractice(id)
+  }
+
+  function handleHeaderBack() {
+    triggerHaptic(10)
+    if (activePractice) {
+      setActivePractice(null)
+    } else if (isTactileView) {
+      setIsTactileView(false)
+    } else {
+      onBack()
+    }
   }
 
   const activeTitle =
@@ -62,19 +78,23 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
       ? 'Doodle'
       : activePractice === 'breathe'
       ? 'Breathe'
+      : isTactileView
+      ? 'Tactile Stim'
       : 'Tune Down'
 
   const activeSubtext =
     activePractice === 'bubble-lattice'
       ? 'soft popping grid & tactile release'
       : activePractice === 'stim-pad'
-      ? 'continuous kinetic touch canvas'
+      ? 'responsive touch & sensory grounding'
       : activePractice === 'follow-dot'
       ? 'bilateral tracking & soft-focus gaze'
       : activePractice === 'doodle'
       ? 'quiet drawing & mark-making'
       : activePractice === 'breathe'
       ? 'somatic pacing & rhythm'
+      : isTactileView
+      ? 'responsive touch & physical grounding'
       : 'sensory regulation & stillness'
 
   return (
@@ -93,7 +113,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
         <header className="flex items-center justify-between mb-2 shrink-0">
           <button
             id="tune-down-back"
-            onClick={activePractice ? () => setActivePractice(null) : onBack}
+            onClick={handleHeaderBack}
             className="
               flex items-center gap-1.5
               font-sans text-neutral-500 text-[0.62rem]
@@ -103,7 +123,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
             "
           >
             <span className="text-[0.8rem] leading-none">←</span>
-            {activePractice ? 'tools' : 'return'}
+            {activePractice || isTactileView ? 'tools' : 'return'}
           </button>
 
           <div className="flex flex-col items-center gap-[2px]">
@@ -120,8 +140,8 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
           </div>
         </header>
 
-        {/* ── View 1: 4 Primary Accordion Drawers ── */}
-        {!activePractice ? (
+        {/* ── View 1: 4 Primary Accordion Drawers (Main Level) ── */}
+        {!activePractice && !isTactileView && (
           <div className="flex-1 flex flex-col justify-start overflow-y-auto pr-0.5 animate-fade-in">
             <div className="flex flex-col gap-y-3 mt-8 w-full">
               {/* ── 1. BREATHE ACCORDION ── */}
@@ -133,10 +153,10 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   aria-expanded={openSection === 'breathe'}
                 >
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="font-serif-nook text-[#E5E0D8] text-[1.12rem] font-light tracking-wide group-hover:text-[#C9B99A] transition-colors">
+                    <span className="font-serif text-[1.15rem] tracking-wide text-[#EAE5DC] font-normal group-hover:text-[#C9B99A] transition-colors">
                       Breathe
                     </span>
-                    <span className="font-sans text-[#71717A] text-[0.7rem] font-light tracking-wide">
+                    <span className="text-xs text-[#8A847A] tracking-normal font-sans">
                       somatic pacing & rhythm
                     </span>
                   </div>
@@ -159,13 +179,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   <div className="flex flex-col animate-fade-in">
                     <button
                       onClick={() => handleLaunchBreathe('soft')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           4-4 Soft
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           unhurried equal-ratio breath
                         </span>
                       </div>
@@ -176,13 +196,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchBreathe('478')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           4-7-8 Calm
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           nervous system reset
                         </span>
                       </div>
@@ -193,13 +213,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchBreathe('box')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Box Breathing
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           4-4-4-4 grounding cadence
                         </span>
                       </div>
@@ -220,10 +240,10 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   aria-expanded={openSection === 'follow-dot'}
                 >
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="font-serif-nook text-[#E5E0D8] text-[1.12rem] font-light tracking-wide group-hover:text-[#C9B99A] transition-colors">
+                    <span className="font-serif text-[1.15rem] tracking-wide text-[#EAE5DC] font-normal group-hover:text-[#C9B99A] transition-colors">
                       Follow Dot
                     </span>
-                    <span className="font-sans text-[#71717A] text-[0.7rem] font-light tracking-wide">
+                    <span className="text-xs text-[#8A847A] tracking-normal font-sans">
                       bilateral tracking & soft-focus gaze
                     </span>
                   </div>
@@ -246,13 +266,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   <div className="flex flex-col animate-fade-in">
                     <button
                       onClick={() => handleLaunchDot('horizontal')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Bilateral
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           horizontal tracking
                         </span>
                       </div>
@@ -263,13 +283,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchDot('orbit')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Orbit
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           circular gaze tracking
                         </span>
                       </div>
@@ -280,13 +300,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchDot('wave')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Wave
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           sinusoidal path tracking
                         </span>
                       </div>
@@ -297,13 +317,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchDot('bloom')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Bloom
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           foveal soft-focus & optic rest
                         </span>
                       </div>
@@ -324,10 +344,10 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   aria-expanded={openSection === 'doodle'}
                 >
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="font-serif-nook text-[#E5E0D8] text-[1.12rem] font-light tracking-wide group-hover:text-[#C9B99A] transition-colors">
+                    <span className="font-serif text-[1.15rem] tracking-wide text-[#EAE5DC] font-normal group-hover:text-[#C9B99A] transition-colors">
                       Doodle
                     </span>
-                    <span className="font-sans text-[#71717A] text-[0.7rem] font-light tracking-wide">
+                    <span className="text-xs text-[#8A847A] tracking-normal font-sans">
                       quiet drawing & mark-making
                     </span>
                   </div>
@@ -350,13 +370,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   <div className="flex flex-col animate-fade-in">
                     <button
                       onClick={() => handleLaunchDoodle('open')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Open Canvas
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           boundless warm charcoal mark-making
                         </span>
                       </div>
@@ -367,13 +387,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchDoodle('vanishing')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Vanishing Ink
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           lines dissolve gently after ~4s
                         </span>
                       </div>
@@ -384,13 +404,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                     <button
                       onClick={() => handleLaunchDoodle('symmetry')}
-                      className="px-4 py-3 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/60 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50"
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
                           Symmetry Flow
                         </span>
-                        <span className="text-[0.68rem] text-[#71717A] font-light italic">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           bilateral mirrored mark-making
                         </span>
                       </div>
@@ -411,10 +431,10 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                   aria-expanded={openSection === 'stim'}
                 >
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="font-serif-nook text-[#E5E0D8] text-[1.12rem] font-light tracking-wide group-hover:text-[#C9B99A] transition-colors">
+                    <span className="font-serif text-[1.15rem] tracking-wide text-[#EAE5DC] font-normal group-hover:text-[#C9B99A] transition-colors">
                       Stim / Fidget
                     </span>
-                    <span className="font-sans text-[#71717A] text-[0.7rem] font-light tracking-wide">
+                    <span className="text-xs text-[#8A847A] tracking-normal font-sans">
                       responsive touch & sensory grounding
                     </span>
                   </div>
@@ -434,115 +454,66 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                 </button>
 
                 {openSection === 'stim' && (
-                  <div className="flex flex-col animate-fade-in divide-y divide-[#1F1F1F]/60">
-                    {/* a. Tactile Stim Expandable Sub-Drawer */}
-                    <div className="flex flex-col">
-                      <button
-                        onClick={() => {
-                          triggerHaptic(10)
-                          setIsTactileOpen(prev => !prev)
-                        }}
-                        className="w-full px-4 py-3 flex items-center justify-between group/sub text-left cursor-pointer focus:outline-none hover:bg-[#181818]/60 transition-colors"
-                        aria-expanded={isTactileOpen}
-                      >
-                        <div className="flex flex-col items-start gap-0.5">
-                          <span className="font-serif-nook text-[#E5E0D8] text-[0.98rem] font-light group-hover/sub:text-[#C9B99A] transition-colors">
-                            Tactile Stim
-                          </span>
-                          <span className="font-sans text-[0.66rem] text-[#71717A] font-light">
-                            responsive touch & physical grounding
-                          </span>
-                        </div>
-                        <span
-                          className={`
-                            text-neutral-500 text-xs font-light transition-transform duration-200 ml-3 shrink-0
-                            ${isTactileOpen ? 'rotate-90 text-[#C9B99A]' : ''}
-                          `}
-                        >
-                          ›
+                  <div className="flex flex-col animate-fade-in">
+                    {/* a. Tactile Stim Row -> Opens Dedicated Tactile Drawer/View */}
+                    <button
+                      onClick={handleOpenTactileView}
+                      className="py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#16161C]/50 text-left"
+                    >
+                      <div className="flex flex-col items-start">
+                        <span className="font-serif text-sm text-[#C9C3BA] italic font-normal group-hover/opt:text-[#FFFFFF]">
+                          Tactile Stim
                         </span>
-                      </button>
-
-                      {isTactileOpen && (
-                        <div className="flex flex-col bg-[#0F0F12]/60 animate-fade-in">
-                          <button
-                            onClick={() => handleLaunchStim('bubble-lattice')}
-                            className="px-5 py-2.5 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/40 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
-                          >
-                            <div className="flex flex-col items-start">
-                              <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
-                                Bubble Lattice
-                              </span>
-                              <span className="text-[0.68rem] text-[#71717A] font-light italic">
-                                soft popping grid with realistic audio & micro-haptics
-                              </span>
-                            </div>
-                            <span className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#71717A] group-hover/opt:text-[#C9B99A]">
-                              Begin →
-                            </span>
-                          </button>
-
-                          <button
-                            onClick={() => handleLaunchStim('stim-pad')}
-                            className="px-5 py-2.5 text-xs text-[#9E988F] hover:text-[#E5E0D8] border-t border-[#1F1F1F]/40 flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none"
-                          >
-                            <div className="flex flex-col items-start">
-                              <span className="font-serif-nook text-sm text-[#E5E0D8] group-hover/opt:text-[#FFFFFF]">
-                                Stim Pad
-                              </span>
-                              <span className="text-[0.68rem] text-[#71717A] font-light italic">
-                                continuous kinetic touch canvas
-                              </span>
-                            </div>
-                            <span className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#71717A] group-hover/opt:text-[#C9B99A]">
-                              Begin →
-                            </span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                        <span className="text-[11px] text-[#6E685F] font-sans">
+                          responsive touch & physical grounding
+                        </span>
+                      </div>
+                      <span className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#71717A] group-hover/opt:text-[#C9B99A]">
+                        Begin →
+                      </span>
+                    </button>
 
                     {/* b. Visual Stim Static Row */}
-                    <div className="w-full px-4 py-3 flex items-center justify-between text-left cursor-default select-none">
-                      <div className="flex flex-col items-start gap-0.5">
-                        <span className="font-serif-nook text-[#9E988F] text-[0.98rem] font-light">
+                    <div className="w-full py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between text-left cursor-default select-none">
+                      <div className="flex flex-col items-start">
+                        <span className="font-serif text-sm text-[#8A847A] italic font-normal">
                           Visual Stim
                         </span>
-                        <span className="font-sans text-[0.66rem] text-[#71717A] font-light">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           optic nerve rest & gaze anchors
                         </span>
                       </div>
-                      <span className="text-[11px] italic text-[#8E8880] shrink-0 ml-3 font-serif-nook">
+                      <span className="font-serif italic text-[11px] text-[#6E685F]">
                         Unfolding soon
                       </span>
                     </div>
 
                     {/* c. Kinetic Stim Static Row */}
-                    <div className="w-full px-4 py-3 flex items-center justify-between text-left cursor-default select-none">
-                      <div className="flex flex-col items-start gap-0.5">
-                        <span className="font-serif-nook text-[#9E988F] text-[0.98rem] font-light">
+                    <div className="w-full py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between text-left cursor-default select-none">
+                      <div className="flex flex-col items-start">
+                        <span className="font-serif text-sm text-[#8A847A] italic font-normal">
                           Kinetic Stim
                         </span>
-                        <span className="font-sans text-[0.66rem] text-[#71717A] font-light">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           unhurried fine-motor release
                         </span>
                       </div>
-                      <span className="text-[11px] italic text-[#8E8880] shrink-0 ml-3 font-serif-nook">
+                      <span className="font-serif italic text-[11px] text-[#6E685F]">
                         Unfolding soon
                       </span>
                     </div>
 
                     {/* d. Cognitive Stim Static Row */}
-                    <div className="w-full px-4 py-3 flex items-center justify-between text-left cursor-default select-none">
-                      <div className="flex flex-col items-start gap-0.5">
-                        <span className="font-serif-nook text-[#9E988F] text-[0.98rem] font-light">
+                    <div className="w-full py-3 px-4 border-t border-[#1C1A17] flex items-center justify-between text-left cursor-default select-none">
+                      <div className="flex flex-col items-start">
+                        <span className="font-serif text-sm text-[#8A847A] italic font-normal">
                           Cognitive Stim
                         </span>
-                        <span className="font-sans text-[0.66rem] text-[#71717A] font-light">
+                        <span className="text-[11px] text-[#6E685F] font-sans">
                           zero-pressure spatial ordering
                         </span>
                       </div>
-                      <span className="text-[11px] italic text-[#8E8880] shrink-0 ml-3 font-serif-nook">
+                      <span className="font-serif italic text-[11px] text-[#6E685F]">
                         Unfolding soon
                       </span>
                     </div>
@@ -556,8 +527,76 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
               </p>
             </div>
           </div>
-        ) : (
-          /* ── View 2: Full-Frame Active Practice Exercise ─── */
+        )}
+
+        {/* ── View 2: Dedicated Tactile Stim Drawer / Screen ── */}
+        {!activePractice && isTactileView && (
+          <div className="flex-1 flex flex-col justify-start overflow-y-auto pr-0.5 animate-fade-in">
+            <div className="flex flex-col gap-y-3 mt-8 w-full">
+              {/* Tool 1: Bubble Lattice */}
+              <button
+                id="tactile-bubble-lattice"
+                onClick={() => handleLaunchStim('bubble-lattice')}
+                className="
+                  w-full rounded-2xl border border-[#1F1F1F] bg-[#141414]/60 p-4
+                  flex items-center justify-between group text-left cursor-pointer
+                  focus:outline-none hover:border-[#2E2E2E] hover:bg-[#181818]/80 transition-all
+                "
+              >
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className="font-serif text-[1.15rem] tracking-wide text-[#EAE5DC] font-normal group-hover:text-[#C9B99A] transition-colors">
+                    Bubble Lattice
+                  </span>
+                  <span className="text-xs text-[#8A847A] tracking-normal font-sans">
+                    soft popping grid with realistic audio & micro-haptics
+                  </span>
+                </div>
+
+                <span
+                  className="text-neutral-500 text-sm font-light leading-none group-hover:text-[#C9B99A] group-hover:translate-x-0.5 transition-all ml-4 shrink-0"
+                  aria-hidden="true"
+                >
+                  ›
+                </span>
+              </button>
+
+              {/* Tool 2: Stim Pad */}
+              <button
+                id="tactile-stim-pad"
+                onClick={() => handleLaunchStim('stim-pad')}
+                className="
+                  w-full rounded-2xl border border-[#1F1F1F] bg-[#141414]/60 p-4
+                  flex items-center justify-between group text-left cursor-pointer
+                  focus:outline-none hover:border-[#2E2E2E] hover:bg-[#181818]/80 transition-all
+                "
+              >
+                <div className="flex flex-col items-start gap-0.5">
+                  <span className="font-serif text-[1.15rem] tracking-wide text-[#EAE5DC] font-normal group-hover:text-[#C9B99A] transition-colors">
+                    Stim Pad
+                  </span>
+                  <span className="text-xs text-[#8A847A] tracking-normal font-sans">
+                    continuous touch & kinetic friction surface
+                  </span>
+                </div>
+
+                <span
+                  className="text-neutral-500 text-sm font-light leading-none group-hover:text-[#C9B99A] group-hover:translate-x-0.5 transition-all ml-4 shrink-0"
+                  aria-hidden="true"
+                >
+                  ›
+                </span>
+              </button>
+
+              {/* Footer Note */}
+              <p className="mt-8 pb-6 text-center text-xs text-[#8E8880] italic select-none">
+                More tactile paths unfolding soon.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── View 3: Full-Frame Active Practice Exercise ─── */}
+        {activePractice && (
           <div className="flex-1 flex flex-col min-h-0 animate-fade-in">
             {activePractice === 'breathe'        && <GuidedBreathing initialPattern={breathePattern} />}
             {activePractice === 'follow-dot'     && <FollowTheDot initialPattern={dotPattern} />}
