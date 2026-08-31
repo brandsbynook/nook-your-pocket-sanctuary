@@ -1,4 +1,5 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useLayoutEffect, useCallback } from 'react'
+import { triggerHaptic } from '../../utils/haptics'
 
 interface Ripple {
   x: number
@@ -20,20 +21,37 @@ export default function StimPad() {
   const ripplesRef = useRef<Ripple[]>([])
   const reqRef = useRef<number | null>(null)
 
-  useEffect(() => {
+  const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const rect = canvas.getBoundingClientRect()
-    const dpr = window.devicePixelRatio || 1
+    if (rect.width === 0 || rect.height === 0) return
 
+    const dpr = window.devicePixelRatio || 1
     canvas.width = rect.width * dpr
     canvas.height = rect.height * dpr
 
     const ctx = canvas.getContext('2d')
-    if (ctx) ctx.scale(dpr, dpr)
+    if (ctx) {
+      ctx.scale(dpr, dpr)
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    resizeCanvas()
+  }, [resizeCanvas])
+
+  useEffect(() => {
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    const canvas = canvasRef.current
+    const ctx = canvas?.getContext('2d')
 
     const render = () => {
       if (!ctx || !canvas) return
+      const rect = canvas.getBoundingClientRect()
+
       ctx.fillStyle = '#0C0C0C'
       ctx.fillRect(0, 0, rect.width, rect.height)
 
@@ -70,9 +88,10 @@ export default function StimPad() {
     reqRef.current = requestAnimationFrame(render)
 
     return () => {
+      window.removeEventListener('resize', resizeCanvas)
       if (reqRef.current) cancelAnimationFrame(reqRef.current)
     }
-  }, [])
+  }, [resizeCanvas])
 
   function addRipple(clientX: number, clientY: number) {
     const canvas = canvasRef.current
@@ -93,41 +112,42 @@ export default function StimPad() {
     })
   }
 
-  function handlePointerDown(e: React.PointerEvent) {
+  function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
     addRipple(e.clientX, e.clientY)
+    triggerHaptic(12)
   }
 
-  function handlePointerMove(e: React.PointerEvent) {
+  function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
     if (e.buttons > 0 || e.pointerType === 'touch') {
       addRipple(e.clientX, e.clientY)
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-between flex-1 py-4 animate-fade-in text-center min-h-0 w-full">
+    <div className="flex flex-col items-center justify-between flex-1 py-4 animate-fade-in text-center min-h-0 w-full select-none">
       {/* Subtitle */}
-      <p className="font-serif-nook text-[#71717A] text-[0.95rem] font-light italic px-4">
+      <p className="font-serif-nook text-[#71717A] text-[0.95rem] font-light italic px-4 pointer-events-none select-none shrink-0 mb-3">
         Tap or glide anywhere. No targets, no scores.
       </p>
 
-      {/* Interactive Liquid Surface */}
-      <div className="w-full flex-1 min-h-[280px] my-auto border border-[#1E1E1E] bg-[#0C0C0C] rounded-sm overflow-hidden touch-none relative cursor-pointer">
+      {/* Interactive Liquid Surface Container with 1:1 Aspect Ratio */}
+      <div className="relative overflow-hidden aspect-square w-full max-w-[380px] my-auto mx-auto border border-[#1E1E1E] bg-[#0C0C0C] rounded-2xl touch-none flex items-center justify-center cursor-pointer shadow-xl">
         <canvas
           ref={canvasRef}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
-          className="w-full h-full block select-none"
+          className="w-full h-full block touch-none select-none"
         />
 
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-          <span className="font-sans text-[0.6rem] tracking-[0.2em] uppercase text-[#71717A]">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-20">
+          <span className="font-sans text-[0.6rem] tracking-[0.2em] uppercase text-[#71717A] pointer-events-none select-none">
             touch the surface
           </span>
         </div>
       </div>
 
       {/* Footer calm note */}
-      <p className="font-sans text-[#52525B] text-[0.62rem] tracking-[0.14em] uppercase">
+      <p className="font-sans text-[#52525B] text-[0.62rem] tracking-[0.14em] uppercase pointer-events-none select-none shrink-0 mt-3">
         Pure sensory stillness
       </p>
     </div>

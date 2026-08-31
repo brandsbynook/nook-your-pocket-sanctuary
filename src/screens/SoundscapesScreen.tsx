@@ -14,7 +14,7 @@ export default function SoundscapesScreen({ onBack }: SoundscapesScreenProps) {
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[#0E0E0E]
+        bg-[var(--bg-primary,#0E0E0E)]
         animate-fade-in
       "
     >

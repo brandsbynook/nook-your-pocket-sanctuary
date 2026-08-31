@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { proceduralAudio } from '../utils/proceduralAudio'
+import { triggerHaptic } from '../utils/haptics'
 
 interface QuietModeOverlayProps {
   isOpen: boolean
@@ -64,7 +65,6 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
   // Canvas render & animation loop
   useEffect(() => {
     if (!mounted) return
-
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -113,31 +113,31 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
         ctx.restore()
       }
 
-      // ── 2. Draw & Update Expanding Fluid Ripples ──
+      // ── 2. Draw & Update Expanding Low-Contrast Fluid Ripples ──
       const ripples = ripplesRef.current
       for (let i = ripples.length - 1; i >= 0; i--) {
         const r = ripples[i]
-        r.radius += 2.2
-        r.alpha -= 0.006
+        r.radius += 1.8
+        r.alpha -= 0.008
 
         if (r.alpha <= 0 || r.radius >= r.maxRadius) {
           ripples.splice(i, 1)
           continue
         }
 
-        // Primary outer expanding fluid ring
+        // Ultra-subtle, low-contrast expanding fluid ring (border: rgba(229, 224, 216, 0.08))
         ctx.beginPath()
         ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2)
-        ctx.lineWidth = 1.2
-        ctx.strokeStyle = `rgba(201, 185, 154, ${r.alpha * 0.7})`
+        ctx.lineWidth = 1.0
+        ctx.strokeStyle = `rgba(229, 224, 216, ${r.alpha * 0.18})`
         ctx.stroke()
 
         // Inner secondary soft echo ring
-        if (r.radius > 24) {
+        if (r.radius > 20) {
           ctx.beginPath()
-          ctx.arc(r.x, r.y, r.radius * 0.65, 0, Math.PI * 2)
-          ctx.lineWidth = 0.8
-          ctx.strokeStyle = `rgba(245, 220, 185, ${r.alpha * 0.35})`
+          ctx.arc(r.x, r.y, r.radius * 0.6, 0, Math.PI * 2)
+          ctx.lineWidth = 0.6
+          ctx.strokeStyle = `rgba(201, 185, 154, ${r.alpha * 0.10})`
           ctx.stroke()
         }
       }
@@ -202,8 +202,10 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
     }
   }
 
-  // Spawn fluid ripple on touch/pointer down
+  // Spawn fluid ripple and micro-haptic on touch/pointer down anywhere on canvas
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    triggerHaptic(12)
+
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
@@ -211,14 +213,10 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
     ripplesRef.current.push({
       x,
       y,
-      radius: 8,
-      maxRadius: 220,
+      radius: 6,
+      maxRadius: 180,
       alpha: 0.45,
     })
-  }
-
-  function handleFullBleedTap() {
-    onClose()
   }
 
   if (!mounted) return null
@@ -226,15 +224,11 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
   return (
     <div
       id="quiet-mode-overlay"
-      onClick={handleFullBleedTap}
       onPointerDown={handlePointerDown}
-      role="button"
-      tabIndex={0}
-      aria-label="Quiet space active. Tap anywhere to return"
       className={`
         fixed inset-0 z-50
-        bg-[#09090C]
-        cursor-pointer select-none
+        bg-[var(--bg-primary,#141210)]
+        select-none touch-none
         transition-opacity duration-500 ease-out
         ${visible ? 'opacity-100' : 'opacity-0'}
       `}
@@ -245,14 +239,18 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
         className="fixed inset-0 pointer-events-none z-0 w-full h-full"
       />
 
-      {/* ── 2. Locked Centered Mobile Frame Layer ── */}
+      {/* ── 2. Centered Frame Layer ── */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-20">
         <div className="w-full max-w-[420px] h-[100dvh] mx-auto flex flex-col justify-between py-12 px-6 relative">
-          {/* Top Bar: Left "QUIET SPACE" · Right "PLAY AMBIENT" */}
+          {/* Top Bar: Left "← RETURN" Button · Right "PLAY AMBIENT" */}
           <div className="flex items-center justify-between w-full pointer-events-auto shrink-0">
-            <span className="font-sans text-[10px] tracking-[0.25em] text-stone-600 uppercase select-none font-normal">
-              Quiet Space
-            </span>
+            <button
+              id="quiet-mode-return-btn"
+              onClick={onClose}
+              className="text-xs uppercase tracking-widest text-[#9E988F] hover:text-[#E5E0D8] transition-colors cursor-pointer focus:outline-none flex items-center gap-1.5 py-1"
+            >
+              ← RETURN
+            </button>
 
             {/* Top Right Ambient Audio Toggle Pill */}
             <button
@@ -282,7 +280,7 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
             </button>
           </div>
 
-          {/* Central Ripple Visualizer (Centered in Mobile Frame w-64 h-64) */}
+          {/* Central Orbital Star Anchor (Centered in Mobile Frame w-64 h-64) */}
           <div className="w-64 h-64 mx-auto my-auto relative flex items-center justify-center pointer-events-none">
             {/* Outermost ring (w-64 / 256px) */}
             <div className="w-64 h-64 rounded-full border border-white/[0.04] flex items-center justify-center">
@@ -300,11 +298,11 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
             </div>
           </div>
 
-          {/* Bottom Center: Faint "TAP ANYWHERE TO RETURN" cue */}
+          {/* Bottom Center: Faint "TAP ANYWHERE" cue */}
           <div className="w-full flex justify-center text-center shrink-0">
-            <span className="font-sans text-[10px] tracking-[0.2em] text-stone-600 uppercase select-none font-normal">
-              Tap anywhere to return
-            </span>
+            <p className="text-[11px] tracking-widest text-[#5A5650] uppercase select-none">
+              TAP ANYWHERE
+            </p>
           </div>
         </div>
       </div>

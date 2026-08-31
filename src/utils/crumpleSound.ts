@@ -3,6 +3,8 @@
    Uses Web Audio API to synthesize a tactile paper crunch & release
 ───────────────────────────────────────────────────────────── */
 
+import { triggerHaptic } from './haptics'
+
 export function playPaperCrumpleSound(): void {
   try {
     const AudioContextClass =
@@ -57,9 +59,7 @@ export function playPaperCrumpleSound(): void {
     whiteNoise.stop(now + duration)
 
     // Haptic feedback pulse if supported
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate?.([40, 30, 60])
-    }
+    triggerHaptic([40, 30, 60])
   } catch {
     // Graceful fallback
   }

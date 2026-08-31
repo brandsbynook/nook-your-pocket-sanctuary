@@ -170,7 +170,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         px-6 py-8
         flex flex-col justify-between
         overflow-hidden
-        bg-[#0E0E0E]
+        bg-[var(--bg-primary,#0E0E0E)]
         transition-opacity duration-800 ease-in-out
         ${isFinishing ? 'opacity-0' : 'opacity-100 animate-fade-in'}
       `}

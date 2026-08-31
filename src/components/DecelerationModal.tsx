@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { triggerHaptic } from '../utils/haptics'
 
 interface DecelerationModalProps {
   isOpen: boolean
@@ -53,9 +54,7 @@ export default function DecelerationModal({
 
       if (progress >= 1) {
         setIsHolding(false)
-        if ('vibrate' in navigator) {
-          navigator.vibrate([30, 40, 60])
-        }
+        triggerHaptic([30, 40, 60])
         onConfirmExit()
       } else {
         animFrameRef.current = requestAnimationFrame(step)
@@ -105,7 +104,7 @@ export default function DecelerationModal({
           clearInterval(breathIntervalRef.current)
           breathIntervalRef.current = null
         }
-        if ('vibrate' in navigator) navigator.vibrate([30, 50])
+        triggerHaptic([30, 50])
       } else {
         setBreathElapsed(elapsed)
       }

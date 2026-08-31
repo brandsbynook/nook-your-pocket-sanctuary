@@ -257,7 +257,7 @@ export default function Reflect({ onBack }: ReflectProps) {
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[#0E0E0E] text-[#E5E0D8]
+        bg-[var(--bg-primary,#0E0E0E)] text-[#E5E0D8]
         animate-fade-in
       "
     >
@@ -279,12 +279,12 @@ export default function Reflect({ onBack }: ReflectProps) {
             {activeTab === 'library' && activePrompt ? 'library' : 'return'}
           </button>
 
-          <div className="flex flex-col items-center gap-[2px]">
-            <h1 className="font-serif-nook text-neutral-300 text-xl font-light tracking-[0.18em] leading-none">
+          <div className="flex-1 min-w-0 mx-2 text-center">
+            <h1 className="font-serif-nook text-neutral-300 text-lg sm:text-xl font-light tracking-[0.18em] leading-none truncate">
               Reflect
             </h1>
-            <p className="font-sans text-neutral-600 text-[0.58rem] tracking-[0.1em] text-center">
-              unhurried prompts for quiet clarity
+            <p className="font-sans text-neutral-500 text-[0.58rem] tracking-[0.06em] text-center mt-1 truncate">
+              A growing library of unhurried prompts for quiet clarity.
             </p>
           </div>
 
@@ -709,6 +709,13 @@ export default function Reflect({ onBack }: ReflectProps) {
                 )
               })}
             </nav>
+
+            {/* End Note */}
+            <div className="py-8 text-center select-none">
+              <p className="font-serif-nook text-xs italic text-[#8E8880] tracking-wide">
+                More sets unfolding soon.
+              </p>
+            </div>
           </div>
         )}
       </div>

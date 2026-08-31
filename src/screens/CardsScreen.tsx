@@ -7,6 +7,7 @@ import {
 } from '../utils/storage'
 import FooterNav, { type NavTabId } from '../components/FooterNav'
 import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
+import { triggerHaptic } from '../utils/haptics'
 
 // ── Default cards ─────────────────────────────────
 
@@ -162,7 +163,10 @@ function CardTile({ title, body, onTap, onDelete }: CardTileProps) {
   return (
     <div className="group relative">
       <button
-        onClick={onTap}
+        onClick={() => {
+          triggerHaptic(15)
+          onTap()
+        }}
         className="
           w-full text-left
           border border-neutral-800/60 bg-neutral-900/30
@@ -232,7 +236,7 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
           px-6 pt-10 pb-6
           flex flex-col justify-between
           overflow-hidden
-          bg-[#0E0E0E]
+          bg-[var(--bg-primary,#0E0E0E)]
           animate-fade-in
         "
       >

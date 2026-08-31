@@ -53,7 +53,7 @@ function getTimelineFillPercent(dueDateStr: string): number {
   due.setHours(0, 0, 0, 0)
   const diffTime = due.getTime() - today.getTime()
   const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
-  const ratio = Math.max(0.15, Math.min(1, (HORIZON_DAYS - daysLeft) / HORIZON_DAYS))
+  const ratio = Math.max(0.1, Math.min(1, daysLeft / HORIZON_DAYS))
   return ratio * 100
 }
 
@@ -86,7 +86,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           px-6 pt-10 pb-6
           flex flex-col justify-between
           overflow-y-auto
-          bg-[#0B0B0E] select-none
+          bg-[var(--bg-primary,#0E0E0E)] select-none
           animate-fade-in
         "
       >
@@ -151,7 +151,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                 return (
                   <div
                     key={index}
-                    className="w-10 h-[2px] rounded-full bg-neutral-800/90 overflow-hidden flex justify-start transition-all duration-300 group-hover:bg-neutral-700/80"
+                    className="w-10 h-[2px] rounded-full bg-neutral-800/90 overflow-hidden flex justify-end ml-auto transition-all duration-300 group-hover:bg-neutral-700/80"
                   >
                     {deadline ? (
                       <div

@@ -9,7 +9,6 @@ import CompanionScreen   from './screens/CompanionScreen'
 import TuneDownScreen    from './screens/TuneDownScreen'
 import SoundscapesScreen from './screens/SoundscapesScreen'
 import OnboardingScreen  from './screens/OnboardingScreen'
-import { isOnboarded }   from './utils/storage'
 
 import { AudioProvider } from './context/AudioContext'
 import QuickAudioSheet from './components/QuickAudioSheet'
@@ -28,7 +27,7 @@ export type Screen =
   | 'memory-chest'
 
 function App() {
-  const [screen, setScreen] = useState<Screen>(() => (isOnboarded() ? 'home' : 'onboarding'))
+  const [screen, setScreen] = useState<Screen>('home')
 
   return (
     <AudioProvider>
@@ -69,7 +68,6 @@ function App() {
         <SettingsScreen
           onBack={() => setScreen('home')}
           onNavigate={tab => setScreen(tab as Screen)}
-          onReplayOnboarding={() => setScreen('onboarding')}
         />
       )}
 

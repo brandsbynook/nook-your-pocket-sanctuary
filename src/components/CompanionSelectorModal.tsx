@@ -1,4 +1,5 @@
 import { type CompanionId } from '../utils/storage'
+import { triggerHaptic } from '../utils/haptics'
 
 export interface CompanionItem {
   id: CompanionId
@@ -85,7 +86,7 @@ export default function CompanionSelectorModal({
                 id={`modal-companion-${comp.id}`}
                 onClick={() => {
                   onSelect(comp.id)
-                  if ('vibrate' in navigator) navigator.vibrate([12])
+                  triggerHaptic(12)
                 }}
                 className={`
                   flex items-center gap-3 p-3 rounded-xl text-left border transition-all duration-300 cursor-pointer focus:outline-none group

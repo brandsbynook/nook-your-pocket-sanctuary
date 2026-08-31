@@ -14,7 +14,7 @@ export default function BreatheScreen({ onBack }: BreatheScreenProps) {
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[#0E0E0E] text-[#E5E0D8]
+        bg-[var(--bg-primary,#0E0E0E)] text-[#E5E0D8]
         animate-fade-in
       "
     >

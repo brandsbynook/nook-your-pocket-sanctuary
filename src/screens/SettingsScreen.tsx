@@ -3,9 +3,9 @@ import {
   loadSettings,
   saveSettings,
   resetApp,
-  setOnboarded,
+  getUserNickname,
+  setUserNickname,
   type NookSettings,
-  type ThemeId,
 } from '../utils/storage'
 import FooterNav, { type NavTabId } from '../components/FooterNav'
 import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
@@ -72,8 +72,7 @@ function ToggleRow({ id, label, checked, onChange }: ToggleRowProps) {
   )
 }
 
-// ── Theme pill row ────────────────────────────────
-
+/* ── Theme pill row (Reserved for full custom styling release) ──
 const THEMES: { id: ThemeId; label: string }[] = [
   { id: 'obsidian',    label: 'Obsidian'    },
   { id: 'warm-dusk',   label: 'Warm Dusk'   },
@@ -111,6 +110,7 @@ function ThemeSelector({ current, onChange }: ThemeSelectorProps) {
     </div>
   )
 }
+── */
 
 // ── Action row ────────────────────────────────────
 
@@ -150,11 +150,11 @@ function ActionRow({ id, label, destructive = false, onClick }: ActionRowProps) 
 interface SettingsScreenProps {
   onBack: () => void
   onNavigate?: (tab: NavTabId) => void
-  onReplayOnboarding?: () => void
 }
 
-export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding }: SettingsScreenProps) {
+export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenProps) {
   const [settings, setSettings] = useState<NookSettings>(() => loadSettings())
+  const [nickname, setNickname] = useState<string>(() => getUserNickname())
   const [resetDone, setResetDone] = useState(false)
 
   function update(patch: Partial<NookSettings>) {
@@ -163,13 +163,9 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
     saveSettings(next)
   }
 
-  function handleReplayOnboarding() {
-    setOnboarded(false)
-    if (onReplayOnboarding) {
-      onReplayOnboarding()
-    } else {
-      window.location.reload()
-    }
+  function handleNicknameChange(val: string) {
+    setNickname(val)
+    setUserNickname(val)
   }
 
   function handleReset() {
@@ -211,7 +207,7 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[#0E0E0E]
+        bg-[var(--bg-primary,#0E0E0E)]
         animate-fade-in
       "
     >
@@ -247,6 +243,23 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
 
           {/* Preferences */}
           <Section label="Preferences">
+            {/* Sanctuary Name / Nickname */}
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#1C1C1C]">
+              <span className="font-sans text-[#E5E0D8] text-[0.78rem] tracking-wide">
+                Your Name
+              </span>
+              <input
+                id="settings-nickname-input"
+                type="text"
+                value={nickname}
+                onChange={e => handleNicknameChange(e.target.value)}
+                placeholder="What should nook call you?"
+                className="
+                  bg-transparent border-b border-[#2C2C2C] text-right font-serif-nook text-sm text-[#E5E0D8]
+                  placeholder:text-[#52525B] placeholder:text-xs placeholder:font-sans focus:outline-none focus:border-[#C9B99A]/60 py-0.5 max-w-[170px]
+                "
+              />
+            </div>
             <ToggleRow
               id="toggle-greeting"
               label="Show Home Greeting"
@@ -261,13 +274,15 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
             />
           </Section>
 
-          {/* Theme */}
+          {/* Theme Switcher — Hidden for this release to avoid half-styled states across screens */}
+          {/*
           <Section label="Theme">
             <ThemeSelector
               current={settings.theme}
               onChange={theme => update({ theme })}
             />
           </Section>
+          */}
 
           {/* Privacy & Storage */}
           <Section label="Privacy & Storage">
@@ -277,11 +292,6 @@ export default function SettingsScreen({ onBack, onNavigate, onReplayOnboarding 
                 No accounts, no telemetry.
               </p>
             </div>
-            <ActionRow
-              id="replay-onboarding-btn"
-              label="Replay Onboarding"
-              onClick={handleReplayOnboarding}
-            />
             <ActionRow
               id="export-data-btn"
               label="Export Data"

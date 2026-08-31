@@ -7,6 +7,7 @@ import {
 import ScreenHeader from '../components/ScreenHeader'
 import CompanionSelectorModal, { COMPANION_ROSTER } from '../components/CompanionSelectorModal'
 import DecelerationModal from '../components/DecelerationModal'
+import { triggerHaptic } from '../utils/haptics'
 
 interface CompanionScreenProps {
   onBack: () => void
@@ -185,7 +186,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
 
   // Ring Tap: Toggle Start / Pause
   const handleRingTap = useCallback(() => {
-    if ('vibrate' in navigator) navigator.vibrate([18])
+    triggerHaptic(18)
 
     setTapRippleKey(k => k + 1)
     setIsRippling(true)
@@ -212,7 +213,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
             setIsRunning(false)
             setIsCompleted(true)
             playCompletionChime()
-            if ('vibrate' in navigator) navigator.vibrate([40, 60, 80])
+            triggerHaptic([40, 60, 80])
             return 0
           }
           return prev - 1
@@ -272,7 +273,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         h-[100dvh] w-full
         px-6 pt-10 pb-6
         flex flex-col justify-between
-        bg-[#0E0E0E] text-[#E5E0D8]
+        bg-[var(--bg-primary,#0E0E0E)] text-[#E5E0D8]
         overflow-hidden select-none
         animate-fade-in
       "

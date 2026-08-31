@@ -72,9 +72,13 @@ const PHYSIOLOGICAL_CUES = [
   'A slower rhythm mechanically slows heart rate.',
 ]
 
-export default function GuidedBreathing() {
-  // Default active technique: Soft (4–4)
-  const [patternId, setPatternId] = useState<PatternId>('soft')
+interface GuidedBreathingProps {
+  initialPattern?: PatternId
+}
+
+export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreathingProps) {
+  // Default active technique
+  const [patternId, setPatternId] = useState<PatternId>(initialPattern)
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState(4)
   const [isActive, setIsActive] = useState(false)

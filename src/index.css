@@ -4,6 +4,35 @@
 @tailwind utilities;
 
 /* ─── Base resets & global styles ─────────────────────────── */
+:root,
+[data-theme="obsidian"] {
+  --bg-primary: #0E0E0E;
+  --bg-surface: #141417;
+  --text-primary: #E5E0D8;
+  --text-secondary: #9E988F;
+  --border-subtle: #1F1F1F;
+  --accent-gold: #C9B99A;
+}
+
+[data-theme="warm-dusk"] {
+  --bg-primary: #141210;
+  --bg-surface: #1C1916;
+  --text-primary: #EAE5DE;
+  --text-secondary: #A39B90;
+  --border-subtle: #24201C;
+  --accent-gold: #D4C3A3;
+}
+
+[data-theme="stone"],
+[data-theme="muted-slate"] {
+  --bg-primary: #111215;
+  --bg-surface: #181A1F;
+  --text-primary: #E2E4E8;
+  --text-secondary: #8E94A0;
+  --border-subtle: #20232A;
+  --accent-gold: #B8C2CC;
+}
+
 @layer base {
 
   *,
@@ -18,7 +47,7 @@
   body,
   #root {
     height: 100%;
-    background-color: #0E0E0E;
+    background-color: var(--bg-primary, #0E0E0E);
   }
 
   body {
@@ -140,6 +169,16 @@
     animation: slowBreathe8s 8s ease-in-out infinite;
   }
 
+  .animate-foveal-bloom {
+    animation: fovealBloom 7.5s ease-in-out infinite;
+    transform-origin: center center;
+  }
+
+  .animate-foveal-halo {
+    animation: fovealHalo 7.5s ease-in-out infinite;
+    transform-origin: center center;
+  }
+
   /* Explicit no-scrollbar utility */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -178,6 +217,36 @@
   50% {
     transform: scale(1.04);
     opacity: 0.95;
+  }
+}
+
+@keyframes fovealBloom {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.35;
+    filter: blur(12px);
+  }
+
+  50% {
+    transform: scale(2.4);
+    opacity: 0.85;
+    filter: blur(28px);
+  }
+}
+
+@keyframes fovealHalo {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.12;
+    filter: blur(20px);
+  }
+
+  50% {
+    transform: scale(3.0);
+    opacity: 0.55;
+    filter: blur(44px);
   }
 }
 
