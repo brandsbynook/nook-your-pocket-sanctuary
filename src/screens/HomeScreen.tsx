@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import DeadlineModal from '../components/DeadlineModal'
 import QuietModeOverlay from '../components/QuietModeOverlay'
-import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
 import { loadDeadlines, loadSettings, type NookDeadline } from '../utils/storage'
 import { useGreeting } from '../hooks/useGreeting'
 
@@ -83,47 +82,37 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
       <main
         id="home-screen"
         className="
-          h-[100dvh] max-w-md mx-auto
+          min-h-[100dvh] max-w-md mx-auto
           px-6 pt-10 pb-6
           flex flex-col justify-between
-          overflow-hidden
+          overflow-y-auto
           bg-[#0B0B0E] select-none
           animate-fade-in
         "
       >
         {/* ═══ Top Section (Brand Stack & Sub-row Cluster) ════════ */}
         <div className="flex flex-col shrink-0">
-          {/* ── 1. Brand Header with Universal Audio Shortcut ─── */}
-          <header className="flex items-start justify-between w-full">
-            <div className="flex flex-col items-start">
-              <h1 className="font-serif-nook text-xl text-neutral-200 tracking-[0.14em] lowercase font-light leading-none">
-                nook.
-              </h1>
-              <p className="font-serif-nook text-xs text-neutral-500 italic lowercase font-normal mt-1">
-                your pocket sanctuary
-              </p>
-            </div>
-
-            <div className="flex items-center">
-              <HeaderAudioShortcut />
-            </div>
+          {/* ── 1. Centered Brand Header ─── */}
+          <header className="flex flex-col items-center text-center w-full">
+            <h1 className="font-serif-nook text-3xl sm:text-4xl text-neutral-200 tracking-[0.14em] lowercase font-light leading-none">
+              nook.
+            </h1>
+            <p className="font-serif-nook text-xs sm:text-sm text-neutral-500 italic lowercase font-normal mt-2">
+              your pocket sanctuary
+            </p>
           </header>
 
-          {/* ── 2. Shared Baseline Sub-row: "Quiet" Toggle & Deadline Reminder ── */}
-          <div className="flex items-center justify-between mt-5 px-0.5">
+          {/* ── 2. Utility Row: "Quiet" Toggle (Label Underneath) & Menu Lines ── */}
+          <div className="flex items-start justify-between mt-7 mb-4 px-1">
             {/* Minimalist Quiet Mode Toggle */}
             <button
               id="home-quiet-mode-toggle"
               role="switch"
               aria-checked={isQuietModeOpen}
               onClick={() => setIsQuietModeOpen(prev => !prev)}
-              className="flex items-center gap-2 group cursor-pointer focus:outline-none py-1"
+              className="flex flex-col items-center gap-1 group cursor-pointer focus:outline-none py-1"
               aria-label="Toggle Quiet Mode"
             >
-              <span className="font-serif-nook italic text-xs text-stone-500 tracking-wider group-hover:text-stone-400 transition-colors">
-                Quiet
-              </span>
-
               {/* Delicate Muted Switch */}
               <span
                 className={`
@@ -141,13 +130,18 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                   `}
                 />
               </span>
+
+              {/* Label positioned underneath toggle */}
+              <span className="font-serif-nook italic text-[11px] text-stone-500 tracking-wider group-hover:text-stone-400 transition-colors">
+                Quiet
+              </span>
             </button>
 
-            {/* Visual Deadline Reminder (Anchors) */}
+            {/* Visual Deadline Reminder (Menu / Timeline Lines) */}
             <button
               id="deadline-timeline-bars"
               onClick={() => setIsAnchorModalOpen(true)}
-              className="flex flex-col items-end gap-1 p-1 group cursor-pointer focus:outline-none"
+              className="flex flex-col items-end gap-1.5 p-1 pt-1.5 group cursor-pointer focus:outline-none"
               title="Visual deadline anchors (tap to manage)"
               aria-label="Visual deadline anchors"
             >
@@ -173,7 +167,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         </div>
 
         {/* ═══ Lifted Center Content (Greeting & 5 Core Rooms) ═══ */}
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full my-auto px-1">
+        <div className="flex-1 flex flex-col justify-start max-w-md mx-auto w-full px-1">
           {/* ── 3. Faded & Re-centered Dynamic Greeting ─────────── */}
           {showGreetingSetting && greeting ? (
             <div className="pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
@@ -193,7 +187,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                   id={`home-menu-${item.id}`}
                   onClick={() => onNavigate(item.id)}
                   className="
-                    w-full text-left py-2.5 sm:py-3 flex flex-col items-start gap-[2px]
+                    w-full text-left py-5 sm:py-6 flex flex-col items-start gap-[2px]
                     group transition-colors duration-200
                     focus:outline-none cursor-pointer
                   "
@@ -214,7 +208,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         </div>
 
         {/* ═══ 4. Clean Footer ═════════════════════════════════════ */}
-        <div className="flex flex-col items-center mt-12">
+        <div className="flex flex-col items-center mt-12 pb-4">
           <footer className="w-full pt-4 border-t border-neutral-900/90 flex items-center justify-between px-2">
             <button
               onClick={() => onNavigate('cards')}
