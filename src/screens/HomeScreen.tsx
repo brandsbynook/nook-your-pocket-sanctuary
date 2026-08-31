@@ -103,7 +103,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           </header>
 
           {/* ── 2. Utility Row: "Quiet" Toggle (Label Underneath) & Menu Lines ── */}
-          <div className="flex items-start justify-between mt-10 mb-4 px-1">
+          <div className="flex items-start justify-between mt-6 mb-4 px-1">
             {/* Minimalist Quiet Mode Toggle */}
             <button
               id="home-quiet-mode-toggle"
@@ -167,10 +167,10 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         </div>
 
         {/* ═══ Lifted Center Content (Greeting & 5 Core Rooms) ═══ */}
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full px-1">
+        <div className="flex-1 flex flex-col justify-start max-w-md mx-auto w-full px-1">
           {/* ── 3. Faded & Re-centered Dynamic Greeting ─────────── */}
           {showGreetingSetting && greeting ? (
-            <div className="pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <div className="mt-8 pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               <p className="font-serif-nook text-sm text-neutral-500/80 font-normal italic tracking-wide leading-relaxed text-center">
                 {greeting}
               </p>
@@ -208,7 +208,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         </div>
 
         {/* ═══ 4. Clean Footer ═════════════════════════════════════ */}
-        <div className="flex flex-col items-center mt-8 pb-4">
+        <div className="flex flex-col items-center mt-4 pb-4">
           <footer className="w-full pt-4 border-t border-neutral-900/90 flex items-center justify-between px-2">
             <button
               onClick={() => onNavigate('cards')}
