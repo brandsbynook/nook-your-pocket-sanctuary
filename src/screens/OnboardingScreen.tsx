@@ -166,7 +166,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     <main
       id="onboarding-screen"
       className={`
-        h-[100dvh] max-w-[420px] mx-auto
+        h-[100dvh] w-full
         px-6 py-8
         flex flex-col justify-between
         overflow-hidden

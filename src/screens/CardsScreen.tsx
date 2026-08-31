@@ -228,7 +228,7 @@ export default function CardsScreen({ onBack, onNavigate }: CardsScreenProps) {
       <main
         id="cards-screen"
         className="
-          h-[100dvh] max-w-md mx-auto
+          h-[100dvh] w-full
           px-6 pt-10 pb-6
           flex flex-col justify-between
           overflow-hidden

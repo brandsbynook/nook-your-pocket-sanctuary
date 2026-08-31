@@ -23,7 +23,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
     <main
       id="brain-dump-screen"
       className="
-        h-[100dvh] max-w-[420px] mx-auto
+        h-[100dvh] w-full
         px-6 pt-10 pb-6
         flex flex-col
         overflow-hidden

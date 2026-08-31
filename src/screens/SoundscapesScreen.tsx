@@ -10,7 +10,7 @@ export default function SoundscapesScreen({ onBack }: SoundscapesScreenProps) {
     <main
       id="soundscapes-screen"
       className="
-        h-[100dvh] max-w-md mx-auto
+        h-[100dvh] w-full
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden

@@ -269,7 +269,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
     <main
       id="companion-screen"
       className="
-        h-[100dvh] max-w-md mx-auto
+        h-[100dvh] w-full
         px-6 pt-10 pb-6
         flex flex-col justify-between
         bg-[#0E0E0E] text-[#E5E0D8]

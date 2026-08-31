@@ -470,7 +470,7 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
     <main
       id="memory-chest-screen"
       className="
-        h-[100dvh] max-w-md mx-auto
+        h-[100dvh] w-full
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
