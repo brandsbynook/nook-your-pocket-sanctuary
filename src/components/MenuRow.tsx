@@ -19,8 +19,7 @@ export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = 
         className="
           w-full flex items-center justify-between
           py-[1.4rem]
-          group
-          transition-all duration-300
+          group cursor-pointer transition-colors
           focus:outline-none focus-visible:outline-none
           text-left
         "
@@ -28,22 +27,20 @@ export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = 
       >
         {/* Left: title + subtitle stacked */}
         <div className="flex flex-col items-start gap-[4px]">
-          <span className="
-            font-serif-nook text-[#E5E0D8] text-[1.15rem] font-light
+          <h2 className="
+            font-serif-nook text-[1.15rem] font-light
             tracking-wide leading-snug
-            group-hover:text-[#C9B99A] transition-colors duration-300
+            text-[#C2B69D] group-hover:text-[#EAE5DC] group-active:text-[#EAE5DC] transition-colors
           ">
             {title}
-          </span>
+          </h2>
           {subtitle && (
-            <span className="
-              font-sans text-[#52525B] text-[0.68rem]
-              font-light leading-none tracking-[0.07em]
-              transition-colors duration-300
-              group-hover:text-[#71717A]
+            <p className="
+              font-sans text-xs tracking-wider mt-1
+              text-[#8C8275] group-hover:text-[#A89F91] transition-colors
             ">
               {subtitle}
-            </span>
+            </p>
           )}
         </div>
 
