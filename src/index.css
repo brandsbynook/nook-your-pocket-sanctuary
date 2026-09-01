@@ -8,9 +8,9 @@
 [data-theme="obsidian"] {
   --bg-primary: #0E0E0E;
   --bg-surface: #141417;
-  --text-primary: #E5E0D8;
-  --text-secondary: #9E988F;
-  --border-subtle: #1F1F1F;
+  --text-primary: #EAE5DC;
+  --text-secondary: #7A7164;
+  --border-subtle: #2C2926;
   --accent-gold: #C9B99A;
 }
 
@@ -41,6 +41,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    text-shadow: none !important;
   }
 
   html,
@@ -52,10 +53,20 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: #E5E0D8;
+    color: #EAE5DC;
+    font-size: 15px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+    text-shadow: none !important;
+  }
+
+  ::placeholder,
+  input::placeholder,
+  textarea::placeholder {
+    color: #6E6458 !important;
+    opacity: 1;
   }
 
   /* Hide scrollbar globally while preserving scroll functionality */

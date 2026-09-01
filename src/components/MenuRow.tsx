@@ -18,7 +18,7 @@ export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = 
         onClick={onClick}
         className="
           w-full flex items-center justify-between
-          py-[1.4rem]
+          py-5
           group cursor-pointer transition-colors
           focus:outline-none focus-visible:outline-none
           text-left
@@ -26,18 +26,18 @@ export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = 
         aria-label={title}
       >
         {/* Left: title + subtitle stacked */}
-        <div className="flex flex-col items-start gap-[4px]">
+        <div className="flex flex-col items-start gap-[2px]">
           <h2 className="
-            font-serif-nook text-[1.15rem] font-light
+            font-serif-nook text-xl font-light
             tracking-wide leading-snug
-            text-[#C2B69D] group-hover:text-[#EAE5DC] group-active:text-[#EAE5DC] transition-colors
+            text-[#EAE5DC] group-hover:text-[#F4EFE6] group-active:text-[#F4EFE6] transition-colors
           ">
             {title}
           </h2>
           {subtitle && (
             <p className="
-              font-sans text-xs tracking-wider mt-1
-              text-[#8C8275] group-hover:text-[#A89F91] transition-colors
+              font-sans text-[13px] tracking-normal mt-1
+              text-[#7A7164] group-hover:text-[#A89F91] transition-colors
             ">
               {subtitle}
             </p>
@@ -47,9 +47,9 @@ export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = 
         {/* Right: delicate arrow */}
         <span
           className="
-            text-[#52525B] text-sm font-light leading-none
+            text-[#7A7164] text-sm font-light leading-none
             transition-all duration-300
-            group-hover:text-[#C9B99A]/70 group-hover:translate-x-0.5
+            group-hover:text-[#A89F91] group-hover:translate-x-0.5
             ml-4 shrink-0
           "
           aria-hidden="true"
@@ -58,8 +58,8 @@ export default function MenuRow({ id, title, subtitle, delay = 0, showDivider = 
         </span>
       </button>
 
-      {/* Soft divider — only rendered between items */}
-      {showDivider && <div className="h-px w-full bg-[#242424]" />}
+      {/* Crisp faint separator */}
+      {showDivider && <div className="border-b border-[#2C2926]/40 w-full" />}
     </div>
   )
 }

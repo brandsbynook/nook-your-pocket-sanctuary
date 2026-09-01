@@ -187,20 +187,20 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                   id={`home-menu-${item.id}`}
                   onClick={() => onNavigate(item.id)}
                   className="
-                    w-full text-left py-5 sm:py-6 flex flex-col items-start gap-[2px]
+                    w-full text-left py-5 flex flex-col items-start gap-[2px]
                     group cursor-pointer transition-colors
                     focus:outline-none
                   "
                 >
-                  <h2 className="font-serif-nook text-[1.05rem] text-[#C2B69D] font-light tracking-wide group-hover:text-[#EAE5DC] group-active:text-[#EAE5DC] transition-colors">
+                  <h2 className="font-serif-nook text-xl text-[#EAE5DC] font-light tracking-wide group-hover:text-[#F4EFE6] group-active:text-[#F4EFE6] transition-colors">
                     {item.title}
                   </h2>
-                  <p className="font-sans text-xs text-[#8C8275] font-normal mt-1 group-hover:text-[#A89F91] transition-colors">
+                  <p className="font-sans text-[13px] text-[#7A7164] tracking-normal mt-1 group-hover:text-[#A89F91] transition-colors">
                     {item.subtitle}
                   </p>
                 </button>
                 {index < PRIMARY_MENU.length - 1 && (
-                  <div className="h-px w-full bg-neutral-800/70" />
+                  <div className="border-b border-[#2C2926]/40 w-full" />
                 )}
               </div>
             ))}
