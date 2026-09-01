@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LeafIcon } from './LeafIcon'
 
 interface QuietToggleProps {
   active?: boolean
@@ -23,8 +24,12 @@ export default function QuietToggle({ active, onToggle }: QuietToggleProps) {
       onClick={handleClick}
       aria-label={isQuiet ? 'Disable quiet mode' : 'Enable quiet mode'}
       aria-pressed={isQuiet}
-      className="flex items-center gap-2.5 select-none focus:outline-none group cursor-pointer"
+      className="flex items-center gap-2 select-none focus:outline-none group cursor-pointer"
     >
+      <LeafIcon
+        size={16}
+        className={`transition-colors duration-300 ${isQuiet ? 'text-[#C9B99A]' : 'text-[#71717A] group-hover:text-[#A1A1AA]'}`}
+      />
       {/* Organic Pill track */}
       <span
         className={`

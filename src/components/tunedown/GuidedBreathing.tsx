@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import BottomControlsDock from './BottomControlsDock'
 
 /* ─── Pattern Definitions (2 Essential Cadences) ─── */
 export type PatternId = 'soft' | 'box'
@@ -195,37 +196,15 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
 
-      {/* ── 1. Pattern Switcher & Static Subtle Cue ────────────── */}
+      {/* ── 1. Static Subtle Cue (Top Mode Switcher Removed) ────── */}
       <div
         className={`
-          w-full flex flex-col items-center pt-1 shrink-0 transition-all duration-700
+          w-full flex flex-col items-center pt-2 shrink-0 transition-all duration-700
           ${isActive ? 'opacity-0 pointer-events-none -translate-y-2' : 'opacity-100 translate-y-0'}
         `}
       >
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          {PATTERNS.map(p => {
-            const sel = p.id === patternId
-            return (
-              <button
-                key={p.id}
-                id={`pattern-pill-${p.id}`}
-                onClick={() => handleSelectPattern(p.id)}
-                className={`
-                  px-3.5 py-1.5 rounded-full font-serif-nook text-xs tracking-wider transition-all duration-300 focus:outline-none cursor-pointer
-                  ${sel
-                    ? 'bg-[#2C2926] text-[#EAE5DC] border border-[#3A3632]'
-                    : 'bg-[#161412] text-[#8C8275] border border-[#2C2926] hover:text-[#EAE5DC]'
-                  }
-                `}
-              >
-                {p.label}
-              </button>
-            )
-          })}
-        </div>
-
         {/* Single-Line Physiological Validation Cue */}
-        <div className="mt-6 mb-8 max-w-xs mx-auto overflow-hidden px-2 w-full">
+        <div className="mb-4 max-w-xs mx-auto overflow-hidden px-2 w-full">
           <p
             className="font-serif-nook italic text-[#8C8275] text-xs tracking-wider text-center whitespace-nowrap truncate transition-opacity duration-1000"
             style={{ opacity: cueVisible && !isActive ? 1 : 0 }}
@@ -239,7 +218,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
       <div className="relative my-auto flex flex-col items-center justify-center min-h-[240px]">
 
         {patternId === 'box' ? (
-          /* ── 2D BOX: Single solid 1px track (#2C2926) & Crisp #EAE5DC 1.5px stroke fill (No glows/blur/shadows) ── */
+          /* ── 2D BOX: SVG Square with rx="16" ry="16", 1.5px Track (#2C2926) & Animated 1.5px Fill (#EAE5DC) ── */
           <div
             onClick={handleTogglePlay}
             className="relative flex items-center justify-center cursor-pointer group select-none"
@@ -253,25 +232,25 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               height="220"
               className="absolute inset-0 block overflow-visible"
             >
-              {/* ── Solid 1px border track (#2C2926) ── */}
+              {/* ── Base track 1.5px stroke (#2C2926) ── */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
-                rx="4" ry="4"
+                rx="16" ry="16"
                 fill="none"
                 stroke="#2C2926"
-                strokeWidth="1"
+                strokeWidth="1.5"
               />
 
-              {/* ── Crisp #EAE5DC 1.5px progressive stroke fill (Resets sharply, no glows/shadows) ── */}
+              {/* ── Crisp #EAE5DC 1.5px progressive stroke fill (Smoothly following rx=16 ry=16 rounded corners) ── */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
-                rx="4" ry="4"
+                rx="16" ry="16"
                 fill="none"
                 stroke="#EAE5DC"
                 strokeWidth="1.5"
-                strokeLinecap="butt"
+                strokeLinecap="round"
                 pathLength="100"
                 strokeDasharray="100"
                 style={{
@@ -373,18 +352,54 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
         )}
       </div>
 
-      {/* ── 3. Quiet Reset ───────────────────────────────────── */}
-      <div className="h-8 flex items-center justify-center shrink-0">
-        {(isActive || phaseIndex > 0 || secondsLeft !== activePattern.phases[0].duration) && (
+      {/* ── 3. Standardized Unified Bottom Controls Dock ────────── */}
+      <BottomControlsDock>
+        {/* Mode Segmented Buttons */}
+        <div className="flex items-center gap-1">
           <button
-            id="breath-reset-btn"
-            onClick={handleReset}
-            className="font-sans text-xs tracking-wider uppercase text-[#8C8275] hover:text-[#EAE5DC] transition-colors focus:outline-none cursor-pointer"
+            type="button"
+            id="pattern-pill-soft"
+            onClick={() => handleSelectPattern('soft')}
+            className={`
+              px-3.5 py-1 rounded-full text-xs transition-colors cursor-pointer focus:outline-none select-none
+              ${patternId === 'soft'
+                ? 'bg-[#2C2926] text-[#EAE5DC] font-medium'
+                : 'text-[#8C8275] hover:text-[#EAE5DC]'
+              }
+            `}
           >
-            Reset
+            4-4
           </button>
-        )}
-      </div>
+
+          <button
+            type="button"
+            id="pattern-pill-box"
+            onClick={() => handleSelectPattern('box')}
+            className={`
+              px-3.5 py-1 rounded-full text-xs transition-colors cursor-pointer focus:outline-none select-none
+              ${patternId === 'box'
+                ? 'bg-[#2C2926] text-[#EAE5DC] font-medium'
+                : 'text-[#8C8275] hover:text-[#EAE5DC]'
+              }
+            `}
+          >
+            4-4-4-4
+          </button>
+        </div>
+
+        {/* Subtle 1px vertical line divider */}
+        <div className="h-4 w-[1px] bg-[#2C2926]" />
+
+        {/* Reset Button */}
+        <button
+          type="button"
+          id="breath-reset-btn"
+          onClick={handleReset}
+          className="text-[#8C8275] hover:text-[#EAE5DC] px-3 py-1 text-xs uppercase tracking-wider transition-colors focus:outline-none cursor-pointer select-none"
+        >
+          Reset
+        </button>
+      </BottomControlsDock>
     </div>
   )
 }
