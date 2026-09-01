@@ -1,5 +1,6 @@
 import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react'
 import { triggerHaptic } from '../../utils/haptics'
+import BottomControlsDock from './BottomControlsDock'
 
 interface Ripple {
   x: number
@@ -32,13 +33,18 @@ function getAudioContext(): AudioContext | null {
 }
 
 export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
-  const [isSettled, setIsSettled] = useState<boolean>(false)
+  const [isMutedState, setIsMutedState] = useState<boolean>(isMuted)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const isInteractingRef = useRef<boolean>(false)
   const lastPointerPosRef = useRef<{ x: number; y: number } | null>(null)
   const travelAccumulatorRef = useRef<number>(0)
   const reqRef = useRef<number | null>(null)
+
+  // Sync prop changes
+  useEffect(() => {
+    setIsMutedState(isMuted)
+  }, [isMuted])
 
   // Resonant rings simulation data
   const ripplesRef = useRef<Ripple[]>([])
@@ -50,7 +56,7 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
 
   // Initialize Sine Wave Audio Graph
   const initAudio = useCallback(() => {
-    if (isMuted) return
+    if (isMutedState) return
     const ctx = getAudioContext()
     if (!ctx) return
 
@@ -73,11 +79,11 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
         // Ignore audio restrictions
       }
     }
-  }, [isMuted])
+  }, [isMutedState])
 
   // Modulate Sine Resonance with Velocity
   const playAudio = useCallback((velocity: number) => {
-    if (isMuted) return
+    if (isMutedState) return
     const ctx = getAudioContext()
     if (!ctx || !oscRef.current || !gainRef.current) return
     const t = ctx.currentTime
@@ -89,7 +95,7 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
     // Soft volume swell
     const targetGain = Math.min(0.08, Math.max(0.02, velocity * 0.006))
     gainRef.current.gain.setTargetAtTime(targetGain, t, 0.03)
-  }, [isMuted])
+  }, [isMutedState])
 
   const stopAudio = useCallback(() => {
     const ctx = getAudioContext()
@@ -100,10 +106,10 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
   }, [])
 
   useEffect(() => {
-    if (isMuted) {
+    if (isMutedState) {
       stopAudio()
     }
-  }, [isMuted, stopAudio])
+  }, [isMutedState, stopAudio])
 
   // Initialize / Resize Canvas Buffer
   const resizeCanvas = useCallback(() => {
@@ -245,53 +251,52 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
     }
   }
 
-  function handleClearSettle() {
-    triggerHaptic(8)
-    setIsSettled(true)
-    setTimeout(() => setIsSettled(false), 1000)
-    ripplesRef.current = []
+  function handleToggleMute() {
+    triggerHaptic(10)
+    setIsMutedState(prev => {
+      const next = !prev
+      if (next) {
+        stopAudio()
+      }
+      return next
+    })
   }
 
   return (
-    <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in min-h-0 w-full select-none">
-      {/* ── Top Header Bar ── */}
-      <div className="flex items-center justify-between w-full mb-3 shrink-0 px-1">
-        <span className="font-serif-nook text-xs text-[#8A847A] tracking-wider uppercase">
+    <div className="relative w-full h-full flex-1 touch-none select-none bg-[#0C0C0C] flex items-center justify-center overflow-hidden animate-fade-in">
+      {/* ── Floating Top Header Bar ── */}
+      <div className="absolute top-16 left-4 right-4 z-20 flex items-center justify-center pointer-events-auto">
+        <span className="font-serif-nook text-xs text-[#8A847A] tracking-wider uppercase bg-[#0C0C0C]/60 backdrop-blur-sm px-2.5 py-1 rounded">
           Acoustic Resonance
         </span>
+      </div>
 
-        {/* Clear / Settle Action */}
+      {/* ── Full-Bleed Interactive Canvas Surface ── */}
+      <canvas
+        ref={canvasRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        className="w-full h-full absolute inset-0 block touch-none select-none cursor-crosshair z-10"
+      />
+
+      {/* ── Standardized Unified Bottom Controls Dock with Functional Sound Pill ── */}
+      <BottomControlsDock>
         <button
-          onClick={handleClearSettle}
+          type="button"
+          onClick={handleToggleMute}
           className="
-            px-2.5 py-1 border border-[#222] rounded-md
-            font-sans text-[0.62rem] tracking-[0.12em] uppercase
-            text-[#71717A] hover:text-[#C9B99A] hover:border-[#C9B99A]/40
-            transition-colors cursor-pointer focus:outline-none
+            px-4 py-1.5 rounded-full text-xs uppercase tracking-wider
+            bg-[#1E1B18] border border-[#2C2926] text-[#8C8275]
+            hover:text-[#EAE5DC] active:text-[#EAE5DC]
+            transition-colors cursor-pointer focus:outline-none flex items-center gap-1.5
           "
         >
-          {isSettled ? 'Settled' : 'Clear'}
+          <span className={`w-1.5 h-1.5 rounded-full ${isMutedState ? 'bg-[#52525B]' : 'bg-[#C9B99A]'}`} />
+          <span>{isMutedState ? 'MUTE' : 'SOUND ON'}</span>
         </button>
-      </div>
-
-      {/* ── 1:1 Aspect Ratio Canvas Surface ── */}
-      <div className="relative overflow-hidden aspect-square w-full max-w-[380px] my-auto mx-auto border border-[#1F1F1F] bg-[#0C0C0C] rounded-2xl touch-none flex items-center justify-center shadow-2xl">
-        <canvas
-          ref={canvasRef}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          className="w-full h-full block touch-none select-none cursor-crosshair"
-        />
-      </div>
-
-      {/* ── Bottom Prompt ── */}
-      <div className="w-full pt-3 shrink-0 flex items-center justify-center">
-        <span className="font-serif-nook text-[#52525B] text-[0.78rem] italic pointer-events-none select-none">
-          Unhurried resonant waves swelling with touch.
-        </span>
-      </div>
+      </BottomControlsDock>
     </div>
   )
 }

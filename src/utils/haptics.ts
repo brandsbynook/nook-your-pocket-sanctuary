@@ -4,6 +4,8 @@
  * for mobile & browser environments.
  */
 
+export type HapticType = 'light' | 'medium' | 'heavy' | number | number[]
+
 export function isHapticsSupported(): boolean {
   return (
     typeof window !== 'undefined' &&
@@ -15,21 +17,30 @@ export function isHapticsSupported(): boolean {
 
 /**
  * Triggers a vibration pattern if supported by the browser/device.
- * Safely fails silently if unsupported or blocked by user gesture requirements.
+ * Safely handles the Navigator Vibration API with graceful fallback.
  *
- * @param pattern Duration in ms, or an array of duration/pause intervals
- * @returns boolean indicating if the vibration was dispatched
+ * @param type 'light' | 'medium' | 'heavy', a duration in ms, or pattern array
  */
-export function triggerHaptic(pattern: number | number[] = 18): boolean {
-  if (!isHapticsSupported()) {
-    return false
-  }
-
-  try {
-    return navigator.vibrate(pattern)
-  } catch {
-    // Graceful fallback for security context or permission errors
-    return false
+export const triggerHaptic = (type: HapticType = 'light') => {
+  if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+    try {
+      const patterns = {
+        light: 12,
+        medium: 24,
+        heavy: 40,
+      }
+      let pattern: number | number[]
+      if (typeof type === 'string' && type in patterns) {
+        pattern = patterns[type as keyof typeof patterns]
+      } else if (typeof type === 'number' || Array.isArray(type)) {
+        pattern = type
+      } else {
+        pattern = 12
+      }
+      navigator.vibrate(pattern)
+    } catch {
+      // Graceful fallback for non-supported browsers
+    }
   }
 }
 
@@ -37,22 +48,14 @@ export function triggerHaptic(pattern: number | number[] = 18): boolean {
  * Common haptic patterns tailored for gentle sanctuary interactions
  */
 export const haptics = {
-  /** Delicate single tap for button/toggle presses */
+  light: () => triggerHaptic('light'),
+  medium: () => triggerHaptic('medium'),
+  heavy: () => triggerHaptic('heavy'),
   tap: (duration = 15) => triggerHaptic(duration),
-
-  /** Soft confirmation pulse */
-  soft: () => triggerHaptic([12]),
-
-  /** Double subtle pulse for completions */
+  soft: () => triggerHaptic('light'),
   success: () => triggerHaptic([40, 60, 80]),
-
-  /** Gentle double beat for state transitions */
   pulse: () => triggerHaptic([30, 50]),
-
-  /** Texture crumple pulse */
   crumple: () => triggerHaptic([40, 30, 60]),
-
-  /** Warning or boundary encounter */
   notice: () => triggerHaptic([30, 40, 60]),
 }
 

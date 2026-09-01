@@ -79,25 +79,30 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
   return (
     <main
       id="tune-down-screen"
-      className="
+      className={`
         min-h-[100dvh] w-full max-w-md mx-auto
-        px-6 pt-10 pb-8
         flex flex-col justify-start
         bg-[var(--bg-primary,#0E0E0E)] text-[#E5E0D8]
-        animate-fade-in
-      "
+        animate-fade-in relative
+        ${activePractice ? 'px-0 pt-0 pb-0 overflow-hidden' : 'px-6 pt-10 pb-8'}
+      `}
     >
-      <div className={`flex flex-col ${activePractice ? 'flex-1 h-[calc(100dvh-5rem)]' : 'flex-initial'} min-h-0 w-full`}>
+      <div className={`flex flex-col ${activePractice ? 'flex-1 h-[100dvh] relative overflow-hidden' : 'flex-initial'} min-h-0 w-full`}>
         {/* ── Header ─────────────────────────────────────────── */}
-        <header className="flex items-center justify-between mb-2 shrink-0">
+        <header
+          className={`
+            flex items-center justify-between mb-2 shrink-0
+            ${activePractice ? 'absolute top-4 left-4 right-4 z-30 pointer-events-auto bg-[#0E0E0E]/40 backdrop-blur-sm p-2 rounded-xl border border-white/5' : ''}
+          `}
+        >
           <button
             id="tune-down-back"
             onClick={activePractice ? () => setActivePractice(null) : onBack}
             className="
               flex items-center gap-1.5
-              font-sans text-neutral-500 text-[0.62rem]
+              font-sans text-neutral-400 text-[0.62rem]
               tracking-[0.14em] uppercase
-              hover:text-neutral-300 transition-colors
+              hover:text-neutral-200 transition-colors
               focus:outline-none py-1 cursor-pointer
             "
           >

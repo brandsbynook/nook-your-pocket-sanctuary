@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { triggerHaptic } from '../../utils/haptics'
+import BottomControlsDock, { SegmentedPillGroup } from './BottomControlsDock'
 
 export type DotMovementPattern = 'dynamic' | 'bloom'
 
@@ -50,18 +51,18 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: FollowTheDo
   ]
 
   return (
-    <div className="flex flex-col items-center justify-between flex-1 py-4 animate-fade-in text-center min-h-0 w-full">
-      {/* Subtitle */}
-      <p className="font-serif-nook text-neutral-400 text-xs font-light italic px-4">
+    <div className="relative w-full flex-1 min-h-[70vh] flex items-center justify-center overflow-hidden touch-none select-none bg-[#0B0B0E] animate-fade-in">
+      {/* Floating Subtitle */}
+      <p className="absolute top-16 left-4 right-4 z-20 font-serif-nook text-neutral-400 text-xs font-light italic text-center pointer-events-none">
         {pattern === 'bloom'
           ? 'A quiet visual anchor. Soften your focus and let your peripheral gaze widen.'
           : 'Smooth, unhurried tracking. Let your gaze float effortlessly with the light.'}
       </p>
 
-      {/* Floating Canvas / Container Area */}
+      {/* Full-Bleed Container Area */}
       <div
         ref={containerRef}
-        className="relative my-auto w-full h-[280px] border border-neutral-800/60 bg-[#0B0B0E] rounded-2xl overflow-hidden shadow-inner flex items-center justify-center"
+        className="w-full h-full absolute inset-0 overflow-hidden flex items-center justify-center pointer-events-none z-10"
       >
         {/* Soft floating orb / Foveal soft-focus bloom anchor */}
         <div
@@ -110,29 +111,14 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: FollowTheDo
         </div>
       </div>
 
-      {/* Pattern Controls */}
-      <div className="flex items-center gap-1.5 flex-wrap justify-center">
-        <span className="font-mono text-[10px] tracking-[0.14em] uppercase text-neutral-500 mr-1">
-          Pattern:
-        </span>
-        {PATTERN_LABELS.map(item => (
-          <button
-            key={item.id}
-            id={`pattern-${item.id}-btn`}
-            onClick={() => handleSelectPattern(item.id)}
-            className={`
-              px-2.5 py-1.5 rounded-xl border font-mono text-[10px] tracking-wider uppercase
-              transition-all duration-200 focus:outline-none cursor-pointer
-              ${pattern === item.id
-                ? 'border-[#C9B99A]/50 text-[#C9B99A] bg-[#C9B99A]/10'
-                : 'border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400'
-              }
-            `}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      {/* Standardized Unified Bottom Controls Dock */}
+      <BottomControlsDock>
+        <SegmentedPillGroup
+          options={PATTERN_LABELS}
+          value={pattern}
+          onChange={handleSelectPattern}
+        />
+      </BottomControlsDock>
     </div>
   )
 }

@@ -283,33 +283,23 @@ export function setOnboarded(val: boolean): void {
 }
 
 export const VALID_COMPANION_IDS = [
-  'bear',
-  'bear1',
-  'bear2',
-  'bunny',
   'cat',
   'dog',
-  'dog3',
-  'elephant',
-  'fox',
-  'giraffe',
-  'owl',
-  'panda',
-  'penguin',
+  'bear1',
   'rhino',
+  'penguin',
+  'panda',
+  'bunny',
+  'elephant',
 ] as const
 
 export type CompanionId = typeof VALID_COMPANION_IDS[number]
 
 export function getCompanionChoice(): CompanionId {
   const saved = localStorage.getItem('nook_companion')
-  if (saved && VALID_COMPANION_IDS.includes(saved as CompanionId)) {
+  if (saved && (VALID_COMPANION_IDS as readonly string[]).includes(saved)) {
     return saved as CompanionId
   }
-  // Normalization for legacy keys
-  if (saved === 'cat1') return 'cat'
-  if (saved === 'bear') return 'bear'
-  if (saved === 'fox') return 'fox'
   return 'cat'
 }
 

@@ -138,7 +138,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Resolve active companion safely with fallback to Cat
-  const activeCompanion = COMPANION_ROSTER.find(c => c.id === selectedCompanionId) ?? COMPANION_ROSTER[4]
+  const activeCompanion = COMPANION_ROSTER.find(c => c.id === selectedCompanionId) ?? COMPANION_ROSTER[0]
 
   // Select and persist companion
   const handleSelectCompanion = (id: CompanionId) => {

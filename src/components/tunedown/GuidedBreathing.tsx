@@ -211,10 +211,10 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
                 id={`pattern-pill-${p.id}`}
                 onClick={() => handleSelectPattern(p.id)}
                 className={`
-                  px-3.5 py-1.5 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-300 focus:outline-none cursor-pointer
+                  px-3.5 py-1.5 rounded-full font-serif-nook text-xs tracking-wider transition-all duration-300 focus:outline-none cursor-pointer
                   ${sel
-                    ? 'bg-[#1D1B16] text-[#FFFFFF] border border-[#C9B99A]/50 shadow-sm'
-                    : 'bg-[#101014] text-neutral-500 border border-[#1E1E26] hover:text-neutral-300 hover:border-[#2A2A38]'
+                    ? 'bg-[#2C2926] text-[#EAE5DC] border border-[#3A3632]'
+                    : 'bg-[#161412] text-[#8C8275] border border-[#2C2926] hover:text-[#EAE5DC]'
                   }
                 `}
               >
@@ -227,7 +227,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
         {/* Single-Line Physiological Validation Cue */}
         <div className="mt-6 mb-8 max-w-xs mx-auto overflow-hidden px-2 w-full">
           <p
-            className="font-serif-nook italic font-normal text-stone-400/80 text-sm tracking-wide text-center whitespace-nowrap truncate transition-opacity duration-1000"
+            className="font-serif-nook italic text-[#8C8275] text-xs tracking-wider text-center whitespace-nowrap truncate transition-opacity duration-1000"
             style={{ opacity: cueVisible && !isActive ? 1 : 0 }}
           >
             {PHYSIOLOGICAL_CUES[cueIndex]}
@@ -239,10 +239,10 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
       <div className="relative my-auto flex flex-col items-center justify-center min-h-[240px]">
 
         {patternId === 'box' ? (
-          /* ── BOX: Continuous Clockwise Progressive Rounded Tracer ── */
+          /* ── 2D BOX: Single solid 1px track (#2C2926) & Crisp #EAE5DC 1.5px stroke fill (No glows/blur/shadows) ── */
           <div
             onClick={handleTogglePlay}
-            className="relative flex items-center justify-center cursor-pointer group"
+            className="relative flex items-center justify-center cursor-pointer group select-none"
             style={{ width: '220px', height: '220px' }}
             role="button"
             aria-label={isActive ? 'Pause breathing' : 'Start breathing'}
@@ -251,27 +251,27 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               viewBox="0 0 220 220"
               width="220"
               height="220"
-              style={{ overflow: 'visible', position: 'absolute', inset: 0 }}
+              className="absolute inset-0 block overflow-visible"
             >
-              {/* ── Background muted track ─────────────────────────── */}
+              {/* ── Solid 1px border track (#2C2926) ── */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
-                rx="28" ry="28"
-                fill="transparent"
-                stroke="rgba(64,64,80,0.4)"
-                strokeWidth="2.5"
+                rx="4" ry="4"
+                fill="none"
+                stroke="#2C2926"
+                strokeWidth="1"
               />
 
-              {/* ── Continuous clockwise glowing tracer ── */}
+              {/* ── Crisp #EAE5DC 1.5px progressive stroke fill (Resets sharply, no glows/shadows) ── */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
-                rx="28" ry="28"
-                fill="transparent"
-                stroke="#FEF3C7"
-                strokeWidth="3.5"
-                strokeLinecap="round"
+                rx="4" ry="4"
+                fill="none"
+                stroke="#EAE5DC"
+                strokeWidth="1.5"
+                strokeLinecap="butt"
                 pathLength="100"
                 strokeDasharray="100"
                 style={{
@@ -281,27 +281,25 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
                   animationIterationCount: 'infinite',
                   animationPlayState: isActive ? 'running' : 'paused',
                   strokeDashoffset: isActive ? undefined : 100,
-                  filter: isActive
-                    ? 'drop-shadow(0 0 6px rgba(254,243,199,0.5)) drop-shadow(0 0 12px rgba(254,243,199,0.25))'
-                    : 'none',
-                  opacity: isActive ? 0.90 : 0,
-                  transition: 'opacity 0.5s ease',
+                  filter: 'none',
+                  opacity: isActive ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
                 }}
               />
             </svg>
 
-            {/* ── Center Dynamic Phase Display (Muted Serif Typography) ── */}
+            {/* ── Center Dynamic Phase Display ── */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center gap-0.5 pointer-events-none">
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-stone-400 text-base font-light italic group-hover:text-neutral-200 transition-colors duration-200">
+                <span className="font-serif-nook text-xs tracking-wider text-[#8C8275] italic group-hover:text-[#EAE5DC] transition-colors duration-200">
                   tap to begin
                 </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-neutral-100 text-2xl font-light tracking-wide capitalize">
+                  <span className="font-serif-nook text-[#EAE5DC] text-[16px] font-light tracking-wide capitalize">
                     {currentPhase.name}
                   </span>
-                  <span className="font-serif-nook text-stone-400 text-base italic font-normal tabular-nums mt-0.5">
+                  <span className="font-sans text-xs tracking-wider text-[#8C8275] tabular-nums mt-0.5">
                     {secondsLeft}s
                   </span>
                 </>
@@ -348,24 +346,24 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
             <div
               className="
                 w-36 h-36 rounded-full
-                bg-gradient-to-br from-[#181715] via-[#121214] to-[#0A0A0C]
-                border border-[#C9B99A]/25
+                bg-[#161412]
+                border border-[#2C2926]
                 flex flex-col items-center justify-center
-                shadow-2xl group-hover:border-[#C9B99A]/45
+                group-hover:border-[#3A3632]
                 pointer-events-none
               "
               style={orbTransitionStyle(currentPhase as OrbPhase)}
             >
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-stone-400 text-base font-light italic">
+                <span className="font-serif-nook text-xs tracking-wider text-[#8C8275] italic">
                   tap to begin
                 </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-neutral-100 text-xl font-light tracking-wide capitalize">
+                  <span className="font-serif-nook text-[#EAE5DC] text-[16px] font-light tracking-wide capitalize">
                     {currentPhase.name}
                   </span>
-                  <span className="font-serif-nook text-stone-400 text-sm italic font-normal mt-0.5 tabular-nums">
+                  <span className="font-sans text-xs tracking-wider text-[#8C8275] tabular-nums mt-0.5">
                     {secondsLeft}s
                   </span>
                 </>
@@ -381,7 +379,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
           <button
             id="breath-reset-btn"
             onClick={handleReset}
-            className="font-serif-nook text-xs tracking-wider uppercase text-neutral-600 hover:text-neutral-400 transition-colors focus:outline-none cursor-pointer"
+            className="font-sans text-xs tracking-wider uppercase text-[#8C8275] hover:text-[#EAE5DC] transition-colors focus:outline-none cursor-pointer"
           >
             Reset
           </button>

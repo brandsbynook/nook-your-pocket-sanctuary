@@ -9,20 +9,14 @@ export interface CompanionItem {
 }
 
 export const COMPANION_ROSTER: CompanionItem[] = [
-  { id: 'bear',     name: 'Bear',        image: '/companions/bear.png',      imagePath: '/companions/bear.png' },
-  { id: 'bear1',    name: 'Polar Bear',  image: '/companions/bear1.png',     imagePath: '/companions/bear1.png' },
-  { id: 'bear2',    name: 'Sleepy Bear', image: '/companions/bear2.png',     imagePath: '/companions/bear2.png' },
-  { id: 'bunny',    name: 'Bunny',       image: '/companions/bunny.png',     imagePath: '/companions/bunny.png' },
   { id: 'cat',      name: 'Cat',         image: '/companions/cat.png',       imagePath: '/companions/cat.png' },
   { id: 'dog',      name: 'Dog',         image: '/companions/dog.png',       imagePath: '/companions/dog.png' },
-  { id: 'dog3',     name: 'Pup',         image: '/companions/dog3.png',      imagePath: '/companions/dog3.png' },
-  { id: 'elephant', name: 'Elephant',    image: '/companions/elephant_.png', imagePath: '/companions/elephant_.png' },
-  { id: 'fox',      name: 'Fox',         image: '/companions/fox.png',       imagePath: '/companions/fox.png' },
-  { id: 'giraffe',  name: 'Giraffe',     image: '/companions/giraffe.png',   imagePath: '/companions/giraffe.png' },
-  { id: 'owl',      name: 'Owl',         image: '/companions/owl.png',       imagePath: '/companions/owl.png' },
-  { id: 'panda',    name: 'Panda',       image: '/companions/panda.png',     imagePath: '/companions/panda.png' },
-  { id: 'penguin',  name: 'Penguin',     image: '/companions/penguin.png',   imagePath: '/companions/penguin.png' },
+  { id: 'bear1',    name: 'Polar Bear',  image: '/companions/bear1.png',     imagePath: '/companions/bear1.png' },
   { id: 'rhino',    name: 'Rhino',       image: '/companions/rhino.png',     imagePath: '/companions/rhino.png' },
+  { id: 'penguin',  name: 'Penguin',     image: '/companions/penguin.png',   imagePath: '/companions/penguin.png' },
+  { id: 'panda',    name: 'Panda',       image: '/companions/panda.png',     imagePath: '/companions/panda.png' },
+  { id: 'bunny',    name: 'Bunny',       image: '/companions/bunny.png',     imagePath: '/companions/bunny.png' },
+  { id: 'elephant', name: 'Elephant',    image: '/companions/elephant_.png', imagePath: '/companions/elephant_.png' },
 ]
 
 interface CompanionSelectorModalProps {
@@ -50,7 +44,7 @@ export default function CompanionSelectorModal({
     >
       <div
         className="
-          w-full max-w-md max-h-[85vh] bg-[#0E0E12] border border-[#22222C]
+          w-full max-w-md bg-[#0E0E12] border border-[#22222C]
           rounded-2xl p-5 sm:p-6 flex flex-col
           shadow-2xl relative overflow-hidden select-none animate-lift-in
         "
@@ -76,8 +70,8 @@ export default function CompanionSelectorModal({
           </button>
         </div>
 
-        {/* Scrollable Companion Roster (2-Column Grid with No Truncation) */}
-        <div className="grid grid-cols-2 gap-2.5 my-4 overflow-y-auto pr-1 no-scrollbar max-h-[55vh]">
+        {/* 8-Item Companion Roster (Clean 2x4 Grid with No Scroll or Orphaned Slots) */}
+        <div className="grid grid-cols-2 gap-2.5 my-4">
           {COMPANION_ROSTER.map(comp => {
             const isSelected = comp.id === selectedId
             return (
