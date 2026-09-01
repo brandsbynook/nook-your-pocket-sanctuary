@@ -12,11 +12,22 @@ interface Ripple {
   alpha: number
 }
 
+interface BloomRing {
+  id: number
+  x: number
+  y: number
+  delayMs: number
+  peakOpacity: number
+  createdAt: number
+}
+
 export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPattern?: DotMovementPattern }) {
   const [pattern, setPattern] = useState<DotMovementPattern>(initialPattern)
+  const [ripples, setRipples] = useState<Ripple[]>([])
+  const [bloomRipples, setBloomRipples] = useState<BloomRing[]>([])
+  const [now, setNow] = useState<number>(Date.now())
 
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [ripples, setRipples] = useState<Ripple[]>([])
 
   // Physics state refs (uncontrolled for 60fps smoothness)
   const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -30,7 +41,9 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
   // Pattern switch handler
   function handleSelectPattern(p: DotMovementPattern) {
     setPattern(p)
-    triggerHaptic(12)
+    if (p === 'dynamic') {
+      triggerHaptic(12)
+    }
   }
 
   // Pointer event handlers
@@ -41,21 +54,36 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
     const px = e.clientX - rect.left
     const py = e.clientY - rect.top
 
-    pointerRef.current = { x: px, y: py, active: true }
-    triggerHaptic(8)
+    if (pattern === 'bloom') {
+      // Fix header clipping: clamp py so ripple center never renders under fixed top header bar
+      const clampedY = Math.max(80, py)
+      const nowTime = Date.now()
 
-    // Spawn 1px faint expanding ripple ring on tap/release
-    const newRipple: Ripple = {
-      id: Date.now() + Math.random(),
-      x: px,
-      y: py,
-      radius: 8,
-      alpha: 0.45,
+      // 3-ring staggered sequence per tap (Ring 1: 0ms/0.60, Ring 2: 220ms/0.45, Ring 3: 440ms/0.30)
+      const newSequence: BloomRing[] = [
+        { id: nowTime + Math.random(),     x: px, y: clampedY, delayMs: 0,   peakOpacity: 0.60, createdAt: nowTime },
+        { id: nowTime + 1 + Math.random(), x: px, y: clampedY, delayMs: 220, peakOpacity: 0.45, createdAt: nowTime },
+        { id: nowTime + 2 + Math.random(), x: px, y: clampedY, delayMs: 440, peakOpacity: 0.30, createdAt: nowTime },
+      ]
+      setBloomRipples(prev => [...prev, ...newSequence])
+    } else {
+      pointerRef.current = { x: px, y: py, active: true }
+      triggerHaptic(8)
+
+      // Spawn 1px faint expanding ripple ring on tap in dynamic mode
+      const newRipple: Ripple = {
+        id: Date.now() + Math.random(),
+        x: px,
+        y: py,
+        radius: 8,
+        alpha: 0.45,
+      }
+      setRipples(prev => [...prev.slice(-4), newRipple])
     }
-    setRipples(prev => [...prev.slice(-4), newRipple])
   }
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (pattern === 'bloom') return
     if (!pointerRef.current.active) return
     const container = containerRef.current
     if (!container) return
@@ -68,10 +96,13 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
     pointerRef.current.active = false
   }
 
-  // Ripple animation loop
+  // Ripple animation & pruning loop
   useEffect(() => {
-    if (ripples.length === 0) return
+    if (ripples.length === 0 && bloomRipples.length === 0) return
     const timer = setInterval(() => {
+      const currentTime = Date.now()
+      setNow(currentTime)
+
       setRipples(prev =>
         prev
           .map(r => ({
@@ -81,12 +112,16 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
           }))
           .filter(r => r.alpha > 0)
       )
+
+      setBloomRipples(prev => prev.filter(r => currentTime - r.createdAt < r.delayMs + 3000))
     }, 16)
     return () => clearInterval(timer)
-  }, [ripples.length])
+  }, [ripples.length, bloomRipples.length])
 
-  // Main 60fps Physics & Wander Engine
+  // Main 60fps Physics & Wander Engine for Dynamic Flow mode
   useEffect(() => {
+    if (pattern !== 'dynamic') return
+
     let animId: number
 
     const container = containerRef.current
@@ -106,22 +141,11 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       const width = rect.width || window.innerWidth
       const height = rect.height || window.innerHeight
 
-      if (pattern === 'bloom') {
-        // Stationary center anchor for foveal bloom
-        posRef.current.x = width / 2
-        posRef.current.y = height / 2
-        if (dotElemRef.current) {
-          dotElemRef.current.style.transform = `translate3d(${width / 2}px, ${height / 2}px, 0)`
-        }
-        animId = requestAnimationFrame(updatePhysics)
-        return
-      }
-
       // Continuous time clock
       timeRef.current += 0.008
       const time = timeRef.current
 
-      // 1. Base Wander Target Calculation (Non-integer harmonic ratio curves)
+      // 1. Base Wander Target Calculation
       const wanderX = Math.sin(time * 0.7) * 0.6 + Math.cos(time * 1.3) * 0.4
       const wanderY = Math.cos(time * 0.5) * 0.6 + Math.sin(time * 1.1) * 0.4
 
@@ -144,7 +168,6 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       const nx = dx / dist
       const ny = dy / dist
 
-      // Orthogonal vector for tangential orbital curving
       const orthoX = -ny
       const orthoY = nx
 
@@ -173,7 +196,7 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       posRef.current.x = Math.max(pad, Math.min(width - pad, posRef.current.x))
       posRef.current.y = Math.max(pad, Math.min(height - pad, posRef.current.y))
 
-      // Direct DOM update for 60fps performance without React re-renders
+      // Direct DOM update for 60fps performance
       if (dotElemRef.current) {
         dotElemRef.current.style.transform = `translate3d(${posRef.current.x}px, ${posRef.current.y}px, 0)`
       }
@@ -206,8 +229,8 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
           : 'Smooth organic drift. Touch and hold to softly guide the light.'}
       </p>
 
-      {/* 1px Faint Expanding Ripple Rings */}
-      {ripples.map(r => (
+      {/* Dynamic Flow Mode Ripples */}
+      {pattern === 'dynamic' && ripples.map(r => (
         <div
           key={r.id}
           className="absolute rounded-full border border-[#EAE5DC]/25 pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
@@ -221,24 +244,51 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
         />
       ))}
 
-      {/* 18px Solid Flat Circle (Zero shadow / glow) */}
-      <div
-        ref={dotElemRef}
-        className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
-        style={{
-          transform: 'translate3d(50vw, 50vh, 0)',
-        }}
-      >
-        {pattern === 'bloom' ? (
-          <div className="relative flex items-center justify-center">
-            {/* Foveal peripheral halo for Bloom */}
-            <div className="absolute -inset-16 rounded-full bg-gradient-to-r from-[rgba(229,224,216,0.18)] to-[rgba(201,185,154,0.12)] animate-foveal-halo pointer-events-none" />
-            <div className="w-[18px] h-[18px] rounded-full bg-[#EAE5DC]" />
-          </div>
-        ) : (
+      {/* Bloom Mode Water-Ripple Touch Effect (3-ring staggered sequence per tap) */}
+      {pattern === 'bloom' && bloomRipples.map(r => {
+        const ringElapsed = Math.max(0, now - (r.createdAt + r.delayMs))
+        if (now < r.createdAt + r.delayMs) return null
+        if (ringElapsed >= 3000) return null
+
+        const progress = Math.min(1, ringElapsed / 3000)
+        // Ease-out timing (fast at first, slowing down to ~180px radius)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        const radius = eased * 180
+
+        // Opacity drops faster in first 2/3 and completes fully by 85% of duration (2550ms)
+        const fadeProgress = Math.min(1, progress / 0.85)
+        const opacity = Math.max(0, r.peakOpacity * Math.pow(1 - fadeProgress, 1.4))
+
+        if (opacity <= 0.001) return null
+
+        return (
+          <div
+            key={r.id}
+            className="absolute rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"
+            style={{
+              left: `${r.x}px`,
+              top: `${r.y}px`,
+              width: `${radius * 2}px`,
+              height: `${radius * 2}px`,
+              border: '1px solid #C9B99A',
+              opacity,
+            }}
+          />
+        )
+      })}
+
+      {/* Solid Flat Circle (Rendered ONLY in Dynamic Flow mode) */}
+      {pattern === 'dynamic' && (
+        <div
+          ref={dotElemRef}
+          className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
+          style={{
+            transform: 'translate3d(50vw, 50vh, 0)',
+          }}
+        >
           <div className="w-[18px] h-[18px] rounded-full bg-[#EAE5DC]" />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Standardized Unified Bottom Controls Dock */}
       <BottomControlsDock>
