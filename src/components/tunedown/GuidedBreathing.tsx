@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-/* ─── Pattern Definitions (Reordered Left to Right: Gentle to Deep) ─── */
-export type PatternId = 'soft' | '478' | 'box'
+/* ─── Pattern Definitions (2 Essential Cadences) ─── */
+export type PatternId = 'soft' | 'box'
 
 type BoxEdge = 'top' | 'right' | 'bottom' | 'left'
 
@@ -32,21 +32,11 @@ interface Pattern {
 const PATTERNS: Pattern[] = [
   {
     id: 'soft',
-    label: 'Soft (4–4)',
-    subline: 'gentle rhythmic pacing',
+    label: 'Unhurried Flow',
+    subline: 'equal-ratio steady calm breath (4–4)',
     phases: [
       { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.35, opacity: 0.75 },
       { kind: 'orb', name: 'Exhale', duration: 4, scale: 1.00, opacity: 0.30 },
-    ],
-  },
-  {
-    id: '478',
-    label: '4-7-8 Calm',
-    subline: 'grounding somatic release',
-    phases: [
-      { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.45, opacity: 0.80 },
-      { kind: 'orb', name: 'Hold',   duration: 7, scale: 1.45, opacity: 0.80 },
-      { kind: 'orb', name: 'Exhale', duration: 8, scale: 1.00, opacity: 0.30 },
     ],
   },
   {

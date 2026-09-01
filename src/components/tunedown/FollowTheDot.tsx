@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { triggerHaptic } from '../../utils/haptics'
 
-export type DotMovementPattern = 'horizontal' | 'orbit' | 'wave' | 'bloom'
+export type DotMovementPattern = 'dynamic' | 'bloom'
 
 interface FollowTheDotProps {
   initialPattern?: DotMovementPattern
 }
 
-export default function FollowTheDot({ initialPattern = 'horizontal' }: FollowTheDotProps) {
+export default function FollowTheDot({ initialPattern = 'dynamic' }: FollowTheDotProps) {
   const [pattern, setPattern] = useState<DotMovementPattern>(initialPattern)
   const containerRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 })
@@ -21,23 +21,11 @@ export default function FollowTheDot({ initialPattern = 'horizontal' }: FollowTh
     }
 
     const animate = (timestamp: number) => {
-      if (pattern === 'horizontal') {
-        // EMDR-inspired smooth bilateral horizontal sweep (15% to 85%)
-        const t = timestamp * 0.0008
-        const x = 50 + 35 * Math.sin(t)
-        const y = 50
-        setPosition({ x, y })
-      } else if (pattern === 'orbit') {
-        // Smooth circular/elliptical orbit
-        const t = timestamp * 0.0006
-        const x = 50 + 30 * Math.cos(t)
-        const y = 50 + 26 * Math.sin(t)
-        setPosition({ x, y })
-      } else if (pattern === 'wave') {
-        // Gentle undulating Lissajous wave
-        const t = timestamp * 0.0005
-        const x = 50 + 32 * Math.sin(t * 1.2) * Math.cos(t * 0.6)
-        const y = 50 + 26 * Math.sin(t * 0.8 + 1.2)
+      if (pattern === 'dynamic') {
+        // Smooth, unhurried harmonic flow blending bilateral sweeps, soft orbits, and undulating paths
+        const t = timestamp * 0.0004
+        const x = 50 + 24 * Math.sin(t * 1.3) + 12 * Math.cos(t * 0.7)
+        const y = 50 + 18 * Math.cos(t * 1.1) + 10 * Math.sin(t * 0.5)
         setPosition({ x, y })
       }
 
@@ -57,10 +45,8 @@ export default function FollowTheDot({ initialPattern = 'horizontal' }: FollowTh
   }
 
   const PATTERN_LABELS: { id: DotMovementPattern; label: string }[] = [
-    { id: 'horizontal', label: 'Bilateral' },
-    { id: 'orbit',      label: 'Orbit' },
-    { id: 'wave',       label: 'Wave' },
-    { id: 'bloom',      label: 'Bloom' },
+    { id: 'dynamic', label: 'Dynamic Flow' },
+    { id: 'bloom',   label: 'Bloom' },
   ]
 
   return (
@@ -69,15 +55,10 @@ export default function FollowTheDot({ initialPattern = 'horizontal' }: FollowTh
       <p className="font-serif-nook text-neutral-400 text-xs font-light italic px-4">
         {pattern === 'bloom'
           ? 'A quiet visual anchor. Soften your focus and let your peripheral gaze widen.'
-          : pattern === 'horizontal'
-          ? 'EMDR-inspired bilateral eye tracking. Rest your gaze on the light.'
-          : pattern === 'orbit'
-          ? 'Slow continuous orbit. Allow your attention to gently follow.'
-          : 'Soft horizon wave. Follow the rhythmic movement without forcing focus.'
-        }
+          : 'Smooth, unhurried tracking. Let your gaze float effortlessly with the light.'}
       </p>
 
-      {/* Floating Canvas / Container Area (Clean, without crosshair artifact) */}
+      {/* Floating Canvas / Container Area */}
       <div
         ref={containerRef}
         className="relative my-auto w-full h-[280px] border border-neutral-800/60 bg-[#0B0B0E] rounded-2xl overflow-hidden shadow-inner flex items-center justify-center"
@@ -111,7 +92,7 @@ export default function FollowTheDot({ initialPattern = 'horizontal' }: FollowTh
             `}
           />
 
-          {/* Layer 3: Grounded Core Dot (Stays calm and centered) */}
+          {/* Layer 3: Grounded Core Dot */}
           <div
             className={`
               relative rounded-full bg-gradient-to-r from-[#E5E0D8] to-[#C9B99A] shadow-lg flex items-center justify-center transition-all duration-500

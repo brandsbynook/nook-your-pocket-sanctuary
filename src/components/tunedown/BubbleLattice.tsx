@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback } from 'react'
 import { triggerHaptic } from '../../utils/haptics'
 
-export default function BubbleLattice() {
+export default function BubbleLattice({ isMuted = false }: { isMuted?: boolean }) {
   const [poppedState, setPoppedState] = useState<boolean[]>(() => Array(36).fill(false))
   const audioCtxRef = useRef<AudioContext | null>(null)
 
   const playPopSound = useCallback(() => {
+    if (isMuted) return
     try {
       if (!audioCtxRef.current) {
         const AudioContextClass =
@@ -42,7 +43,7 @@ export default function BubbleLattice() {
     } catch {
       // Fallback silently
     }
-  }, [])
+  }, [isMuted])
 
   const handlePop = (index: number) => {
     triggerHaptic(12)
