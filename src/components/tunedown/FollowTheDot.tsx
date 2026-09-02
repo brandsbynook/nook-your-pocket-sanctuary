@@ -214,90 +214,97 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
   ]
 
   return (
-    <div
-      ref={containerRef}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      className="relative w-full h-full min-h-[70vh] flex-1 flex items-center justify-center overflow-hidden touch-none select-none bg-[#0A0A0B] animate-fade-in"
-    >
-      {/* Subtitle */}
-      <p className="absolute top-16 left-4 right-4 z-20 font-serif-nook text-[#71717A] text-xs font-light italic text-center pointer-events-none">
-        {pattern === 'bloom'
-          ? 'A quiet visual anchor. Soften your focus and let your peripheral gaze widen.'
-          : 'Smooth organic drift. Touch and hold to softly guide the light.'}
-      </p>
+    <div className="w-full h-full flex flex-col flex-1 min-h-0 bg-[#0A0A0B] animate-fade-in select-none">
+      {/* Fixed Header Area (outside interactive canvas) */}
+      <div className="flex flex-col items-center text-center px-6 pt-4 pb-2 select-none pointer-events-none shrink-0">
+        <h1 className="font-serif text-xl sm:text-2xl text-[#E5E5E7] tracking-tight">Ripple & Flow</h1>
+        <p className="text-xs sm:text-sm text-[#71717A] tracking-wider mt-1">fluid touch & soft gaze</p>
+        <p className="font-serif text-sm sm:text-base text-[#A1A1AA] italic font-normal tracking-wide leading-relaxed mt-3 max-w-xs">
+          {pattern === 'bloom'
+            ? 'A quiet visual anchor. Soften your focus and let your peripheral gaze widen.'
+            : 'Smooth organic drift. Touch and hold to softly guide the light.'}
+        </p>
+      </div>
 
-      {/* Dynamic Flow Mode Ripples */}
-      {pattern === 'dynamic' && ripples.map(r => (
-        <div
-          key={r.id}
-          className="absolute rounded-full border border-[#E5E5E7]/25 pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
-          style={{
-            left: `${r.x}px`,
-            top: `${r.y}px`,
-            width: `${r.radius * 2}px`,
-            height: `${r.radius * 2}px`,
-            opacity: r.alpha,
-          }}
-        />
-      ))}
-
-      {/* Bloom Mode Water-Ripple Touch Effect (3-ring staggered sequence per tap) */}
-      {pattern === 'bloom' && bloomRipples.map(r => {
-        const ringElapsed = Math.max(0, now - (r.createdAt + r.delayMs))
-        if (now < r.createdAt + r.delayMs) return null
-        if (ringElapsed >= 3000) return null
-
-        const progress = Math.min(1, ringElapsed / 3000)
-        // Ease-out timing (fast at first, slowing down to ~180px radius)
-        const eased = 1 - Math.pow(1 - progress, 3)
-        const radius = eased * 180
-
-        // Opacity drops faster in first 2/3 and completes fully by 85% of duration (2550ms)
-        const fadeProgress = Math.min(1, progress / 0.85)
-        const opacity = Math.max(0, r.peakOpacity * Math.pow(1 - fadeProgress, 1.4))
-
-        if (opacity <= 0.001) return null
-
-        return (
+      {/* Interactive Touch Container (starts below header) */}
+      <div
+        ref={containerRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        className="flex-1 w-full relative touch-none overflow-hidden flex items-center justify-center"
+      >
+        {/* Dynamic Flow Mode Ripples */}
+        {pattern === 'dynamic' && ripples.map(r => (
           <div
             key={r.id}
-            className="absolute rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"
+            className="absolute rounded-full border border-[#E5E5E7]/25 pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
             style={{
               left: `${r.x}px`,
               top: `${r.y}px`,
-              width: `${radius * 2}px`,
-              height: `${radius * 2}px`,
-              border: '1px solid #E5E5E7',
-              opacity,
+              width: `${r.radius * 2}px`,
+              height: `${r.radius * 2}px`,
+              opacity: r.alpha,
             }}
           />
-        )
-      })}
+        ))}
 
-      {/* Solid Flat Circle (Rendered ONLY in Dynamic Flow mode) */}
-      {pattern === 'dynamic' && (
-        <div
-          ref={dotElemRef}
-          className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
-          style={{
-            transform: 'translate3d(50vw, 50vh, 0)',
-          }}
-        >
-          <div className="w-[18px] h-[18px] rounded-full bg-[#E5E5E7]" />
-        </div>
-      )}
+        {/* Bloom Mode Water-Ripple Touch Effect (3-ring staggered sequence per tap) */}
+        {pattern === 'bloom' && bloomRipples.map(r => {
+          const ringElapsed = Math.max(0, now - (r.createdAt + r.delayMs))
+          if (now < r.createdAt + r.delayMs) return null
+          if (ringElapsed >= 3000) return null
 
-      {/* Standardized Unified Bottom Controls Dock */}
-      <BottomControlsDock>
-        <SegmentedPillGroup
-          options={PATTERN_LABELS}
-          value={pattern}
-          onChange={handleSelectPattern}
-        />
-      </BottomControlsDock>
+          const progress = Math.min(1, ringElapsed / 3000)
+          // Ease-out timing (fast at first, slowing down to ~180px radius)
+          const eased = 1 - Math.pow(1 - progress, 3)
+          const radius = eased * 180
+
+          // Opacity drops faster in first 2/3 and completes fully by 85% of duration (2550ms)
+          const fadeProgress = Math.min(1, progress / 0.85)
+          const opacity = Math.max(0, r.peakOpacity * Math.pow(1 - fadeProgress, 1.4))
+
+          if (opacity <= 0.001) return null
+
+          return (
+            <div
+              key={r.id}
+              className="absolute rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"
+              style={{
+                left: `${r.x}px`,
+                top: `${r.y}px`,
+                width: `${radius * 2}px`,
+                height: `${radius * 2}px`,
+                border: '1px solid #E5E5E7',
+                opacity,
+              }}
+            />
+          )
+        })}
+
+        {/* Solid Flat Circle (Rendered ONLY in Dynamic Flow mode) */}
+        {pattern === 'dynamic' && (
+          <div
+            ref={dotElemRef}
+            className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
+            style={{
+              transform: 'translate3d(50vw, 50vh, 0)',
+            }}
+          >
+            <div className="w-[18px] h-[18px] rounded-full bg-[#E5E5E7]" />
+          </div>
+        )}
+
+        {/* Standardized Unified Bottom Controls Dock */}
+        <BottomControlsDock>
+          <SegmentedPillGroup
+            options={PATTERN_LABELS}
+            value={pattern}
+            onChange={handleSelectPattern}
+          />
+        </BottomControlsDock>
+      </div>
     </div>
   )
 }

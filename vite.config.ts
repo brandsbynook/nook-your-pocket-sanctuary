@@ -8,19 +8,25 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'nook. — your pocket sanctuary',
         short_name: 'nook.',
         description: 'your pocket sanctuary. A quiet space to breathe, reflect, and just be.',
-        theme_color: '#0d0d0d',
-        background_color: '#0d0d0d',
+        theme_color: '#0A0A0B',
+        background_color: '#0A0A0B',
         display: 'standalone',
         icons: [
           {
-            src: 'favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any maskable',
           },
         ],

@@ -105,14 +105,16 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
         </div>
 
         {/* ── Decoupled Title Block ──────────────────────────── */}
-        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0">
-          <h1 className="font-serif-nook text-xl tracking-widest text-[#E5E5E7] leading-none">
-            {activeTitle}
-          </h1>
-          <p className="font-sans text-xs text-[#71717A] mt-1 text-center tracking-wide">
-            {activeSubtext}
-          </p>
-        </div>
+        {activePractice !== 'follow-dot' && (
+          <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0">
+            <h1 className="font-serif-nook text-xl tracking-widest text-[#E5E5E7] leading-none">
+              {activeTitle}
+            </h1>
+            <p className="font-sans text-xs text-[#71717A] mt-1 text-center tracking-wide">
+              {activeSubtext}
+            </p>
+          </div>
+        )}
 
       {/* ── View 1: 4 Primary Accordion Drawers ── */}
       {!activePractice ? (
@@ -408,7 +410,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
               </div>
 
               {/* Footer Note */}
-              <p className="mt-8 pb-6 text-center text-xs text-[#71717A] italic select-none">
+              <p className="mt-8 pb-6 text-sm text-[#71717A] italic tracking-wide text-center select-none">
                 More sensory paths unfolding soon.
               </p>
             </div>

@@ -216,7 +216,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
 
         {/* Physiological Cue */}
         <p
-          className="font-serif-nook italic text-[#71717A] text-xs tracking-wider text-center mt-3 transition-opacity duration-700"
+          className="font-serif-nook text-sm sm:text-base text-[#A1A1AA] italic font-normal tracking-wide text-center mt-3 transition-opacity duration-700"
           style={{ opacity: cueVisible ? 1 : 0 }}
         >
           {PHYSIOLOGICAL_CUES[cueIndex]}
@@ -278,7 +278,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
             {/* Center Dynamic Phase Display */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center gap-0.5 pointer-events-none">
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-xs tracking-wider text-[#71717A] italic group-hover:text-[#E5E5E7] transition-colors duration-200">
+                <span className="font-serif-nook text-sm text-[#A1A1AA] tracking-wider uppercase transition-colors duration-200">
                   tap to begin
                 </span>
               ) : (
@@ -342,7 +342,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               style={orbTransitionStyle(currentPhase as OrbPhase)}
             >
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-xs tracking-wider text-[#71717A] italic">
+                <span className="font-serif-nook text-sm text-[#A1A1AA] tracking-wider uppercase">
                   tap to begin
                 </span>
               ) : (

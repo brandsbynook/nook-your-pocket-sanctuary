@@ -65,7 +65,7 @@ export default function BubbleLattice({ isMuted = false }: { isMuted?: boolean }
   return (
     <div className="relative w-full flex-1 min-h-[70vh] flex items-center justify-center overflow-hidden touch-none select-none animate-fade-in">
       {/* Floating Subtitle */}
-      <p className="absolute top-16 left-0 right-0 z-20 font-serif-nook text-[#71717A] text-xs font-light italic px-4 text-center pointer-events-none">
+      <p className="absolute top-16 left-4 right-4 z-20 font-serif-nook text-sm sm:text-base text-[#A1A1AA] italic font-normal tracking-wide text-center pointer-events-none">
         Tactile popping grid. Press to release, unhurried and infinite.
       </p>
 
