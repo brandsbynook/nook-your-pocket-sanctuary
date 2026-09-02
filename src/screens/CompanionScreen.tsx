@@ -366,7 +366,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
           </svg>
 
           {/* ── Centered Selected Companion with 4s Breathing Animation & Image Fallback ── */}
-          <div className="relative z-10 flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <img
               src={activeCompanion.imagePath || activeCompanion.image}
               alt={activeCompanion.name}
