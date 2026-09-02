@@ -44,19 +44,19 @@ export default function CompanionSelectorModal({
     >
       <div
         className="
-          w-full max-w-md bg-[#0E0E12] border border-[#22222C]
+          w-full max-w-md bg-[#141416] border border-[#222225]
           rounded-2xl p-5 sm:p-6 flex flex-col
           shadow-2xl relative overflow-hidden select-none animate-lift-in
         "
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#1E1E26] shrink-0">
+        <div className="flex items-center justify-between pb-3 border-b border-[#1F1F23] shrink-0">
           <div className="flex flex-col">
-            <h2 id="companion-modal-title" className="font-serif-nook text-xl text-[#FFFFFF] font-light tracking-wide">
+            <h2 id="companion-modal-title" className="font-serif-nook text-xl text-[#E5E5E7] font-light tracking-wide">
               Sanctuary Companions
             </h2>
-            <p className="font-sans text-[0.58rem] text-neutral-500 tracking-[0.1em] mt-0.5">
+            <p className="font-sans text-[0.58rem] text-[#71717A] tracking-[0.1em] mt-0.5">
               a quiet presence to keep you company
             </p>
           </div>
@@ -64,7 +64,7 @@ export default function CompanionSelectorModal({
             id="close-companion-modal-btn"
             onClick={onClose}
             aria-label="Close companion selector"
-            className="font-sans text-[0.62rem] text-neutral-500 hover:text-neutral-300 tracking-[0.14em] uppercase px-2 py-1 transition-colors cursor-pointer"
+            className="font-sans text-[0.62rem] text-[#71717A] hover:text-[#E5E5E7] tracking-[0.14em] uppercase px-2 py-1 transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -85,8 +85,8 @@ export default function CompanionSelectorModal({
                 className={`
                   flex items-center gap-3 p-3 rounded-xl text-left border transition-all duration-300 cursor-pointer focus:outline-none group
                   ${isSelected
-                    ? 'border-[#C9B99A]/60 bg-[#1D1B16] text-[#FFFFFF] shadow-sm shadow-[#C9B99A]/5'
-                    : 'border-[#1E1E26] bg-[#101014] text-[#A1A1AA] hover:border-[#2A2A38] hover:bg-[#131318]'
+                    ? 'border-[#3F3F46] bg-[#1A1A1E] text-[#FFFFFF] shadow-sm'
+                    : 'border-[#222225] bg-[#0A0A0B] text-[#71717A] hover:border-[#3F3F46] hover:bg-[#141416]'
                   }
                 `}
               >
@@ -106,12 +106,12 @@ export default function CompanionSelectorModal({
 
                 {/* Companion Name (clean whitespace-nowrap, no trailing dots) */}
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className={`font-serif-nook text-sm font-light whitespace-nowrap leading-tight ${isSelected ? 'text-[#FFFFFF]' : 'text-neutral-300 group-hover:text-[#FFFFFF]'}`}>
+                  <span className={`font-serif-nook text-sm font-light whitespace-nowrap leading-tight ${isSelected ? 'text-[#E5E5E7]' : 'text-[#71717A] group-hover:text-[#E5E5E7]'}`}>
                     {comp.name}
                   </span>
                   {isSelected && (
-                    <span className="font-sans text-[0.52rem] text-[#C9B99A] uppercase tracking-wider mt-0.5 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C9B99A] animate-pulse" />
+                    <span className="font-sans text-[0.52rem] text-[#E5E5E7] uppercase tracking-wider mt-0.5 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E5E5E7] animate-pulse" />
                       Active
                     </span>
                   )}
@@ -122,10 +122,10 @@ export default function CompanionSelectorModal({
         </div>
 
         {/* Done Action */}
-        <div className="pt-3 border-t border-[#1E1E26] shrink-0">
+        <div className="pt-3 border-t border-[#1F1F23] shrink-0">
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-[#1A1916] border border-[#C9B99A]/40 text-[#FFFFFF] hover:bg-[#22201C] font-serif-nook text-sm font-light rounded-xl transition-colors cursor-pointer tracking-wide"
+            className="w-full py-2.5 bg-[#141416] border border-[#222225] text-[#E5E5E7] hover:bg-[#1E1E22] font-serif-nook text-sm font-light rounded-xl transition-colors cursor-pointer tracking-wide"
           >
             Done
           </button>

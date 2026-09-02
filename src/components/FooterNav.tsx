@@ -17,7 +17,7 @@ export default function FooterNav({ active, onSelect }: FooterNavProps) {
   return (
     <nav
       id="footer-nav"
-      className="flex items-center justify-between pt-3 pb-safe border-t border-[#1E1E1E]"
+      className="flex items-center justify-between pt-3 pb-safe border-t border-[#1F1F23]"
       aria-label="Main navigation"
     >
       {navItems.map(({ id, label }) => {
@@ -41,7 +41,7 @@ export default function FooterNav({ active, onSelect }: FooterNavProps) {
                 font-sans text-[0.58rem] tracking-[0.16em] uppercase
                 transition-colors duration-300
                 ${isActive
-                  ? 'text-[#C9B99A]'
+                  ? 'text-[#E5E5E7]'
                   : 'text-[#52525B] group-hover:text-[#71717A]'
                 }
               `}
@@ -49,12 +49,12 @@ export default function FooterNav({ active, onSelect }: FooterNavProps) {
               {label}
             </span>
 
-            {/* Active dot indicator — amber accent */}
+            {/* Active dot indicator — bone accent */}
             <span
               className={`
-                block h-[3px] w-[3px]
+                block h-[3px] w-[3px] rounded-full
                 transition-all duration-400
-                ${isActive ? 'bg-[#C9B99A] opacity-100' : 'opacity-0'}
+                ${isActive ? 'bg-[#E5E5E7] opacity-100' : 'opacity-0'}
               `}
               aria-hidden="true"
             />

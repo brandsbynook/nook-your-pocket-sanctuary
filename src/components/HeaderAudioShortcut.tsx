@@ -12,8 +12,8 @@ export default function HeaderAudioShortcut() {
       className={`
         relative p-2 rounded-full transition-all duration-400 focus:outline-none flex items-center justify-center
         ${isAudioPlaying
-          ? 'text-[#F4F0EA] opacity-100 bg-[#1C1C22]/80 border border-[#33333E] shadow-sm'
-          : 'text-[#52525B] opacity-40 hover:opacity-90 hover:text-[#A1A1AA] hover:bg-[#161618] border border-transparent'
+          ? 'text-[#E5E5E7] opacity-100 bg-[#141416] border border-[#222225] shadow-sm'
+          : 'text-[#52525B] opacity-40 hover:opacity-100 hover:text-[#E5E5E7] hover:bg-[#141416] border border-transparent'
         }
       `}
     >
@@ -58,7 +58,7 @@ export default function HeaderAudioShortcut() {
 
       {/* Tiny pulsing ambient indicator when active */}
       {isAudioPlaying && (
-        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#C9B99A] animate-pulse" />
+        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#E5E5E7] animate-pulse" />
       )}
     </button>
   )

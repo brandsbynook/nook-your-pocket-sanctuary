@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
-import DeadlineModal from '../components/DeadlineModal'
+import { useState } from 'react'
 import QuietModeOverlay from '../components/QuietModeOverlay'
-import { loadDeadlines, loadSettings, type NookDeadline } from '../utils/storage'
+import QuietToggle from '../components/QuietToggle'
+import DeadlineGlyph from '../components/DeadlineGlyph'
+import { loadSettings } from '../utils/storage'
 import { useGreeting } from '../hooks/useGreeting'
 
 export type Screen = 'home' | 'brain-dump' | 'reflect' | 'companion' | 'tune-down' | 'soundscapes' | 'cards' | 'settings' | 'memory-chest'
@@ -44,38 +45,10 @@ const PRIMARY_MENU: MenuItem[] = [
   },
 ]
 
-const HORIZON_DAYS = 14
-
-function getTimelineFillPercent(dueDateStr: string): number {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const due = new Date(dueDateStr)
-  due.setHours(0, 0, 0, 0)
-  const diffTime = due.getTime() - today.getTime()
-  const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
-  const ratio = Math.max(0.1, Math.min(1, daysLeft / HORIZON_DAYS))
-  return ratio * 100
-}
-
 export default function HomeScreen({ onNavigate }: HomeScreenProps) {
   const greeting = useGreeting()
   const [showGreetingSetting] = useState<boolean>(() => loadSettings().showGreeting ?? true)
-  const [deadlines, setDeadlines] = useState<NookDeadline[]>([])
-  const [isAnchorModalOpen, setIsAnchorModalOpen] = useState(false)
   const [isQuietModeOpen, setIsQuietModeOpen] = useState(false)
-
-  const refreshAnchors = useCallback(() => {
-    const all = loadDeadlines()
-    const todayStr = new Date().toISOString().split('T')[0]
-    const active = all
-      .filter(d => d.dueDate >= todayStr)
-      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-    setDeadlines(active)
-  }, [])
-
-  useEffect(() => {
-    refreshAnchors()
-  }, [refreshAnchors])
 
   return (
     <>
@@ -86,7 +59,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           px-6 pt-10 pb-6
           flex flex-col justify-between
           overflow-y-auto
-          bg-[var(--bg-primary,#0E0E0E)] select-none
+          bg-[#0A0A0B] select-none
           animate-fade-in
         "
       >
@@ -94,75 +67,18 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         <div className="flex flex-col shrink-0">
           {/* ── 1. Centered Brand Header ─── */}
           <header className="flex flex-col items-center text-center w-full">
-            <h1 className="font-serif-nook text-3xl sm:text-4xl text-neutral-200 tracking-[0.14em] lowercase font-light leading-none">
+            <h1 className="font-serif-nook text-3xl sm:text-4xl text-[#E5E5E7] tracking-[0.14em] lowercase font-light leading-none">
               nook.
             </h1>
-            <p className="font-serif-nook text-xs sm:text-sm text-neutral-500 italic lowercase font-normal mt-2">
+            <p className="font-serif-nook text-xs sm:text-sm text-[#71717A] italic lowercase font-normal mt-2">
               your pocket sanctuary
             </p>
           </header>
 
-          {/* ── 2. Utility Row: "Quiet" Toggle (Label Underneath) & Menu Lines ── */}
-          <div className="flex items-start justify-between mt-6 mb-4 px-1">
-            {/* Minimalist Quiet Mode Toggle */}
-            <button
-              id="home-quiet-mode-toggle"
-              role="switch"
-              aria-checked={isQuietModeOpen}
-              onClick={() => setIsQuietModeOpen(prev => !prev)}
-              className="flex flex-col items-center gap-1 group cursor-pointer focus:outline-none py-1"
-              aria-label="Toggle Quiet Mode"
-            >
-              {/* Delicate Muted Switch */}
-              <span
-                className={`
-                  w-7 h-3.5 rounded-full p-[2px] transition-colors duration-300 ease-in-out relative flex items-center shrink-0
-                  ${isQuietModeOpen
-                    ? 'bg-[#383329] border border-[#5E523E]'
-                    : 'bg-[#18181E] border border-[#24242C]'
-                  }
-                `}
-              >
-                <span
-                  className={`
-                    w-2.5 h-2.5 rounded-full shadow-sm transform transition-transform duration-300 ease-in-out
-                    ${isQuietModeOpen ? 'translate-x-3.5 bg-[#C9B99A]' : 'translate-x-0 bg-[#52525B]'}
-                  `}
-                />
-              </span>
-
-              {/* Label positioned underneath toggle */}
-              <span className="font-serif-nook italic text-[11px] text-stone-500 tracking-wider group-hover:text-stone-400 transition-colors">
-                Quiet
-              </span>
-            </button>
-
-            {/* Visual Deadline Reminder (Menu / Timeline Lines) */}
-            <button
-              id="deadline-timeline-bars"
-              onClick={() => setIsAnchorModalOpen(true)}
-              className="flex flex-col items-end gap-1.5 p-1 pt-1.5 group cursor-pointer focus:outline-none"
-              title="Visual deadline anchors (tap to manage)"
-              aria-label="Visual deadline anchors"
-            >
-              {[0, 1, 2].map(index => {
-                const deadline = deadlines[index]
-                const fillPercent = deadline ? getTimelineFillPercent(deadline.dueDate) : 0
-                return (
-                  <div
-                    key={index}
-                    className="w-10 h-[2px] rounded-full bg-neutral-800/90 overflow-hidden flex justify-end ml-auto transition-all duration-300 group-hover:bg-neutral-700/80"
-                  >
-                    {deadline ? (
-                      <div
-                        className="h-full bg-neutral-300/80 rounded-full transition-all duration-500"
-                        style={{ width: `${fillPercent}%` }}
-                      />
-                    ) : null}
-                  </div>
-                )
-              })}
-            </button>
+          {/* ── 2. Utility Row: Quiet Leaf Button & Deadline Glyph ── */}
+          <div className="flex items-center justify-between mt-6 mb-4 px-2">
+            <QuietToggle active={isQuietModeOpen} onToggle={(active) => setIsQuietModeOpen(active)} />
+            <DeadlineGlyph />
           </div>
         </div>
 
@@ -171,7 +87,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           {/* ── 3. Faded & Re-centered Dynamic Greeting ─────────── */}
           {showGreetingSetting && greeting ? (
             <div className="mt-8 pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-              <p className="font-serif-nook text-sm text-neutral-500/80 font-normal italic tracking-wide leading-relaxed text-center">
+              <p className="font-serif-nook text-sm text-[#71717A] font-normal italic tracking-wide leading-relaxed text-center">
                 {greeting}
               </p>
             </div>
@@ -192,15 +108,15 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
                     focus:outline-none
                   "
                 >
-                  <h2 className="font-serif-nook text-xl text-[#EAE5DC] font-light tracking-wide group-hover:text-[#F4EFE6] group-active:text-[#F4EFE6] transition-colors">
+                  <h2 className="font-serif-nook text-xl text-[#E5E5E7] font-light tracking-wide group-hover:text-[#FFFFFF] group-active:text-[#FFFFFF] transition-colors">
                     {item.title}
                   </h2>
-                  <p className="font-sans text-[13px] text-[#7A7164] tracking-normal mt-1 group-hover:text-[#A89F91] transition-colors">
+                  <p className="font-sans text-[13px] text-[#71717A] tracking-normal mt-1 group-hover:text-[#A1A1AA] transition-colors">
                     {item.subtitle}
                   </p>
                 </button>
                 {index < PRIMARY_MENU.length - 1 && (
-                  <div className="border-b border-[#2C2926]/40 w-full" />
+                  <div className="border-b border-[#1F1F23] w-full" />
                 )}
               </div>
             ))}
@@ -209,35 +125,28 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
 
         {/* ═══ 4. Clean Footer ═════════════════════════════════════ */}
         <div className="flex flex-col items-center mt-4 pb-4">
-          <footer className="w-full pt-4 border-t border-neutral-900/90 flex items-center justify-between px-2">
+          <footer className="w-full pt-4 border-t border-[#1F1F23] flex items-center justify-between px-2">
             <button
               onClick={() => onNavigate('cards')}
-              className="font-sans text-[10px] tracking-[0.2em] text-neutral-500 uppercase hover:text-neutral-300 transition-colors focus:outline-none"
+              className="font-sans text-[10px] tracking-[0.2em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
             >
               Cards
             </button>
             <button
               onClick={() => onNavigate('memory-chest')}
-              className="font-sans text-[10px] tracking-[0.2em] text-neutral-500 uppercase hover:text-neutral-300 transition-colors focus:outline-none"
+              className="font-sans text-[10px] tracking-[0.2em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
             >
               Memory Chest
             </button>
             <button
               onClick={() => onNavigate('settings')}
-              className="font-sans text-[10px] tracking-[0.2em] text-neutral-500 uppercase hover:text-neutral-300 transition-colors focus:outline-none"
+              className="font-sans text-[10px] tracking-[0.2em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
             >
               Settings
             </button>
           </footer>
         </div>
       </main>
-
-      {/* ── Solid Opaque Anchors Modal ────────────────────────── */}
-      <DeadlineModal
-        isOpen={isAnchorModalOpen}
-        onClose={() => setIsAnchorModalOpen(false)}
-        onUpdate={refreshAnchors}
-      />
 
       {/* ── Dedicated Home Quiet Mode Overlay ──────────────────── */}
       <QuietModeOverlay

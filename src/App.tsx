@@ -31,53 +31,57 @@ function App() {
 
   return (
     <AudioProvider>
-      {screen === 'onboarding' && (
-        <OnboardingScreen onComplete={() => setScreen('home')} />
-      )}
-      {screen === 'home' && (
-        <HomeScreen onNavigate={setScreen} />
-      )}
-      {screen === 'brain-dump' && (
-        <BrainDumpScreen onBack={() => setScreen('home')} />
-      )}
-      {screen === 'reflect' && (
-        <Reflect onBack={() => setScreen('home')} />
-      )}
-      {screen === 'companion' && (
-        <CompanionScreen onBack={() => setScreen('home')} />
-      )}
-      {screen === 'tune-down' && (
-        <TuneDownScreen onBack={() => setScreen('home')} />
-      )}
-      {screen === 'soundscapes' && (
-        <SoundscapesScreen onBack={() => setScreen('home')} />
-      )}
-      {screen === 'cards' && (
-        <CardsScreen
-          onBack={() => setScreen('home')}
-          onNavigate={tab => setScreen(tab as Screen)}
-        />
-      )}
-      {screen === 'memory-chest' && (
-        <MemoryChestScreen
-          onBack={() => setScreen('home')}
-          onNavigate={tab => setScreen(tab as Screen)}
-        />
-      )}
-      {screen === 'settings' && (
-        <SettingsScreen
-          onBack={() => setScreen('home')}
-          onNavigate={tab => setScreen(tab as Screen)}
-        />
-      )}
+      <div className="w-full h-[100dvh] bg-[#0A0A0B] flex justify-center overflow-hidden">
+        <main className="w-full max-w-md h-full flex flex-col relative overflow-hidden bg-[#0A0A0B]">
+          {screen === 'onboarding' && (
+            <OnboardingScreen onComplete={() => setScreen('home')} />
+          )}
+          {screen === 'home' && (
+            <HomeScreen onNavigate={setScreen} />
+          )}
+          {screen === 'brain-dump' && (
+            <BrainDumpScreen onBack={() => setScreen('home')} />
+          )}
+          {screen === 'reflect' && (
+            <Reflect onBack={() => setScreen('home')} />
+          )}
+          {screen === 'companion' && (
+            <CompanionScreen onBack={() => setScreen('home')} />
+          )}
+          {screen === 'tune-down' && (
+            <TuneDownScreen onBack={() => setScreen('home')} />
+          )}
+          {screen === 'soundscapes' && (
+            <SoundscapesScreen onBack={() => setScreen('home')} />
+          )}
+          {screen === 'cards' && (
+            <CardsScreen
+              onBack={() => setScreen('home')}
+              onNavigate={tab => setScreen(tab as Screen)}
+            />
+          )}
+          {screen === 'memory-chest' && (
+            <MemoryChestScreen
+              onBack={() => setScreen('home')}
+              onNavigate={tab => setScreen(tab as Screen)}
+            />
+          )}
+          {screen === 'settings' && (
+            <SettingsScreen
+              onBack={() => setScreen('home')}
+              onNavigate={tab => setScreen(tab as Screen)}
+            />
+          )}
+        </main>
 
-      {/* Global Quick Audio Sheet (Mini-Player) */}
-      <QuickAudioSheet
-        onNavigateSoundSanctuary={() => setScreen('soundscapes')}
-      />
+        {/* Global Quick Audio Sheet (Mini-Player) */}
+        <QuickAudioSheet
+          onNavigateSoundSanctuary={() => setScreen('soundscapes')}
+        />
 
-      {/* Sanctuary Key Ethical Paywall Modal */}
-      <SanctuaryKeyModal />
+        {/* Sanctuary Key Ethical Paywall Modal */}
+        <SanctuaryKeyModal />
+      </div>
     </AudioProvider>
   )
 }

@@ -14,7 +14,7 @@ export default function SoundscapesScreen({ onBack }: SoundscapesScreenProps) {
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[var(--bg-primary,#0E0E0E)]
+        bg-[#0A0A0B]
         animate-fade-in
       "
     >
@@ -26,9 +26,9 @@ export default function SoundscapesScreen({ onBack }: SoundscapesScreenProps) {
             onClick={onBack}
             className="
               flex items-center gap-1.5
-              font-sans text-neutral-500 text-[0.62rem]
+              font-sans text-[#52525B] text-[0.62rem]
               tracking-[0.14em] uppercase
-              hover:text-neutral-300 transition-colors
+              hover:text-[#E5E5E7] transition-colors
               focus:outline-none py-1
             "
           >
@@ -37,10 +37,10 @@ export default function SoundscapesScreen({ onBack }: SoundscapesScreenProps) {
           </button>
 
           <div className="flex flex-col items-center gap-[2px]">
-            <h1 className="font-serif-nook text-neutral-200 text-xl font-light tracking-[0.18em] leading-none">
+            <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
               Soundscapes
             </h1>
-            <p className="font-sans text-neutral-500 text-[0.58rem] tracking-[0.1em] text-center">
+            <p className="font-sans text-[#71717A] text-[0.58rem] tracking-[0.1em] text-center">
               generative ambient layers
             </p>
           </div>

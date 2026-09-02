@@ -106,9 +106,9 @@ function VoiceDumpItem({
   }
 
   return (
-    <div className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group">
+    <div className="rounded-2xl bg-[#141416] border border-[#222225] p-5 mb-4 transition-all duration-300 hover:border-[#3F3F46] group">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+        <span className="text-[10px] tracking-widest text-[#71717A] uppercase font-mono">
           Voice Recording · {formatDate(record.timestamp)}
         </span>
 
@@ -122,7 +122,7 @@ function VoiceDumpItem({
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="text-[10px] tracking-wider uppercase text-neutral-500 hover:text-neutral-300"
+              className="text-[10px] tracking-wider uppercase text-[#71717A] hover:text-[#E5E5E7]"
             >
               Cancel
             </button>
@@ -131,7 +131,7 @@ function VoiceDumpItem({
           <button
             onClick={() => setConfirmDelete(true)}
             aria-label="Delete recording"
-            className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
+            className="text-[10px] tracking-wider uppercase text-[#52525B] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none"
           >
             Let go
           </button>
@@ -142,16 +142,16 @@ function VoiceDumpItem({
         {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
-          className="w-9 h-9 rounded-full border border-neutral-700/80 bg-neutral-800/80 flex items-center justify-center text-neutral-200 hover:border-[#C9B99A]/50 transition-colors shrink-0 focus:outline-none"
+          className="w-9 h-9 rounded-full border border-[#222225] bg-[#141416] flex items-center justify-center text-[#E5E5E7] hover:border-[#52525B] transition-colors shrink-0 focus:outline-none"
           aria-label={isPlaying ? 'Pause recording' : 'Play recording'}
         >
           {isPlaying ? (
             <span className="flex gap-[3px]">
-              <span className="w-[2.5px] h-3.5 bg-neutral-200 rounded-sm" />
-              <span className="w-[2.5px] h-3.5 bg-neutral-200 rounded-sm" />
+              <span className="w-[2.5px] h-3.5 bg-[#E5E5E7] rounded-sm" />
+              <span className="w-[2.5px] h-3.5 bg-[#E5E5E7] rounded-sm" />
             </span>
           ) : (
-            <span className="text-[0.75rem] ml-0.5 leading-none text-neutral-200">▶</span>
+            <span className="text-[0.75rem] ml-0.5 leading-none text-[#E5E5E7]">▶</span>
           )}
         </button>
 
@@ -159,14 +159,14 @@ function VoiceDumpItem({
         <div className="flex-1 flex flex-col gap-1.5">
           <div
             onClick={handleSeek}
-            className="w-full h-2 bg-neutral-800 rounded-full cursor-pointer relative flex items-center overflow-hidden"
+            className="w-full h-2 bg-[#1F1F23] rounded-full cursor-pointer relative flex items-center overflow-hidden"
           >
             <div
-              className="h-full bg-[#C9B99A] rounded-full transition-all duration-100"
+              className="h-full bg-[#E5E5E7] rounded-full transition-all duration-100"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex justify-between font-mono text-[10px] text-neutral-500 tabular-nums">
+          <div className="flex justify-between font-mono text-[10px] text-[#71717A] tabular-nums">
             <span>{isPlaying ? formatDuration(currentTime) : '0:00'}</span>
             <span>{formatDuration(record.durationMs)}</span>
           </div>
@@ -241,25 +241,25 @@ function NotesJarView({
   if (viewMode === 'list') {
     return (
       <div className="flex flex-col flex-1 animate-fade-in pb-4">
-        <div className="flex items-center justify-between mb-4 border-b border-neutral-800/80 pb-2.5">
+        <div className="flex items-center justify-between mb-4 border-b border-[#1F1F23] pb-2.5">
           <button
             onClick={() => setViewMode('jar')}
-            className="font-mono text-[10px] tracking-widest uppercase text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none cursor-pointer flex items-center gap-1"
+            className="font-mono text-[10px] tracking-widest uppercase text-[#71717A] hover:text-[#E5E5E7] transition-colors focus:outline-none cursor-pointer flex items-center gap-1"
           >
             <span>←</span>
             <span>draw from jar</span>
           </button>
-          <span className="font-mono text-[10px] text-neutral-500">
+          <span className="font-mono text-[10px] text-[#71717A]">
             {userNotes.length} {userNotes.length === 1 ? 'note' : 'notes'}
           </span>
         </div>
 
         {userNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="font-serif-nook text-neutral-500 text-sm font-light italic">
+            <p className="font-serif-nook text-[#71717A] text-sm font-light italic">
               The jar is currently empty.
             </p>
-            <p className="font-sans text-neutral-600 text-[0.58rem] tracking-wider uppercase mt-1">
+            <p className="font-sans text-[#52525B] text-[0.58rem] tracking-wider uppercase mt-1">
               Save today's note in Brain Dump to place memories in the jar.
             </p>
           </div>
@@ -267,21 +267,21 @@ function NotesJarView({
           userNotes.map(note => (
             <div
               key={note.id}
-              className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group"
+              className="rounded-2xl bg-[#141416] border border-[#222225] p-5 mb-4 transition-all duration-300 hover:border-[#3F3F46] group"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+                <span className="text-[10px] tracking-widest text-[#71717A] uppercase font-mono">
                   Daily Note · {formatDate(note.timestamp)}
                 </span>
                 <button
                   onClick={() => onDeleteNote(note.id)}
                   aria-label="Let go of note"
-                  className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
+                  className="text-[10px] tracking-wider uppercase text-[#52525B] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
                 >
                   Let go
                 </button>
               </div>
-              <p className="font-serif-nook text-neutral-200 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
+              <p className="font-serif-nook text-[#E5E5E7] text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
                 {note.content}
               </p>
             </div>
@@ -298,7 +298,7 @@ function NotesJarView({
       <div className="flex flex-col items-center my-auto w-full px-2">
         {!activeSlip ? (
           /* Large Handcrafted Apothecary Jar */
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center mt-8 mb-6 gap-4">
             <button
               onClick={handleDraw}
               id="apothecary-jar-button"
@@ -309,9 +309,9 @@ function NotesJarView({
               `}
             >
               {/* Handcrafted Organic Apothecary Jar SVG */}
-              <svg width="115" height="145" viewBox="0 0 115 145" fill="none" className="text-neutral-500 group-hover:text-neutral-300 transition-colors drop-shadow-md">
+              <svg viewBox="0 0 115 145" fill="none" className="w-44 h-56 max-w-[200px] text-[#E5E5E7] group-hover:text-[#FFFFFF] transition-colors drop-shadow-md">
                 {/* Cork Stopper with subtle line */}
-                <path d="M39 12 C39 10 42 8 46 8 H69 C73 8 76 10 76 12 V19 H39 Z" fill="#201D1A" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="M39 12 C39 10 42 8 46 8 H69 C73 8 76 10 76 12 V19 H39 Z" fill="#141416" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 <line x1="44" y1="14" x2="71" y2="14" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.4" />
                 
                 {/* Rounded Jar Lip */}
@@ -326,46 +326,46 @@ function NotesJarView({
 
                 {/* Floating Folded Paper Slip 1 (-15deg) */}
                 <g className="animate-float-slip-1 origin-[44px_82px]">
-                  <rect x="32" y="76" width="25" height="13" rx="2" fill="#E8E2D8" fillOpacity="0.1" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.75" />
-                  <line x1="36" y1="82" x2="52" y2="82" stroke="#D1C7B7" strokeWidth="0.7" strokeOpacity="0.5" />
+                  <rect x="32" y="76" width="25" height="13" rx="2" fill="rgba(229, 229, 231, 0.1)" stroke="#E5E5E7" strokeWidth="1.5" strokeOpacity="0.85" />
+                  <line x1="36" y1="82" x2="52" y2="82" stroke="#E5E5E7" strokeWidth="0.8" strokeOpacity="0.6" />
                 </g>
 
                 {/* Floating Folded Paper Slip 2 (8deg) */}
                 <g className="animate-float-slip-2 origin-[64px_106px]">
-                  <rect x="52" y="100" width="28" height="14" rx="2" fill="#E8E2D8" fillOpacity="0.12" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.8" />
-                  <line x1="56" y1="107" x2="74" y2="107" stroke="#D1C7B7" strokeWidth="0.7" strokeOpacity="0.5" />
+                  <rect x="52" y="100" width="28" height="14" rx="2" fill="rgba(229, 229, 231, 0.1)" stroke="#E5E5E7" strokeWidth="1.5" strokeOpacity="0.9" />
+                  <line x1="56" y1="107" x2="74" y2="107" stroke="#E5E5E7" strokeWidth="0.8" strokeOpacity="0.6" />
                 </g>
 
                 {/* Floating Folded Paper Slip 3 (-6deg) */}
                 <g className="animate-float-slip-3 origin-[42px_110px]">
-                  <rect x="30" y="104" width="24" height="13" rx="2" fill="#E8E2D8" fillOpacity="0.09" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.65" />
+                  <rect x="30" y="104" width="24" height="13" rx="2" fill="rgba(229, 229, 231, 0.1)" stroke="#E5E5E7" strokeWidth="1.5" strokeOpacity="0.75" />
                 </g>
 
                 {/* Floating Folded Paper Slip 4 (22deg) */}
                 <g className="animate-float-slip-4 origin-[72px_78px]">
-                  <rect x="62" y="72" width="22" height="12" rx="2" fill="#E8E2D8" fillOpacity="0.1" stroke="#D1C7B7" strokeWidth="1.1" strokeOpacity="0.7" />
+                  <rect x="62" y="72" width="22" height="12" rx="2" fill="rgba(229, 229, 231, 0.1)" stroke="#E5E5E7" strokeWidth="1.5" strokeOpacity="0.8" />
                 </g>
               </svg>
             </button>
-            <span className="font-serif-nook text-neutral-400 text-xs italic">
+            <span className="font-serif-nook text-[#71717A] text-xs italic">
               Contains {userNotes.length} preserved {userNotes.length === 1 ? 'memory' : 'memories'} from your days.
             </span>
           </div>
         ) : (
           /* Unfolded Drawn Paper Slip */
-          <div className="w-full max-w-[340px] rounded-2xl bg-neutral-900/90 border border-neutral-700/80 p-6 shadow-2xl backdrop-blur-md animate-lift-in flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-neutral-800/80 pb-2">
-              <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono truncate max-w-[200px]">
+          <div className="w-full max-w-[340px] rounded-2xl bg-[#141416] border border-[#222225] p-6 shadow-2xl backdrop-blur-md animate-lift-in flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#1F1F23] pb-2">
+              <span className="text-[10px] tracking-widest text-[#71717A] uppercase font-mono truncate max-w-[200px]">
                 {activeSlip.source}
               </span>
               {activeSlip.date && (
-                <span className="text-[10px] text-neutral-500 font-mono">
+                <span className="text-[10px] text-[#71717A] font-mono">
                   {activeSlip.date}
                 </span>
               )}
             </div>
 
-            <p className="font-serif-nook text-neutral-100 text-lg md:text-xl font-light italic leading-relaxed py-2 text-left">
+            <p className="font-serif-nook text-[#E5E5E7] text-lg md:text-xl font-light italic leading-relaxed py-2 text-left">
               "{activeSlip.text}"
             </p>
           </div>
@@ -381,7 +381,7 @@ function NotesJarView({
                 onClick={handleFoldBack}
                 className="
                   font-mono text-[11px] tracking-widest uppercase
-                  text-neutral-500 hover:text-neutral-300 transition-colors duration-200 focus:outline-none px-3 py-2
+                  text-[#71717A] hover:text-[#E5E5E7] transition-colors duration-200 focus:outline-none px-3 py-2
                 "
               >
                 Fold back into jar
@@ -389,8 +389,8 @@ function NotesJarView({
               <button
                 onClick={handleDraw}
                 className="
-                  font-mono text-[11px] tracking-widest uppercase
-                  text-neutral-200 hover:text-white font-medium transition-colors duration-200 focus:outline-none px-4 py-2 rounded-xl bg-neutral-800/70 border border-neutral-700/80
+                  font-mono text-xs tracking-widest uppercase
+                  text-[#E5E5E7] hover:text-white font-medium transition-colors duration-200 focus:outline-none px-6 py-2.5 rounded-full bg-[#141416] border border-[#222225] hover:bg-[#1E1E22] shadow-sm
                 "
               >
                 Draw another
@@ -401,10 +401,10 @@ function NotesJarView({
               onClick={handleDraw}
               id="jar-draw-btn"
               className="
-                font-mono text-[11px] tracking-widest uppercase
-                text-neutral-300 hover:text-white font-medium
-                px-6 py-2.5 rounded-2xl border border-neutral-700/80 bg-neutral-900/60 hover:bg-neutral-800/70
-                transition-all duration-200 focus:outline-none cursor-pointer
+                font-mono text-xs tracking-widest uppercase
+                text-[#E5E5E7] hover:text-white font-medium
+                px-6 py-2.5 rounded-full border border-[#222225] bg-[#141416] hover:bg-[#1E1E22]
+                transition-all duration-200 focus:outline-none cursor-pointer shadow-sm
               "
             >
               Draw a memory
@@ -416,7 +416,7 @@ function NotesJarView({
         {!activeSlip && userNotes.length > 0 && (
           <button
             onClick={() => setViewMode('list')}
-            className="font-mono text-[10px] tracking-widest uppercase text-neutral-500 hover:text-neutral-300 transition-colors focus:outline-none cursor-pointer pt-1"
+            className="font-mono text-[10px] tracking-widest uppercase text-[#71717A] hover:text-[#E5E5E7] transition-colors focus:outline-none cursor-pointer pt-1"
           >
             view all notes ({userNotes.length}) →
           </button>
@@ -474,7 +474,7 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[var(--bg-primary,#0E0E0E)]
+        bg-[#0A0A0B]
         animate-fade-in
       "
     >
@@ -486,9 +486,9 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
             onClick={onBack}
             className="
               flex items-center gap-1.5
-              font-sans text-neutral-500 text-[0.62rem]
+              font-sans text-[#52525B] text-[0.62rem]
               tracking-[0.14em] uppercase
-              hover:text-neutral-300 transition-colors
+              hover:text-[#E5E5E7] transition-colors
               focus:outline-none py-1
             "
           >
@@ -497,10 +497,10 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
           </button>
 
           <div className="flex flex-col items-center gap-[2px]">
-            <h1 className="font-serif-nook text-neutral-200 text-xl font-light tracking-[0.18em] leading-none">
+            <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
               Memory Chest
             </h1>
-            <p className="font-sans text-neutral-500 text-[0.58rem] tracking-[0.1em] text-center">
+            <p className="font-sans text-[#71717A] text-[0.58rem] tracking-[0.1em] text-center">
               everything you chose to keep
             </p>
           </div>
@@ -514,7 +514,7 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
         <div
           role="tablist"
           aria-label="Keepsake categories"
-          className="flex items-center mb-5 border-b border-neutral-800/80 shrink-0"
+          className="flex items-center mb-5 border-b border-[#1F1F23] shrink-0"
         >
           {TABS.map(tab => {
             const isActive = tab.id === activeTab
@@ -532,14 +532,14 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
                   focus:outline-none cursor-pointer
                 "
               >
-                <span className={isActive ? 'text-neutral-200 font-medium' : 'text-neutral-500 hover:text-neutral-400'}>
+                <span className={isActive ? 'text-[#E5E5E7] font-medium' : 'text-[#52525B] hover:text-[#71717A]'}>
                   {tab.label}
                 </span>
                 <span
                   className={`
                     absolute bottom-0 left-0 right-0 h-px
                     transition-all duration-400
-                    ${isActive ? 'bg-[#C9B99A] opacity-90' : 'bg-transparent'}
+                    ${isActive ? 'bg-[#E5E5E7] opacity-90' : 'bg-transparent'}
                   `}
                   aria-hidden="true"
                 />
@@ -555,10 +555,10 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
             <div className="flex flex-col animate-fade-in pb-4">
               {dumps.length === 0 && voiceRecords.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <p className="font-serif-nook text-neutral-500 text-sm font-light italic">
+                  <p className="font-serif-nook text-[#71717A] text-sm font-light italic">
                     The chest is empty.
                   </p>
-                  <p className="font-sans text-neutral-600 text-[0.58rem] tracking-wider uppercase mt-1">
+                  <p className="font-sans text-[#52525B] text-[0.58rem] tracking-wider uppercase mt-1">
                     Offload thoughts in Brain Dump to preserve them here.
                   </p>
                 </div>
@@ -577,21 +577,21 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
                   {dumps.map(entry => (
                     <div
                       key={entry.id}
-                      className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group"
+                      className="rounded-2xl bg-[#141416] border border-[#222225] p-5 mb-4 transition-all duration-300 hover:border-[#3F3F46] group"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+                        <span className="text-[10px] tracking-widest text-[#71717A] uppercase font-mono">
                           Text Dump · {formatDate(entry.timestamp)}
                         </span>
                         <button
                           onClick={() => handleDeleteEntry(entry.id)}
                           aria-label="Let go of entry"
-                          className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
+                          className="text-[10px] tracking-wider uppercase text-[#52525B] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
                         >
                           Let go
                         </button>
                       </div>
-                      <p className="font-serif-nook text-neutral-200 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
+                      <p className="font-serif-nook text-[#E5E5E7] text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
                         {entry.content}
                       </p>
                     </div>
@@ -606,10 +606,10 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
             <div className="flex flex-col animate-fade-in pb-4">
               {reflections.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <p className="font-serif-nook text-neutral-500 text-sm font-light italic">
+                  <p className="font-serif-nook text-[#71717A] text-sm font-light italic">
                     No reflections saved yet.
                   </p>
-                  <p className="font-sans text-neutral-600 text-[0.58rem] tracking-wider uppercase mt-1">
+                  <p className="font-sans text-[#52525B] text-[0.58rem] tracking-wider uppercase mt-1">
                     Complete a guided prompt in Reflect to preserve it here.
                   </p>
                 </div>
@@ -617,26 +617,26 @@ export default function MemoryChestScreen({ onBack, onNavigate }: MemoryChestScr
                 reflections.map(ref => (
                   <div
                     key={ref.id}
-                    className="rounded-2xl bg-neutral-900/40 border border-neutral-800/60 p-5 mb-4 transition-all duration-300 hover:border-neutral-700/70 group"
+                    className="rounded-2xl bg-[#141416] border border-[#222225] p-5 mb-4 transition-all duration-300 hover:border-[#3F3F46] group"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] tracking-widest text-neutral-500 uppercase font-mono">
+                      <span className="text-[10px] tracking-widest text-[#71717A] uppercase font-mono">
                         Reflection · {formatDate(ref.timestamp)}
                       </span>
                       <button
                         onClick={() => handleDeleteReflection(ref.id)}
                         aria-label="Let go of reflection"
-                        className="text-[10px] tracking-wider uppercase text-neutral-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
+                        className="text-[10px] tracking-wider uppercase text-[#52525B] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none cursor-pointer"
                       >
                         Let go
                       </button>
                     </div>
                     {/* Prompt Header Quote */}
-                    <p className="text-xs text-neutral-400 font-serif-nook italic mb-3 leading-relaxed border-l-2 border-neutral-800 pl-3 py-0.5">
+                    <p className="text-xs text-[#71717A] font-serif-nook italic mb-3 leading-relaxed border-l-2 border-[#222225] pl-3 py-0.5">
                       "{ref.prompt}"
                     </p>
                     {/* Response */}
-                    <p className="font-serif-nook text-neutral-200 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
+                    <p className="font-serif-nook text-[#E5E5E7] text-sm md:text-base leading-relaxed whitespace-pre-wrap font-light">
                       {ref.response}
                     </p>
                   </div>

@@ -33,7 +33,7 @@ export default function ScreenHeader({
           flex items-center gap-1.5 py-1.5 px-1
           font-sans text-[#52525B] text-[0.62rem]
           tracking-[0.14em] uppercase
-          hover:text-[#71717A] transition-colors
+          hover:text-[#E5E5E7] transition-colors
           focus:outline-none
         "
       >
@@ -43,11 +43,11 @@ export default function ScreenHeader({
 
       {/* Screen Title & Subtitle */}
       <div className="flex flex-col items-center gap-[2px]">
-        <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
+        <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
           {title}
         </h1>
         {subtitle && (
-          <p className="font-sans text-[#3A3A3A] text-[0.58rem] tracking-[0.1em] text-center">
+          <p className="font-sans text-[#71717A] text-[0.58rem] tracking-[0.1em] text-center">
             {subtitle}
           </p>
         )}

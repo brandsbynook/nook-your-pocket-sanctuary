@@ -138,10 +138,10 @@ export default function VoiceDump() {
 
   // ── Render ──────────────────────────────────────
   return (
-    <div className="flex flex-col flex-1 items-center justify-between min-h-0">
+    <div className="flex-1 flex flex-col items-center justify-start min-h-0 w-full pt-3 sm:pt-6 pb-2 overflow-y-auto">
 
-      {/* Central record area */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full my-auto">
+      {/* Central record card */}
+      <div className="w-full max-w-lg min-h-[300px] flex flex-col items-center justify-center mx-auto bg-[#141416] border border-[#222225] p-5 md:p-6 rounded-2xl shadow-xl relative mt-4 sm:mt-6">
 
         {/* ── idle / requesting ── */}
         {(state === 'idle' || state === 'requesting') && (
@@ -161,13 +161,13 @@ export default function VoiceDump() {
               <span className="
                 flex items-center justify-center
                 w-20 h-20 rounded-full
-                border border-neutral-700/60 bg-neutral-900/40
+                border border-[#222225] bg-[#0A0A0B]/60
                 transition-all duration-500
-                group-hover:border-neutral-500/80 group-hover:bg-neutral-800/60 group-hover:scale-105
+                group-hover:border-[#52525B] group-hover:bg-[#18181E] group-hover:scale-105
                 shadow-lg
               ">
                 {/* Mic SVG */}
-                <svg width="24" height="28" viewBox="0 0 22 26" fill="none" className="text-neutral-400 group-hover:text-neutral-200 transition-colors duration-300">
+                <svg width="24" height="28" viewBox="0 0 22 26" fill="none" className="text-[#71717A] group-hover:text-[#E5E5E7] transition-colors duration-300">
                   <rect x="6" y="1" width="10" height="15" rx="5" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M1 12C1 17.5 5.5 22 11 22C16.5 22 21 17.5 21 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   <line x1="11" y1="22" x2="11" y2="25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -176,7 +176,7 @@ export default function VoiceDump() {
             </button>
 
             {/* Prompt text directly underneath central mic */}
-            <p className="text-xs md:text-sm text-neutral-400/80 font-serif-nook italic text-center max-w-xs mx-auto mt-6 font-normal leading-relaxed">
+            <p className="text-xs md:text-sm text-[#71717A] font-serif-nook italic text-center max-w-xs mx-auto mt-6 font-normal leading-relaxed">
               {state === 'requesting' ? 'Connecting microphone...' : 'Rant, vent out, scream. No one is listening but you.'}
             </p>
           </div>
@@ -190,23 +190,23 @@ export default function VoiceDump() {
             aria-label="Stop recording"
             className="flex flex-col items-center gap-4 group focus:outline-none cursor-pointer animate-fade-in"
           >
-            {/* Warm Breathing Glow Ring */}
+            {/* Breathing Glow Ring */}
             <span className="
               relative flex items-center justify-center
               w-20 h-20 rounded-full
-              border border-amber-200/40 bg-neutral-900/80
-              ring-8 ring-amber-200/10 animate-pulse
+              border border-[#E5E5E7]/40 bg-[#141416]
+              ring-8 ring-[#E5E5E7]/10 animate-pulse
               transition-all duration-500
             ">
               {/* Stop Square */}
-              <span className="w-6 h-6 bg-amber-100/90 rounded-md shadow-md" />
+              <span className="w-6 h-6 bg-[#E5E5E7] rounded-md shadow-md" />
             </span>
             {/* Elapsed time and prompt */}
             <div className="flex flex-col items-center gap-1">
-              <span className="font-mono text-neutral-200 text-sm tracking-widest tabular-nums">
+              <span className="font-mono text-[#E5E5E7] text-sm tracking-widest tabular-nums">
                 {formatDuration(elapsed)}
               </span>
-              <span className="text-xs text-neutral-400/80 font-serif-nook italic mt-2">
+              <span className="text-xs text-[#71717A] font-serif-nook italic mt-2">
                 Tap again to stop
               </span>
             </div>
@@ -217,7 +217,7 @@ export default function VoiceDump() {
         {state === 'preview' && audio.url && (
           <div className="w-full flex flex-col items-center gap-6 animate-fade-in">
             {/* Duration */}
-            <span className="font-mono text-neutral-400 text-xs tracking-widest">
+            <span className="font-mono text-[#71717A] text-xs tracking-widest">
               {formatDuration(audio.duration)}
             </span>
 
@@ -227,17 +227,17 @@ export default function VoiceDump() {
               src={audio.url}
               controls
               className="w-full h-9 opacity-80 hover:opacity-100 transition-opacity"
-              style={{ accentColor: '#C9B99A' }}
+              style={{ accentColor: '#E5E5E7' }}
             />
 
             {/* Actions */}
-            <div className="flex items-center justify-between w-full border-t border-neutral-800/80 pt-4">
+            <div className="flex items-center justify-between w-full border-t border-[#1F1F23] pt-4">
               <button
                 id="voice-discard-btn"
                 onClick={handleDiscard}
                 className="
                   font-mono text-[11px] tracking-widest uppercase
-                  text-neutral-500 hover:text-neutral-300
+                  text-[#71717A] hover:text-[#E5E5E7]
                   transition-colors duration-200 focus:outline-none cursor-pointer
                 "
               >
@@ -248,7 +248,7 @@ export default function VoiceDump() {
                 onClick={handleKeep}
                 className="
                   font-mono text-[11px] tracking-widest uppercase
-                  text-neutral-500 hover:text-neutral-300
+                  text-[#71717A] hover:text-[#E5E5E7]
                   transition-colors duration-200 focus:outline-none cursor-pointer
                 "
               >
@@ -287,8 +287,6 @@ export default function VoiceDump() {
           </div>
         )}
       </div>
-
-      <div className="h-4" />
     </div>
   )
 }

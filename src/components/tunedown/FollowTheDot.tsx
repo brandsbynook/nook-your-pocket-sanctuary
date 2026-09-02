@@ -220,10 +220,10 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="relative w-full h-full min-h-[70vh] flex-1 flex items-center justify-center overflow-hidden touch-none select-none bg-[#0B0B0E] animate-fade-in"
+      className="relative w-full h-full min-h-[70vh] flex-1 flex items-center justify-center overflow-hidden touch-none select-none bg-[#0A0A0B] animate-fade-in"
     >
       {/* Subtitle */}
-      <p className="absolute top-16 left-4 right-4 z-20 font-serif-nook text-neutral-400 text-xs font-light italic text-center pointer-events-none">
+      <p className="absolute top-16 left-4 right-4 z-20 font-serif-nook text-[#71717A] text-xs font-light italic text-center pointer-events-none">
         {pattern === 'bloom'
           ? 'A quiet visual anchor. Soften your focus and let your peripheral gaze widen.'
           : 'Smooth organic drift. Touch and hold to softly guide the light.'}
@@ -233,7 +233,7 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       {pattern === 'dynamic' && ripples.map(r => (
         <div
           key={r.id}
-          className="absolute rounded-full border border-[#EAE5DC]/25 pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
+          className="absolute rounded-full border border-[#E5E5E7]/25 pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
           style={{
             left: `${r.x}px`,
             top: `${r.y}px`,
@@ -270,7 +270,7 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
               top: `${r.y}px`,
               width: `${radius * 2}px`,
               height: `${radius * 2}px`,
-              border: '1px solid #C9B99A',
+              border: '1px solid #E5E5E7',
               opacity,
             }}
           />
@@ -286,7 +286,7 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
             transform: 'translate3d(50vw, 50vh, 0)',
           }}
         >
-          <div className="w-[18px] h-[18px] rounded-full bg-[#EAE5DC]" />
+          <div className="w-[18px] h-[18px] rounded-full bg-[#E5E5E7]" />
         </div>
       )}
 

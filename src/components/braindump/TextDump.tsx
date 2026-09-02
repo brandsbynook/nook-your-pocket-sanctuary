@@ -58,11 +58,11 @@ export default function TextDump() {
   const activeFontClass = getFontFamilyClass(font)
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full py-2">
-      <div className="w-full max-w-2xl mx-auto bg-[#161412] border border-[#2C2926] p-6 md:p-8 rounded-2xl shadow-xl flex flex-col relative my-auto">
+    <div className="flex-1 flex flex-col items-center justify-start min-h-0 w-full pt-3 sm:pt-6 pb-2 overflow-y-auto">
+      <div className="w-full max-w-lg min-h-[300px] flex flex-col mx-auto bg-[#141416] border border-[#222225] p-5 md:p-6 rounded-2xl shadow-xl relative mt-4 sm:mt-6">
         {/* Helper text */}
         <div className="mb-4">
-          <p className="font-serif-nook text-neutral-500 text-[0.92rem] font-light italic leading-snug">
+          <p className="font-serif-nook text-[#71717A] text-[0.92rem] font-light italic leading-snug">
             Everything can go here.
           </p>
         </div>
@@ -80,10 +80,10 @@ export default function TextDump() {
             autoCapitalize="off"
             disabled={isCrumpling}
             className={`
-              w-full bg-transparent resize-none outline-none border-none
-              ${activeFontClass} text-neutral-200/90 text-[0.98rem]
+              w-full bg-transparent resize-none outline-none focus:outline-none border-none
+              ${activeFontClass} text-[#E5E5E7] text-[0.98rem]
               font-light leading-[1.85] tracking-wide
-              placeholder:text-neutral-700
+              placeholder:text-[#52525B]
               min-h-[140px] transition-all duration-300
             `}
             style={{ height: 'auto' }}
@@ -93,7 +93,7 @@ export default function TextDump() {
         {/* Soft Particle Puff at Release Point */}
         {showPuff && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <div className="w-20 h-20 rounded-full border border-neutral-500/30 bg-neutral-700/20 backdrop-blur-xs animate-puff-fade" />
+            <div className="w-20 h-20 rounded-full border border-[#52525B]/30 bg-[#27272A]/20 backdrop-blur-xs animate-puff-fade" />
           </div>
         )}
 
@@ -102,7 +102,7 @@ export default function TextDump() {
           className={`
             text-center font-sans text-[0.6rem] tracking-[0.2em] uppercase
             transition-all duration-500 mb-3
-            ${status === 'saved'   ? 'text-[#C9B99A] opacity-100' :
+            ${status === 'saved'   ? 'text-[#E5E5E7] opacity-100' :
               status === 'cleared' ? 'text-[#52525B] opacity-100' :
                                      'opacity-0'}
           `}
@@ -113,14 +113,14 @@ export default function TextDump() {
         </div>
 
         {/* Equalized Bottom actions */}
-        <div className="flex items-center justify-between border-t border-neutral-800/80 pt-4">
+        <div className="flex items-center justify-between border-t border-[#1F1F23] pt-4 mt-auto">
           <button
             id="text-dump-discard"
             onClick={handleClear}
             disabled={!text || isCrumpling}
             className="
               font-mono text-[11px] tracking-widest uppercase
-              text-neutral-500 hover:text-neutral-300
+              text-[#71717A] hover:text-[#E5E5E7]
               disabled:opacity-30 disabled:cursor-not-allowed
               transition-colors duration-200 focus:outline-none cursor-pointer
             "
@@ -134,7 +134,7 @@ export default function TextDump() {
             onClick={() => setShowTypefaceModal(true)}
             className="
               font-mono text-[11px] tracking-widest uppercase
-              text-neutral-500 hover:text-neutral-300
+              text-[#71717A] hover:text-[#E5E5E7]
               transition-colors duration-200 focus:outline-none cursor-pointer
             "
           >
@@ -147,7 +147,7 @@ export default function TextDump() {
             disabled={!text.trim() || isCrumpling}
             className="
               font-mono text-[11px] tracking-widest uppercase
-              text-neutral-500 hover:text-neutral-300
+              text-[#71717A] hover:text-[#E5E5E7]
               disabled:opacity-30 disabled:cursor-not-allowed
               transition-colors duration-200 focus:outline-none cursor-pointer
             "

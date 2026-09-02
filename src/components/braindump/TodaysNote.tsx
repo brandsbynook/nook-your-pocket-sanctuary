@@ -60,8 +60,8 @@ export default function TodaysNote() {
   const activeFontClass = getFontFamilyClass(font)
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-0 w-full py-2">
-      <div className="w-full max-w-lg mx-auto bg-[#161412] border border-[#2C2926] p-5 md:p-6 rounded-2xl shadow-xl flex flex-col relative my-auto">
+    <div className="flex-1 flex flex-col items-center justify-start min-h-0 w-full pt-3 sm:pt-6 pb-2 overflow-y-auto">
+      <div className="w-full max-w-lg min-h-[300px] flex flex-col mx-auto bg-[#141416] border border-[#222225] p-5 md:p-6 rounded-2xl shadow-xl relative mt-4 sm:mt-6">
         {/* Date stamp */}
         <div className="mb-4">
           <p className="font-sans text-[#52525B] text-[0.62rem] tracking-[0.2em] uppercase">
@@ -84,10 +84,10 @@ export default function TodaysNote() {
             autoCapitalize="sentences"
             disabled={isCrumpling}
             className={`
-              w-full bg-transparent resize-none outline-none border-none
-              ${activeFontClass} text-neutral-200/90 text-[0.98rem]
+              w-full bg-transparent resize-none outline-none focus:outline-none border-none
+              ${activeFontClass} text-[#E5E5E7] text-[0.98rem]
               font-light leading-[1.85] tracking-wide
-              placeholder:text-neutral-500/60 placeholder:italic placeholder:font-serif-nook
+              placeholder:text-[#52525B] placeholder:italic placeholder:font-serif-nook
               min-h-[120px] transition-all duration-300
             `}
             style={{ height: 'auto' }}
@@ -97,7 +97,7 @@ export default function TodaysNote() {
         {/* Soft Particle Puff at Release Point */}
         {showPuff && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <div className="w-20 h-20 rounded-full border border-neutral-500/30 bg-neutral-700/20 backdrop-blur-xs animate-puff-fade" />
+            <div className="w-20 h-20 rounded-full border border-[#52525B]/30 bg-[#27272A]/20 backdrop-blur-xs animate-puff-fade" />
           </div>
         )}
 
@@ -105,8 +105,8 @@ export default function TodaysNote() {
         <div
           className={`
             text-center font-serif-nook text-xs italic tracking-wider transition-all duration-500 mb-3
-            ${status === 'saved'   ? 'text-[#C9B99A] opacity-100' :
-              status === 'cleared' ? 'text-neutral-500 font-sans uppercase text-[0.6rem] tracking-[0.2em] opacity-100' :
+            ${status === 'saved'   ? 'text-[#E5E5E7] opacity-100' :
+              status === 'cleared' ? 'text-[#52525B] font-sans uppercase text-[0.6rem] tracking-[0.2em] opacity-100' :
                                      'opacity-0'}
           `}
           aria-live="polite"
@@ -116,14 +116,14 @@ export default function TodaysNote() {
         </div>
 
         {/* Equalized Bottom actions */}
-        <div className="flex items-center justify-between border-t border-neutral-800/80 pt-4">
+        <div className="flex items-center justify-between border-t border-[#1F1F23] pt-4 mt-auto">
           <button
             id="todays-note-clear-btn"
             onClick={handleClear}
             disabled={!text || isCrumpling}
             className="
               font-mono text-[11px] tracking-widest uppercase
-              text-neutral-500 hover:text-neutral-300
+              text-[#71717A] hover:text-[#E5E5E7]
               disabled:opacity-30 disabled:cursor-not-allowed
               transition-colors duration-200 focus:outline-none cursor-pointer
             "
@@ -137,7 +137,7 @@ export default function TodaysNote() {
             onClick={() => setShowTypefaceModal(true)}
             className="
               font-mono text-[11px] tracking-widest uppercase
-              text-neutral-500 hover:text-neutral-300
+              text-[#71717A] hover:text-[#E5E5E7]
               transition-colors duration-200 focus:outline-none cursor-pointer
             "
           >
@@ -150,7 +150,7 @@ export default function TodaysNote() {
             disabled={!text.trim() || isCrumpling}
             className="
               font-mono text-[11px] tracking-widest uppercase
-              text-neutral-500 hover:text-neutral-300
+              text-[#71717A] hover:text-[#E5E5E7]
               disabled:opacity-30 disabled:cursor-not-allowed
               transition-colors duration-200 focus:outline-none cursor-pointer
             "

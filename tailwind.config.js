@@ -8,12 +8,14 @@ export default {
     extend: {
       colors: {
         sanctuary: {
-          bg:      "#0E0E0E",
-          surface: "#141414",
-          divider: "#222222",
-          text:    "#E5E0D8",
+          bg:      "#0A0A0B",
+          surface: "#141416",
+          divider: "#1F1F23",
+          border:  "#222225",
+          text:    "#E5E5E7",
           muted:   "#71717A",
-          accent:  "#C9B99A",
+          subtle:  "#52525B",
+          accent:  "#E5E5E7",
         },
       },
       fontFamily: {

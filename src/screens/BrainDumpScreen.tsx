@@ -27,7 +27,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
         px-6 pt-10 pb-6
         flex flex-col items-center
         overflow-hidden
-        bg-[var(--bg-primary,#0E0E0E)]
+        bg-[#0A0A0B]
         animate-fade-in
       "
     >
@@ -44,7 +44,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
               font-sans text-[#52525B] text-[0.62rem]
               tracking-[0.14em] uppercase
               transition-colors duration-300
-              hover:text-[#71717A]
+              hover:text-[#E5E5E7]
               focus:outline-none
             "
           >
@@ -54,7 +54,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
 
           {/* Screen title */}
           <h1 className="
-            font-serif-nook text-[#E5E0D8]
+            font-serif-nook text-[#E5E5E7]
             text-xl font-light tracking-[0.18em] leading-none
           ">
             Brain Dump
@@ -70,7 +70,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
         <div
           role="tablist"
           aria-label="Brain dump modes"
-          className="flex items-center justify-between mb-6 border-b border-neutral-800/60 pb-2.5 shrink-0"
+          className="flex items-center justify-between mb-6 border-b border-[#1F1F23] pb-2.5 shrink-0"
         >
           {tabs.map(tab => {
             const isActive = tab.id === activeTab
@@ -87,7 +87,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
                   transition-colors duration-200 focus:outline-none cursor-pointer
                 "
               >
-                <span className={isActive ? 'text-neutral-200 font-medium' : 'text-neutral-500 hover:text-neutral-400 font-normal'}>
+                <span className={isActive ? 'text-[#E5E5E7] font-medium' : 'text-[#52525B] hover:text-[#71717A] font-normal'}>
                   {tab.label}
                 </span>
               </button>
@@ -100,7 +100,7 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
           id={`panel-${activeTab}`}
           role="tabpanel"
           aria-labelledby={`tab-${activeTab}`}
-          className="flex flex-col flex-1 min-h-0 animate-fade-in"
+          className="flex flex-col flex-1 min-h-0 animate-fade-in justify-start pt-3 sm:pt-6"
           key={activeTab}   /* remount panel on tab switch to reset state */
         >
           {activeTab === 'text'  && <TextDump />}

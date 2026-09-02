@@ -39,20 +39,20 @@ export default function QuickAudioSheet({
         id="quick-audio-sheet"
         className="
           w-full max-w-[440px] mx-auto
-          bg-[#121216] border-t border-x border-[#22222A]
+          bg-[#141416] border-t border-x border-[#222225]
           rounded-t-2xl px-6 pt-5 pb-8
           shadow-2xl animate-lift-in select-none
         "
         onClick={e => e.stopPropagation()}
       >
         {/* ── Top Handle & Header ───────────────────────────── */}
-        <div className="w-10 h-1 bg-[#262630] rounded-full mx-auto mb-4" />
+        <div className="w-10 h-1 bg-[#222225] rounded-full mx-auto mb-4" />
 
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#1A1A22] border border-[#2A2A34] flex items-center justify-center text-[#F4F0EA]">
+            <div className="w-8 h-8 rounded-full bg-[#18181C] border border-[#222225] flex items-center justify-center text-[#E5E5E7]">
               {isAudioPlaying ? (
-                <span className="w-2 h-2 rounded-full bg-[#C9B99A] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#E5E5E7] animate-pulse" />
               ) : (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
@@ -62,7 +62,7 @@ export default function QuickAudioSheet({
             </div>
 
             <div className="flex flex-col">
-              <span className="font-serif-nook text-[#FFFFFF] text-base font-light tracking-wide leading-none">
+              <span className="font-serif-nook text-[#E5E5E7] text-base font-light tracking-wide leading-none">
                 {currentPreset.subtitle}
               </span>
               <span className="font-sans text-[0.55rem] tracking-[0.16em] uppercase text-[#71717A] mt-1">
@@ -80,14 +80,14 @@ export default function QuickAudioSheet({
                 px-3.5 py-1.5 rounded-full border text-[0.62rem] font-sans tracking-[0.14em] uppercase
                 transition-all duration-300 focus:outline-none flex items-center gap-1.5
                 ${isAudioPlaying
-                  ? 'border-[#C9B99A]/50 bg-[#1E1C1A] text-[#E5E0D8]'
-                  : 'border-[#2E2E3C] bg-[#181820] text-[#A1A1AA] hover:text-white'
+                  ? 'border-[#3F3F46] bg-[#222225] text-[#E5E5E7]'
+                  : 'border-[#222225] bg-[#141416] text-[#71717A] hover:text-[#E5E5E7]'
                 }
               `}
             >
               {isAudioPlaying ? (
                 <>
-                  <span className="w-1.5 h-1.5 bg-[#C9B99A] rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-[#E5E5E7] rounded-full" />
                   Pause
                 </>
               ) : (
@@ -102,7 +102,7 @@ export default function QuickAudioSheet({
               id="sheet-close-btn"
               onClick={closeQuickSheet}
               aria-label="Close sound sheet"
-              className="p-1.5 text-[#52525B] hover:text-[#A1A1AA] rounded-full transition-colors focus:outline-none"
+              className="p-1.5 text-[#52525B] hover:text-[#E5E5E7] rounded-full transition-colors focus:outline-none"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -129,8 +129,8 @@ export default function QuickAudioSheet({
                   className={`
                     py-2.5 px-2 rounded-xl border text-center transition-all duration-300 focus:outline-none
                     ${isSelected
-                      ? 'border-[#FFFFFF]/40 bg-[#1C1C24] text-[#FFFFFF] shadow-sm'
-                      : 'border-[#1E1E26] bg-[#141418] text-[#71717A] hover:border-[#2E2E3A] hover:text-[#A1A1AA]'
+                      ? 'border-[#3F3F46] bg-[#1A1A1E] text-[#E5E5E7] shadow-sm'
+                      : 'border-[#222225] bg-[#0A0A0B] text-[#71717A] hover:border-[#3F3F46] hover:text-[#E5E5E7]'
                     }
                   `}
                 >
@@ -143,12 +143,12 @@ export default function QuickAudioSheet({
         </div>
 
         {/* ── Master Volume Slider ─────────────────────────── */}
-        <div className="mb-6 bg-[#16161C] border border-[#22222C] rounded-xl p-3.5">
+        <div className="mb-6 bg-[#18181C] border border-[#222225] rounded-xl p-3.5">
           <div className="flex items-center justify-between mb-2">
             <span className="font-sans text-[0.56rem] tracking-[0.16em] uppercase text-[#71717A]">
               Master Volume
             </span>
-            <span className="font-sans text-[0.62rem] text-[#A1A1AA] tabular-nums">
+            <span className="font-sans text-[0.62rem] text-[#71717A] tabular-nums">
               {Math.round(volume * 100)}%
             </span>
           </div>
@@ -167,8 +167,8 @@ export default function QuickAudioSheet({
               value={volume}
               onChange={e => setVolume(parseFloat(e.target.value))}
               className="
-                w-full h-1.5 bg-[#262632] rounded-lg appearance-none cursor-pointer
-                accent-[#F4F0EA] focus:outline-none
+                w-full h-1.5 bg-[#1F1F23] rounded-lg appearance-none cursor-pointer
+                accent-[#E5E5E7] focus:outline-none
               "
             />
 
@@ -184,9 +184,9 @@ export default function QuickAudioSheet({
           id="explore-sound-sanctuary-btn"
           onClick={handleNavigate}
           className="
-            w-full py-2.5 border border-[#2E2E3A] rounded-xl
-            font-serif-nook text-[#E5E0D8] text-[0.95rem] font-light
-            hover:border-[#C9B99A]/50 hover:bg-[#1A1A22] hover:text-[#C9B99A]
+            w-full py-2.5 border border-[#222225] rounded-xl
+            font-serif-nook text-[#E5E5E7] text-[0.95rem] font-light
+            hover:border-[#3F3F46] hover:bg-[#1A1A1E] hover:text-white
             transition-all duration-300 focus:outline-none flex items-center justify-center gap-2
           "
         >

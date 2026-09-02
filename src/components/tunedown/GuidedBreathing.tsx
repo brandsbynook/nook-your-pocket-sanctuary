@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import BottomControlsDock from './BottomControlsDock'
 
 /* ─── Pattern Definitions (2 Essential Cadences) ─── */
 export type PatternId = 'soft' | 'box'
@@ -33,7 +32,7 @@ interface Pattern {
 const PATTERNS: Pattern[] = [
   {
     id: 'soft',
-    label: 'Unhurried Flow',
+    label: 'Soft (4-4)',
     subline: 'equal-ratio steady calm breath (4–4)',
     phases: [
       { kind: 'orb', name: 'Inhale', duration: 4, scale: 1.35, opacity: 0.75 },
@@ -167,23 +166,12 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
     setIsActive(prev => !prev)
   }
 
-  /* ── Reset ────────────────────────────────────────────────── */
-  function handleReset(e: React.MouseEvent) {
-    e.stopPropagation()
-    stopTick()
-    setIsActive(false)
-    setPhaseIndex(0)
-    setSecondsLeft(activePattern.phases[0].duration)
-    phaseIndexRef.current = 0
-    secondsLeftRef.current = activePattern.phases[0].duration
-  }
-
   /* ── Orb CSS transition duration (tied to phase duration) ─── */
   function orbTransitionStyle(phase: OrbPhase) {
     const durMs = phase.duration * 1000
     const easing = phase.name === 'Inhale' ? 'ease-out'
                  : phase.name === 'Exhale' ? 'ease-in-out'
-                 : 'linear' // Hold: instant, no re-scale
+                 : 'linear'
     return {
       transform: isActive ? `scale(${phase.scale})` : 'scale(1.0)',
       opacity: isActive ? phase.opacity : 0.3,
@@ -195,30 +183,50 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
 
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
-
-      {/* ── 1. Static Subtle Cue (Top Mode Switcher Removed) ────── */}
-      <div
-        className={`
-          w-full flex flex-col items-center pt-2 shrink-0 transition-all duration-700
-          ${isActive ? 'opacity-0 pointer-events-none -translate-y-2' : 'opacity-100 translate-y-0'}
-        `}
-      >
-        {/* Single-Line Physiological Validation Cue */}
-        <div className="mb-4 max-w-xs mx-auto overflow-hidden px-2 w-full">
-          <p
-            className="font-serif-nook italic text-[#8C8275] text-xs tracking-wider text-center whitespace-nowrap truncate transition-opacity duration-1000"
-            style={{ opacity: cueVisible && !isActive ? 1 : 0 }}
+      {/* ── 1. Top Document Flow (Pills & Mantra) ── */}
+      <div className="w-full flex flex-col items-center shrink-0">
+        {/* Row of Pill Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            id="pattern-pill-soft"
+            onClick={() => handleSelectPattern('soft')}
+            className={
+              patternId === 'soft'
+                ? 'border border-[#52525B] bg-[#18181B] text-[#E5E5E7] px-3.5 py-1.5 rounded-full text-xs font-sans'
+                : 'border border-[#222225] text-[#71717A] hover:text-[#E5E5E7] px-3.5 py-1.5 rounded-full text-xs font-sans transition-colors'
+            }
           >
-            {PHYSIOLOGICAL_CUES[cueIndex]}
-          </p>
+            Soft (4-4)
+          </button>
+
+          <button
+            type="button"
+            id="pattern-pill-box"
+            onClick={() => handleSelectPattern('box')}
+            className={
+              patternId === 'box'
+                ? 'border border-[#52525B] bg-[#18181B] text-[#E5E5E7] px-3.5 py-1.5 rounded-full text-xs font-sans'
+                : 'border border-[#222225] text-[#71717A] hover:text-[#E5E5E7] px-3.5 py-1.5 rounded-full text-xs font-sans transition-colors'
+            }
+          >
+            Box Breathing (4-4-4-4)
+          </button>
         </div>
+
+        {/* Physiological Cue */}
+        <p
+          className="font-serif-nook italic text-[#71717A] text-xs tracking-wider text-center mt-3 transition-opacity duration-700"
+          style={{ opacity: cueVisible ? 1 : 0 }}
+        >
+          {PHYSIOLOGICAL_CUES[cueIndex]}
+        </p>
       </div>
 
-      {/* ── 2. Central Interactive Visualizer ────────────────── */}
+      {/* ── 2. Central Interactive Visualizer Float in Center ── */}
       <div className="relative my-auto flex flex-col items-center justify-center min-h-[240px]">
-
         {patternId === 'box' ? (
-          /* ── 2D BOX: SVG Square with rx="16" ry="16", 1.5px Track (#2C2926) & Animated 1.5px Fill (#EAE5DC) ── */
+          /* ── 2D BOX: SVG Square ── */
           <div
             onClick={handleTogglePlay}
             className="relative flex items-center justify-center cursor-pointer group select-none"
@@ -232,23 +240,23 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               height="220"
               className="absolute inset-0 block overflow-visible"
             >
-              {/* ── Base track 1.5px stroke (#2C2926) ── */}
+              {/* Base track */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
                 rx="16" ry="16"
                 fill="none"
-                stroke="#2C2926"
+                stroke="#222225"
                 strokeWidth="1.5"
               />
 
-              {/* ── Crisp #EAE5DC 1.5px progressive stroke fill (Smoothly following rx=16 ry=16 rounded corners) ── */}
+              {/* Progressive stroke fill */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
                 rx="16" ry="16"
                 fill="none"
-                stroke="#EAE5DC"
+                stroke="#E5E5E7"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 pathLength="100"
@@ -267,18 +275,18 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               />
             </svg>
 
-            {/* ── Center Dynamic Phase Display ── */}
+            {/* Center Dynamic Phase Display */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center gap-0.5 pointer-events-none">
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-xs tracking-wider text-[#8C8275] italic group-hover:text-[#EAE5DC] transition-colors duration-200">
+                <span className="font-serif-nook text-xs tracking-wider text-[#71717A] italic group-hover:text-[#E5E5E7] transition-colors duration-200">
                   tap to begin
                 </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-[#EAE5DC] text-[16px] font-light tracking-wide capitalize">
+                  <span className="font-serif-nook text-[#E5E5E7] text-[16px] font-light tracking-wide capitalize">
                     {currentPhase.name}
                   </span>
-                  <span className="font-sans text-xs tracking-wider text-[#8C8275] tabular-nums mt-0.5">
+                  <span className="font-sans text-xs tracking-wider text-[#71717A] tabular-nums mt-0.5">
                     {secondsLeft}s
                   </span>
                 </>
@@ -295,7 +303,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
           >
             {/* Ambient atmosphere */}
             <div
-              className="absolute w-56 h-56 rounded-full bg-[#C9B99A]/5 blur-3xl pointer-events-none"
+              className="absolute w-56 h-56 rounded-full bg-[#E5E5E7]/5 blur-3xl pointer-events-none"
               style={{
                 transform: isActive
                   ? `scale(${(currentPhase as OrbPhase).scale * 1.15})`
@@ -309,7 +317,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
 
             {/* Outer breath ring */}
             <div
-              className="absolute w-48 h-48 rounded-full border border-[#C9B99A]/12 pointer-events-none"
+              className="absolute w-48 h-48 rounded-full border border-[#E5E5E7]/12 pointer-events-none"
               style={{
                 transform: isActive
                   ? `scale(${(currentPhase as OrbPhase).scale * 1.04})`
@@ -325,24 +333,24 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
             <div
               className="
                 w-36 h-36 rounded-full
-                bg-[#161412]
-                border border-[#2C2926]
+                bg-[#141416]
+                border border-[#222225]
                 flex flex-col items-center justify-center
-                group-hover:border-[#3A3632]
+                group-hover:border-[#3F3F46]
                 pointer-events-none
               "
               style={orbTransitionStyle(currentPhase as OrbPhase)}
             >
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
-                <span className="font-serif-nook text-xs tracking-wider text-[#8C8275] italic">
+                <span className="font-serif-nook text-xs tracking-wider text-[#71717A] italic">
                   tap to begin
                 </span>
               ) : (
                 <>
-                  <span className="font-serif-nook text-[#EAE5DC] text-[16px] font-light tracking-wide capitalize">
+                  <span className="font-serif-nook text-[#E5E5E7] text-[16px] font-light tracking-wide capitalize">
                     {currentPhase.name}
                   </span>
-                  <span className="font-sans text-xs tracking-wider text-[#8C8275] tabular-nums mt-0.5">
+                  <span className="font-sans text-xs tracking-wider text-[#71717A] tabular-nums mt-0.5">
                     {secondsLeft}s
                   </span>
                 </>
@@ -351,55 +359,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
           </div>
         )}
       </div>
-
-      {/* ── 3. Standardized Unified Bottom Controls Dock ────────── */}
-      <BottomControlsDock>
-        {/* Mode Segmented Buttons */}
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            id="pattern-pill-soft"
-            onClick={() => handleSelectPattern('soft')}
-            className={`
-              px-3.5 py-1 rounded-full text-xs transition-colors cursor-pointer focus:outline-none select-none
-              ${patternId === 'soft'
-                ? 'bg-[#2C2926] text-[#EAE5DC] font-medium'
-                : 'text-[#8C8275] hover:text-[#EAE5DC]'
-              }
-            `}
-          >
-            4-4
-          </button>
-
-          <button
-            type="button"
-            id="pattern-pill-box"
-            onClick={() => handleSelectPattern('box')}
-            className={`
-              px-3.5 py-1 rounded-full text-xs transition-colors cursor-pointer focus:outline-none select-none
-              ${patternId === 'box'
-                ? 'bg-[#2C2926] text-[#EAE5DC] font-medium'
-                : 'text-[#8C8275] hover:text-[#EAE5DC]'
-              }
-            `}
-          >
-            4-4-4-4
-          </button>
-        </div>
-
-        {/* Subtle 1px vertical line divider */}
-        <div className="h-4 w-[1px] bg-[#2C2926]" />
-
-        {/* Reset Button */}
-        <button
-          type="button"
-          id="breath-reset-btn"
-          onClick={handleReset}
-          className="text-[#8C8275] hover:text-[#EAE5DC] px-3 py-1 text-xs uppercase tracking-wider transition-colors focus:outline-none cursor-pointer select-none"
-        >
-          Reset
-        </button>
-      </BottomControlsDock>
     </div>
   )
 }
+

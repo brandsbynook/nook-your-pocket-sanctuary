@@ -144,7 +144,7 @@ export default function DecelerationModal({
     >
       <div
         className="
-          w-full max-w-sm bg-[#101014] border border-[#22222C]
+          w-full max-w-sm bg-[#141416] border border-[#222225]
           rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center
           shadow-2xl relative overflow-hidden select-none animate-lift-in
         "
@@ -154,31 +154,31 @@ export default function DecelerationModal({
         <div
           className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(201,185,154,0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(229,229,231,0.08) 0%, transparent 70%)',
           }}
         />
 
         {/* Modal Title & Intentional Subtitle in Title Case */}
         <h2
           id="deceleration-modal-title"
-          className="font-serif-nook text-2xl font-light text-[#FFFFFF] tracking-wide"
+          className="font-serif-nook text-2xl font-light text-[#E5E5E7] tracking-wide"
         >
           Mindful Deceleration
         </h2>
-        <p className="font-serif-nook italic text-xs text-neutral-400 font-light mt-1 leading-relaxed px-2">
+        <p className="font-serif-nook italic text-xs text-[#71717A] font-light mt-1 leading-relaxed px-2">
           You are currently in stillness. Take a grounding breath before stepping away.
         </p>
 
         {/* Mode Toggle Switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#14141A] border border-[#262634] rounded-full my-5">
+        <div className="flex items-center gap-1.5 p-1 bg-[#18181C] border border-[#222225] rounded-full my-5">
           <button
             type="button"
             onClick={() => setMode('hold')}
             className={`
               px-4 py-1.5 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-200 cursor-pointer
               ${mode === 'hold'
-                ? 'bg-[#1E1C18] border border-[#C9B99A]/50 text-[#F4F0EA] shadow-sm'
-                : 'text-neutral-500 hover:text-neutral-300'
+                ? 'bg-[#222225] border border-[#3F3F46] text-[#E5E5E7] shadow-sm'
+                : 'text-[#71717A] hover:text-[#E5E5E7]'
               }
             `}
           >
@@ -195,8 +195,8 @@ export default function DecelerationModal({
             className={`
               px-4 py-1.5 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-200 cursor-pointer
               ${mode === 'breath'
-                ? 'bg-[#1E1C18] border border-[#C9B99A]/50 text-[#F4F0EA] shadow-sm'
-                : 'text-neutral-500 hover:text-neutral-300'
+                ? 'bg-[#222225] border border-[#3F3F46] text-[#E5E5E7] shadow-sm'
+                : 'text-[#71717A] hover:text-[#E5E5E7]'
               }
             `}
           >
@@ -236,7 +236,7 @@ export default function DecelerationModal({
                   cx={size / 2}
                   cy={size / 2}
                   r={radius}
-                  stroke={holdProgress > 0.8 ? '#F5F5F7' : '#C9B99A'}
+                  stroke={holdProgress > 0.8 ? '#FFFFFF' : '#E5E5E7'}
                   strokeWidth={strokeWidth}
                   fill="none"
                   strokeDasharray={circumference}
@@ -247,10 +247,10 @@ export default function DecelerationModal({
 
               {/* Inner hold text / indicator */}
               <div className="flex flex-col items-center justify-center p-3 text-center pointer-events-none">
-                <span className="font-serif-nook text-sm text-neutral-200 font-light">
+                <span className="font-serif-nook text-sm text-[#E5E5E7] font-light">
                   {isHolding ? `${holdSecondsLeft}s Left` : 'Press & Hold'}
                 </span>
-                <span className="font-serif-nook italic text-[11px] text-neutral-500 mt-0.5">
+                <span className="font-serif-nook italic text-[11px] text-[#71717A] mt-0.5">
                   {isHolding ? 'Stay grounded' : '8 seconds'}
                 </span>
               </div>
@@ -264,7 +264,7 @@ export default function DecelerationModal({
             {/* Visual Expanding Breath Bubble */}
             <div className="relative w-[130px] h-[130px] flex items-center justify-center">
               <div
-                className="w-24 h-24 rounded-full border border-[#C9B99A]/40 bg-[#1E1C18] flex flex-col items-center justify-center transition-transform duration-300"
+                className="w-24 h-24 rounded-full border border-[#3F3F46] bg-[#18181C] flex flex-col items-center justify-center transition-transform duration-300"
                 style={{
                   transform: breathActive
                     ? breathElapsed < 5
@@ -273,14 +273,14 @@ export default function DecelerationModal({
                     : 'scale(1)',
                 }}
               >
-                <span className="font-serif-nook text-base text-[#FFFFFF] font-light">
+                <span className="font-serif-nook text-base text-[#E5E5E7] font-light">
                   {breathCompleted
                     ? 'Complete'
                     : breathActive
                     ? breathPhase
                     : '10s Breath'}
                 </span>
-                <span className="font-serif-nook italic text-[10px] text-neutral-400 mt-0.5">
+                <span className="font-serif-nook italic text-[10px] text-[#71717A] mt-0.5">
                   {breathCompleted
                     ? 'Grounding complete'
                     : breathActive
@@ -291,9 +291,9 @@ export default function DecelerationModal({
             </div>
 
             {/* Linear Progress Bar for 10s Breath */}
-            <div className="w-48 h-1 bg-[#262634] rounded-full overflow-hidden mt-3">
+            <div className="w-48 h-1 bg-[#1F1F23] rounded-full overflow-hidden mt-3">
               <div
-                className="h-full bg-[#C9B99A] transition-all duration-100 ease-linear rounded-full"
+                className="h-full bg-[#E5E5E7] transition-all duration-100 ease-linear rounded-full"
                 style={{ width: `${breathProgressRatio * 100}%` }}
               />
             </div>
@@ -304,7 +304,7 @@ export default function DecelerationModal({
                 <button
                   type="button"
                   onClick={startBreathingCycle}
-                  className="font-serif-nook text-xs text-[#C9B99A] hover:underline cursor-pointer"
+                  className="font-serif-nook text-xs text-[#E5E5E7] hover:underline cursor-pointer"
                 >
                   Begin 10s Breath →
                 </button>
@@ -316,8 +316,8 @@ export default function DecelerationModal({
                   type="button"
                   onClick={onConfirmExit}
                   className="
-                    px-5 py-1.5 bg-[#22201C] border border-[#C9B99A]/60 text-[#FFFFFF]
-                    font-serif-nook text-xs rounded-full hover:bg-[#2A2722] transition-colors cursor-pointer shadow-sm
+                    px-5 py-1.5 bg-[#141416] border border-[#222225] text-[#E5E5E7]
+                    font-serif-nook text-xs rounded-full hover:bg-[#1E1E22] transition-colors cursor-pointer shadow-sm
                   "
                 >
                   Proceed to Return →
@@ -328,13 +328,13 @@ export default function DecelerationModal({
         )}
 
         {/* Modal Actions */}
-        <div className="w-full mt-6 pt-4 border-t border-[#22222C] flex flex-col gap-2">
+        <div className="w-full mt-6 pt-4 border-t border-[#1F1F23] flex flex-col gap-2">
           <button
             id="friction-stay-btn"
             type="button"
             onClick={onClose}
             className="
-              w-full py-2.5 rounded-xl bg-[#1D1B16] border border-[#C9B99A]/60 text-[#FFFFFF] hover:bg-[#24221C]
+              w-full py-2.5 rounded-xl bg-[#141416] border border-[#222225] text-[#E5E5E7] hover:bg-[#1E1E22]
               font-serif-nook text-sm font-light tracking-wide
               transition-all duration-200 cursor-pointer shadow-sm
             "

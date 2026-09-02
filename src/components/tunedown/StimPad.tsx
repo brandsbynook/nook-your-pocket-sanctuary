@@ -12,9 +12,9 @@ interface Ripple {
 }
 
 const RIPPLE_PALETTE = [
-  'rgba(201, 185, 154, ', // warm amber
-  'rgba(229, 224, 216, ', // warm off-white
-  'rgba(168, 162, 153, ', // soft stone
+  'rgba(229, 229, 231, ', // bone / moonlit silver
+  'rgba(212, 212, 216, ', // slate silver
+  'rgba(161, 161, 170, ', // cool stone ash
 ]
 
 // Singleton lazy AudioContext helper
@@ -144,7 +144,7 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
       if (!ctx || !canvas) return
       const rect = canvas.getBoundingClientRect()
 
-      ctx.fillStyle = '#0C0C0C'
+      ctx.fillStyle = '#0A0A0B'
       ctx.fillRect(0, 0, rect.width, rect.height)
 
       const ripples = ripplesRef.current
@@ -263,10 +263,10 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
   }
 
   return (
-    <div className="relative w-full h-full flex-1 touch-none select-none bg-[#0C0C0C] flex items-center justify-center overflow-hidden animate-fade-in">
-      {/* ── Floating Top Header Bar ── */}
-      <div className="absolute top-16 left-4 right-4 z-20 flex items-center justify-center pointer-events-auto">
-        <span className="font-serif-nook text-xs text-[#8A847A] tracking-wider uppercase bg-[#0C0C0C]/60 backdrop-blur-sm px-2.5 py-1 rounded">
+    <div className="relative w-full h-full flex-1 touch-none select-none bg-[#0A0A0B] flex items-center justify-center overflow-hidden animate-fade-in">
+      {/* ── Floating Top Header Subtitle ── */}
+      <div className="absolute top-16 left-4 right-4 z-20 flex items-center justify-center pointer-events-none">
+        <span className="font-serif-nook text-xs text-[#71717A] tracking-wider uppercase">
           Acoustic Resonance
         </span>
       </div>
@@ -288,12 +288,12 @@ export default function StimPad({ isMuted = false }: { isMuted?: boolean }) {
           onClick={handleToggleMute}
           className="
             px-4 py-1.5 rounded-full text-xs uppercase tracking-wider
-            bg-[#1E1B18] border border-[#2C2926] text-[#8C8275]
-            hover:text-[#EAE5DC] active:text-[#EAE5DC]
+            bg-[#141416] border border-[#222225] text-[#71717A]
+            hover:text-[#E5E5E7] active:text-[#E5E5E7]
             transition-colors cursor-pointer focus:outline-none flex items-center gap-1.5
           "
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isMutedState ? 'bg-[#52525B]' : 'bg-[#C9B99A]'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${isMutedState ? 'bg-[#52525B]' : 'bg-[#E5E5E7]'}`} />
           <span>{isMutedState ? 'MUTE' : 'SOUND ON'}</span>
         </button>
       </BottomControlsDock>

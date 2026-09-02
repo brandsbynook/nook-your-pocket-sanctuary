@@ -273,7 +273,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         h-[100dvh] w-full
         px-6 pt-10 pb-6
         flex flex-col justify-between
-        bg-[var(--bg-primary,#0E0E0E)] text-[#E5E0D8]
+        bg-[#0A0A0B] text-[#E5E5E7]
         overflow-hidden select-none
         animate-fade-in
       "
@@ -292,7 +292,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
                 setTimeLeft(totalSessionSeconds)
                 setIsCompleted(false)
               }}
-              className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-neutral-500 hover:text-neutral-300 transition-colors focus:outline-none cursor-pointer py-1 px-1.5"
+              className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-[#71717A] hover:text-[#E5E5E7] transition-colors focus:outline-none cursor-pointer py-1 px-1.5"
             >
               Reset
             </button>
@@ -319,7 +319,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
               ${isRunning ? 'opacity-100' : 'opacity-35'}
             `}
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(201,185,154,0.06) 0%, rgba(201,185,154,0.01) 60%, transparent 80%)',
+              background: 'radial-gradient(ellipse at center, rgba(229,229,231,0.06) 0%, rgba(229,229,231,0.01) 60%, transparent 80%)',
             }}
           />
 
@@ -329,7 +329,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
               key={tapRippleKey}
               className="absolute inset-0 rounded-full pointer-events-none animate-companion-tap-glow"
               style={{
-                background: 'radial-gradient(ellipse at center, rgba(201,185,154,0.2) 0%, rgba(201,185,154,0.04) 55%, transparent 80%)',
+                background: 'radial-gradient(ellipse at center, rgba(229,229,231,0.2) 0%, rgba(229,229,231,0.04) 55%, transparent 80%)',
               }}
             />
           )}
@@ -355,7 +355,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
               cx={dialSize / 2}
               cy={dialSize / 2}
               r={radius}
-              stroke="#F2EDE4"
+              stroke="#E5E5E7"
               strokeWidth={trackStrokeWidth}
               fill="none"
               strokeDasharray={circumference}
@@ -388,12 +388,12 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
             }}
             disabled={isRunning}
             title={!isRunning ? 'Tap to adjust custom duration' : undefined}
-            className="font-serif-nook text-2xl sm:text-3xl text-neutral-200 font-light italic tracking-wider leading-none select-none focus:outline-none cursor-pointer disabled:cursor-default"
+            className="font-serif-nook text-2xl sm:text-3xl text-[#E5E5E7] font-light italic tracking-wider leading-none select-none focus:outline-none cursor-pointer disabled:cursor-default"
           >
             {formatTimeRemaining(timeLeft)}
           </button>
 
-          <p className="font-serif-nook italic text-xs text-neutral-400 font-normal tracking-wide mt-1">
+          <p className="font-serif-nook italic text-xs text-[#71717A] font-normal tracking-wide mt-1">
             {isCompleted
               ? 'Session Completed · Rest Well'
               : isRunning
@@ -421,8 +421,8 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
                 className={`
                   px-3 py-1 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-200 focus:outline-none cursor-pointer
                   ${isSelected
-                    ? 'bg-[#1D1B16] text-[#FFFFFF] border border-[#C9B99A]/50 shadow-sm'
-                    : 'bg-transparent text-stone-500 border border-[#222228] hover:text-stone-300 hover:border-[#33333C]'
+                    ? 'bg-[#141416] text-[#E5E5E7] border border-[#222225] shadow-sm'
+                    : 'bg-transparent text-[#71717A] border border-[#1F1F23] hover:text-[#E5E5E7]'
                   }
                 `}
               >
@@ -439,20 +439,20 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
             onClick={() => setIsSelectorModalOpen(true)}
             className="
               flex items-center gap-2.5 px-4 py-1.5 rounded-full
-              bg-[#14141A] border border-[#22222C] hover:border-[#C9B99A]/50 hover:bg-[#1A1916]
+              bg-[#141416] border border-[#222225] hover:border-[#3F3F46] hover:bg-[#1A1A1E]
               transition-all duration-300 focus:outline-none cursor-pointer group shadow-sm
             "
             aria-label="Change companion"
           >
             {/* Miniature companion active dot */}
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C9B99A] group-hover:scale-110 transition-transform" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E5E5E7] group-hover:scale-110 transition-transform" />
 
-            <span className="font-serif-nook text-sm text-neutral-300 group-hover:text-[#FFFFFF] tracking-wide">
+            <span className="font-serif-nook text-sm text-[#E5E5E7] group-hover:text-[#FFFFFF] tracking-wide">
               {activeCompanion.name}
             </span>
 
             {/* Subtle gear / switch glyph */}
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-500 group-hover:text-[#C9B99A] transition-colors">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-[#71717A] group-hover:text-[#E5E5E7] transition-colors">
               <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
@@ -516,19 +516,19 @@ function CustomIntervalModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[340px] bg-[#121216] border border-[#22222C] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl animate-scale-up"
+        className="w-full max-w-[340px] bg-[#141416] border border-[#222225] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl animate-scale-up"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="text-center">
-          <h3 className="font-serif-nook text-neutral-200 text-lg font-light tracking-wide">
+          <h3 className="font-serif-nook text-[#E5E5E7] text-lg font-light tracking-wide">
             Custom Interval
           </h3>
-          <p className="font-sans text-stone-500 text-[0.62rem] tracking-[0.14em] uppercase mt-1">
+          <p className="font-sans text-[#71717A] text-[0.62rem] tracking-[0.14em] uppercase mt-1">
             tailor your focus and rest pacing
           </p>
         </div>
@@ -536,12 +536,12 @@ function CustomIntervalModal({
         {/* Stepper Controls */}
         <div className="flex flex-col gap-4">
           {/* Focus Duration */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[#16161C] border border-[#22222A]">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181C] border border-[#222225]">
             <div className="flex flex-col">
-              <span className="font-serif-nook text-neutral-200 text-sm font-light">
+              <span className="font-serif-nook text-[#E5E5E7] text-sm font-light">
                 Focus Duration
               </span>
-              <span className="font-sans text-stone-500 text-[0.55rem] tracking-wider uppercase">
+              <span className="font-sans text-[#71717A] text-[0.55rem] tracking-wider uppercase">
                 1 – 120 minutes
               </span>
             </div>
@@ -550,17 +550,17 @@ function CustomIntervalModal({
               <button
                 type="button"
                 onClick={() => setWork(w => Math.max(1, w - (w > 10 ? 5 : 1)))}
-                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+                className="w-7 h-7 rounded-full bg-[#222225] text-[#E5E5E7] hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
               >
                 −
               </button>
-              <span className="font-serif-nook text-neutral-100 text-base font-normal tabular-nums min-w-[3rem] text-center">
+              <span className="font-serif-nook text-[#E5E5E7] text-base font-normal tabular-nums min-w-[3rem] text-center">
                 {work} min
               </span>
               <button
                 type="button"
                 onClick={() => setWork(w => Math.min(120, w + (w >= 10 ? 5 : 1)))}
-                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+                className="w-7 h-7 rounded-full bg-[#222225] text-[#E5E5E7] hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
               >
                 +
               </button>
@@ -568,12 +568,12 @@ function CustomIntervalModal({
           </div>
 
           {/* Rest / Break Gap */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[#16161C] border border-[#22222A]">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-[#18181C] border border-[#222225]">
             <div className="flex flex-col">
-              <span className="font-serif-nook text-neutral-200 text-sm font-light">
+              <span className="font-serif-nook text-[#E5E5E7] text-sm font-light">
                 Rest Gap
               </span>
-              <span className="font-sans text-stone-500 text-[0.55rem] tracking-wider uppercase">
+              <span className="font-sans text-[#71717A] text-[0.55rem] tracking-wider uppercase">
                 1 – 30 minutes
               </span>
             </div>
@@ -582,17 +582,17 @@ function CustomIntervalModal({
               <button
                 type="button"
                 onClick={() => setRest(r => Math.max(1, r - 1))}
-                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+                className="w-7 h-7 rounded-full bg-[#222225] text-[#E5E5E7] hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
               >
                 −
               </button>
-              <span className="font-serif-nook text-neutral-100 text-base font-normal tabular-nums min-w-[3rem] text-center">
+              <span className="font-serif-nook text-[#E5E5E7] text-base font-normal tabular-nums min-w-[3rem] text-center">
                 {rest} min
               </span>
               <button
                 type="button"
                 onClick={() => setRest(r => Math.min(30, r + 1))}
-                className="w-7 h-7 rounded-full bg-[#202028] text-neutral-300 hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
+                className="w-7 h-7 rounded-full bg-[#222225] text-[#E5E5E7] hover:text-white flex items-center justify-center font-mono text-sm focus:outline-none cursor-pointer"
               >
                 +
               </button>
@@ -605,7 +605,7 @@ function CustomIntervalModal({
           <button
             type="button"
             onClick={onClose}
-            className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-stone-500 hover:text-stone-300 transition-colors focus:outline-none cursor-pointer py-1.5 px-3"
+            className="font-sans text-[0.62rem] tracking-[0.14em] uppercase text-[#71717A] hover:text-[#E5E5E7] transition-colors focus:outline-none cursor-pointer py-1.5 px-3"
           >
             Cancel
           </button>
@@ -613,7 +613,7 @@ function CustomIntervalModal({
           <button
             type="button"
             onClick={() => onSave(work, rest)}
-            className="px-4 py-1.5 rounded-full bg-[#1D1B16] border border-[#C9B99A]/60 text-[#FFFFFF] font-serif-nook text-xs font-light tracking-wide hover:bg-[#26231C] transition-all duration-200 focus:outline-none cursor-pointer shadow-sm"
+            className="px-4 py-1.5 rounded-full bg-[#141416] border border-[#222225] text-[#E5E5E7] font-serif-nook text-xs font-light tracking-wide hover:bg-[#1E1E22] transition-all duration-200 focus:outline-none cursor-pointer shadow-sm"
           >
             Set Custom Interval
           </button>

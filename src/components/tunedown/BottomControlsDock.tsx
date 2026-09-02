@@ -16,7 +16,7 @@ export const BottomControlsDock: React.FC<BottomControlsDockProps> = ({
 }) => {
   return (
     <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-auto select-none max-w-[90vw] ${className}`}>
-      <div className="flex items-center gap-1.5 p-1.5 bg-[#1E1B18] border border-[#2C2926] rounded-full shadow-none">
+      <div className="flex items-center gap-1.5 p-1.5 bg-[#141416] border border-[#222225] rounded-full shadow-none">
         {children}
       </div>
     </div>
@@ -31,7 +31,6 @@ interface ActionPillProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 
 /**
  * Standardized Action Button (Mute, Clear, Reset, Restore)
- * Base: px-3.5 py-1.5 rounded-full text-xs uppercase tracking-wider text-[#8C8275] hover:text-[#EAE5DC] hover:bg-[#2C2926]/50 transition-colors flex items-center gap-1.5
  */
 export const ActionPill: React.FC<ActionPillProps> = ({
   active = false,
@@ -48,8 +47,8 @@ export const ActionPill: React.FC<ActionPillProps> = ({
         transition-colors flex items-center justify-center gap-1.5
         cursor-pointer focus:outline-none select-none
         ${active
-          ? 'bg-[#2C2926] text-[#EAE5DC] font-medium'
-          : 'text-[#8C8275] hover:text-[#EAE5DC] hover:bg-[#2C2926]/50'
+          ? 'bg-[#222225] text-[#E5E5E7] font-medium'
+          : 'text-[#71717A] hover:text-[#E5E5E7] hover:bg-[#222225]/50'
         }
         disabled:opacity-40 disabled:cursor-not-allowed
         ${className}
@@ -76,9 +75,6 @@ interface SegmentedPillGroupProps<T extends string> {
 
 /**
  * Standardized Segmented Tab Selector (Mode switches)
- * Active: bg-[#2C2926] text-[#EAE5DC] font-medium
- * Inactive: text-[#8C8275] hover:text-[#EAE5DC]
- * Sizing: px-4 py-1.5 rounded-full text-xs uppercase tracking-widest transition-colors
  */
 export function SegmentedPillGroup<T extends string>({
   options,
@@ -99,8 +95,8 @@ export function SegmentedPillGroup<T extends string>({
               transition-colors flex items-center justify-center gap-1.5
               cursor-pointer focus:outline-none select-none
               ${isActive
-                ? 'bg-[#2C2926] text-[#EAE5DC] font-medium'
-                : 'text-[#8C8275] hover:text-[#EAE5DC]'
+                ? 'bg-[#222225] text-[#E5E5E7] font-medium'
+                : 'text-[#71717A] hover:text-[#E5E5E7]'
               }
             `}
           >

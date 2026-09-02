@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { loadDeadlines, type NookDeadline } from '../utils/storage'
 import DeadlineModal from './DeadlineModal'
 
-const MAX_TRACK_WIDTHS = [22, 15, 9]
+const TRACK_WIDTH = 70
 const OPACITIES = ['opacity-85', 'opacity-50', 'opacity-25']
 const HORIZON_DAYS = 14
 
@@ -38,13 +38,12 @@ export default function DeadlineGlyph() {
       <button
         id="deadline-glyph"
         onClick={() => setIsModalOpen(true)}
-        className="flex flex-col items-end gap-[5px] animate-glyph-breath cursor-pointer focus:outline-none p-1 group"
+        className="flex flex-col items-end gap-[10px] cursor-pointer focus:outline-none p-1 group"
         aria-label="View and manage deadlines"
         title="Visual deadline anchors (tap to view)"
       >
         {[0, 1, 2].map(index => {
           const deadline = deadlines[index]
-          const maxWidth = MAX_TRACK_WIDTHS[index]
           const opacityClass = OPACITIES[index]
 
           if (!deadline) {
@@ -52,8 +51,8 @@ export default function DeadlineGlyph() {
             return (
               <span
                 key={index}
-                className="block h-[1.5px] bg-[#2A2A2A] rounded-full transition-all duration-500 group-hover:bg-[#3A3A3A]"
-                style={{ width: `${maxWidth}px` }}
+                className="block h-[4.5px] bg-[#1F1F23] rounded-full transition-all duration-500 group-hover:bg-[#3F3F46]"
+                style={{ width: `${TRACK_WIDTH}px` }}
               />
             )
           }
@@ -61,16 +60,16 @@ export default function DeadlineGlyph() {
           const daysLeft = getDaysRemaining(deadline.dueDate)
           // Ratio: scale based on remaining days (14 days = 100% full, 0 days = 18% minimal sliver)
           const fillRatio = Math.min(1, Math.max(0.18, daysLeft / HORIZON_DAYS))
-          const fillWidth = Math.max(3, Math.round(maxWidth * fillRatio))
+          const fillWidth = Math.max(6, Math.round(TRACK_WIDTH * fillRatio))
 
           return (
             <div
               key={deadline.id}
-              className="relative flex items-center justify-end h-[1.5px] bg-[#1F1F1F] rounded-full overflow-hidden"
-              style={{ width: `${maxWidth}px` }}
+              className="relative flex items-center justify-end h-[4.5px] bg-[#141416] rounded-full overflow-hidden"
+              style={{ width: `${TRACK_WIDTH}px` }}
             >
               <span
-                className={`block h-full bg-[#E5E0D8] rounded-full ${opacityClass} transition-all duration-500 group-hover:bg-[#C9B99A]`}
+                className={`block h-full bg-[#E5E5E7] rounded-full ${opacityClass} transition-all duration-500 group-hover:bg-white`}
                 style={{ width: `${fillWidth}px` }}
               />
             </div>

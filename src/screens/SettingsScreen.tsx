@@ -16,12 +16,12 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   return (
     <div className="mb-7">
       <p className="
-        font-sans text-[#3A3A3A] text-[0.58rem]
+        font-sans text-[#52525B] text-[0.58rem]
         tracking-[0.2em] uppercase mb-3
       ">
         {label}
       </p>
-      <div className="flex flex-col gap-0 border border-[#1C1C1C]">
+      <div className="flex flex-col gap-0 border border-[#1F1F23]">
         {children}
       </div>
     </div>
@@ -39,8 +39,8 @@ interface ToggleRowProps {
 
 function ToggleRow({ id, label, checked, onChange }: ToggleRowProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-4 border-b border-[#1C1C1C] last:border-0">
-      <span className="font-sans text-[#E5E0D8] text-[0.78rem] tracking-wide">
+    <div className="flex items-center justify-between px-4 py-4 border-b border-[#1F1F23] last:border-0">
+      <span className="font-sans text-[#E5E5E7] text-[0.78rem] tracking-wide">
         {label}
       </span>
       <button
@@ -55,15 +55,15 @@ function ToggleRow({ id, label, checked, onChange }: ToggleRowProps) {
           className={`
             w-11 h-6 rounded-full p-0.5 transition-colors duration-300 ease-in-out relative flex items-center shrink-0
             ${checked
-              ? 'bg-[#4A3E2C] border border-[#7C6647]'
-              : 'bg-[#222222] border border-transparent'
+              ? 'bg-[#222225] border border-[#3F3F46]'
+              : 'bg-[#141416] border border-[#222225]'
             }
           `}
         >
           <span
             className={`
               w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out
-              ${checked ? 'translate-x-5 bg-[#E5E0D8]' : 'translate-x-0 bg-[#888888]'}
+              ${checked ? 'translate-x-5 bg-[#E5E5E7]' : 'translate-x-0 bg-[#52525B]'}
             `}
           />
         </span>
@@ -71,46 +71,6 @@ function ToggleRow({ id, label, checked, onChange }: ToggleRowProps) {
     </div>
   )
 }
-
-/* ── Theme pill row (Reserved for full custom styling release) ──
-const THEMES: { id: ThemeId; label: string }[] = [
-  { id: 'obsidian',    label: 'Obsidian'    },
-  { id: 'warm-dusk',   label: 'Warm Dusk'   },
-  { id: 'muted-slate', label: 'Muted Slate' },
-]
-
-interface ThemeSelectorProps {
-  current: ThemeId
-  onChange: (id: ThemeId) => void
-}
-
-function ThemeSelector({ current, onChange }: ThemeSelectorProps) {
-  return (
-    <div className="px-4 py-4 flex items-center gap-2 flex-wrap">
-      {THEMES.map(t => (
-        <button
-          key={t.id}
-          id={`theme-${t.id}`}
-          onClick={() => onChange(t.id)}
-          className={`
-            font-sans text-[0.62rem] tracking-[0.14em] uppercase
-            px-3 py-1.5
-            border transition-all duration-300
-            focus:outline-none
-            ${current === t.id
-              ? 'border-[#C9B99A]/50 text-[#C9B99A] bg-[#C9B99A]/8'
-              : 'border-[#242424] text-[#52525B] hover:border-[#3A3A3A] hover:text-[#71717A]'
-            }
-          `}
-          aria-pressed={current === t.id}
-        >
-          {t.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-── */
 
 // ── Action row ────────────────────────────────────
 
@@ -129,18 +89,18 @@ function ActionRow({ id, label, destructive = false, onClick }: ActionRowProps) 
       className={`
         w-full flex items-center justify-between
         px-4 py-4
-        border-b border-[#1C1C1C] last:border-0
+        border-b border-[#1F1F23] last:border-0
         font-sans text-[0.78rem] tracking-wide
         transition-colors duration-300
         focus:outline-none text-left
         ${destructive
-          ? 'text-[#71717A] hover:text-[#C9B99A]'
-          : 'text-[#E5E0D8] hover:text-[#C9B99A]'
+          ? 'text-[#71717A] hover:text-[#E5E5E7]'
+          : 'text-[#E5E5E7] hover:text-[#FFFFFF]'
         }
       `}
     >
       {label}
-      <span className="text-[#3A3A3A] text-sm" aria-hidden="true">›</span>
+      <span className="text-[#52525B] text-sm" aria-hidden="true">›</span>
     </button>
   )
 }
@@ -207,7 +167,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
         px-6 pt-10 pb-6
         flex flex-col justify-between
         overflow-hidden
-        bg-[var(--bg-primary,#0E0E0E)]
+        bg-[#0A0A0B]
         animate-fade-in
       "
     >
@@ -221,7 +181,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
               flex items-center gap-1.5
               font-sans text-[#52525B] text-[0.62rem]
               tracking-[0.14em] uppercase
-              hover:text-[#71717A] transition-colors
+              hover:text-[#E5E5E7] transition-colors
               focus:outline-none
             "
           >
@@ -229,7 +189,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
             return
           </button>
 
-          <h1 className="font-serif-nook text-[#E5E0D8] text-xl font-light tracking-[0.18em] leading-none">
+          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
             Settings
           </h1>
 
@@ -244,8 +204,8 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
           {/* Preferences */}
           <Section label="Preferences">
             {/* Sanctuary Name / Nickname */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#1C1C1C]">
-              <span className="font-sans text-[#E5E0D8] text-[0.78rem] tracking-wide">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#1F1F23]">
+              <span className="font-sans text-[#E5E5E7] text-[0.78rem] tracking-wide">
                 Your Name
               </span>
               <input
@@ -255,8 +215,8 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
                 onChange={e => handleNicknameChange(e.target.value)}
                 placeholder="What should nook call you?"
                 className="
-                  bg-transparent border-b border-[#2C2C2C] text-right font-serif-nook text-sm text-[#E5E0D8]
-                  placeholder:text-[#52525B] placeholder:text-xs placeholder:font-sans focus:outline-none focus:border-[#C9B99A]/60 py-0.5 max-w-[170px]
+                  bg-transparent border-b border-[#1F1F23] text-right font-serif-nook text-sm text-[#E5E5E7]
+                  placeholder:text-[#52525B] placeholder:text-xs placeholder:font-sans focus:outline-none focus:border-[#3F3F46] py-0.5 max-w-[170px]
                 "
               />
             </div>
@@ -274,20 +234,10 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
             />
           </Section>
 
-          {/* Theme Switcher — Hidden for this release to avoid half-styled states across screens */}
-          {/*
-          <Section label="Theme">
-            <ThemeSelector
-              current={settings.theme}
-              onChange={theme => update({ theme })}
-            />
-          </Section>
-          */}
-
           {/* Privacy & Storage */}
           <Section label="Privacy & Storage">
-            <div className="px-4 py-4 border-b border-[#1C1C1C]">
-              <p className="font-sans text-[#52525B] text-[0.7rem] leading-relaxed tracking-wide">
+            <div className="px-4 py-4 border-b border-[#1F1F23]">
+              <p className="font-sans text-[#71717A] text-[0.7rem] leading-relaxed tracking-wide">
                 All data stays on this device.
                 No accounts, no telemetry.
               </p>
@@ -308,7 +258,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
           {/* About nook & Founder's Note */}
           <div className="mb-7">
             <div className="flex items-baseline justify-between mb-3">
-              <h3 className="font-serif-nook text-[#E5E0D8] text-lg font-light tracking-wide">
+              <h3 className="font-serif-nook text-[#E5E5E7] text-lg font-light tracking-wide">
                 About nook
               </h3>
               <span className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#71717A]">
@@ -316,9 +266,9 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
               </span>
             </div>
 
-            <div className="border border-[#1C1C1C] bg-[#0E0E0E] p-5 rounded-sm flex flex-col gap-4">
-              <div className="font-serif-nook text-[#D4D4D8] text-[0.92rem] font-light leading-relaxed space-y-3.5">
-                <p className="italic text-[#E5E0D8]">
+            <div className="border border-[#1F1F23] bg-[#141416] p-5 rounded-2xl flex flex-col gap-4">
+              <div className="font-serif-nook text-[#71717A] text-[0.92rem] font-light leading-relaxed space-y-3.5">
+                <p className="italic text-[#E5E5E7]">
                   I built nook because I needed it to exist.
                 </p>
 
@@ -334,14 +284,14 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
                   nook isn’t here to fix you, track you, or make you more productive. It exists simply to hold space when your mind is full, your senses are overloaded, or words are hard to find. Everything stays on your device. Nothing is saved to a cloud. Nothing is watching.
                 </p>
 
-                <p className="italic text-[#E5E0D8]">
+                <p className="italic text-[#E5E5E7]">
                   Take what you need, leave what you don't.
                 </p>
               </div>
 
               {/* Sign-off */}
-              <div className="pt-2 border-t border-[#181818] flex items-center justify-between">
-                <span className="font-serif-nook text-[#C9B99A] text-sm font-light italic">
+              <div className="pt-2 border-t border-[#1F1F23] flex items-center justify-between">
+                <span className="font-serif-nook text-[#E5E5E7] text-sm font-light italic">
                   — The Founder
                 </span>
                 <span className="font-sans text-[#52525B] text-[0.62rem] tracking-wider">
@@ -353,7 +303,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
 
           {/* Reset confirmation */}
           {resetDone && (
-            <p className="font-sans text-[#C9B99A] text-[0.6rem] tracking-[0.2em] uppercase text-center mt-2 animate-fade-in">
+            <p className="font-sans text-[#E5E5E7] text-[0.6rem] tracking-[0.2em] uppercase text-center mt-2 animate-fade-in">
               Resetting…
             </p>
           )}

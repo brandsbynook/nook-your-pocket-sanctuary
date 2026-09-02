@@ -105,10 +105,10 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
 
-        // Soft warm amber particle glow
+        // Soft bone particle glow
         ctx.shadowBlur = 4
-        ctx.shadowColor = `rgba(245, 215, 170, ${Math.max(0, p.alpha * 0.7)})`
-        ctx.fillStyle = `rgba(245, 220, 185, ${Math.max(0, Math.min(1, p.alpha))})`
+        ctx.shadowColor = `rgba(229, 229, 231, ${Math.max(0, p.alpha * 0.7)})`
+        ctx.fillStyle = `rgba(229, 229, 231, ${Math.max(0, Math.min(1, p.alpha))})`
         ctx.fill()
         ctx.restore()
       }
@@ -125,11 +125,11 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
           continue
         }
 
-        // Ultra-subtle, low-contrast expanding fluid ring (border: rgba(229, 224, 216, 0.08))
+        // Ultra-subtle, low-contrast expanding fluid ring (border: rgba(229, 229, 231, 0.08))
         ctx.beginPath()
         ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2)
         ctx.lineWidth = 1.0
-        ctx.strokeStyle = `rgba(229, 224, 216, ${r.alpha * 0.18})`
+        ctx.strokeStyle = `rgba(229, 229, 231, ${r.alpha * 0.18})`
         ctx.stroke()
 
         // Inner secondary soft echo ring
@@ -137,7 +137,7 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
           ctx.beginPath()
           ctx.arc(r.x, r.y, r.radius * 0.6, 0, Math.PI * 2)
           ctx.lineWidth = 0.6
-          ctx.strokeStyle = `rgba(201, 185, 154, ${r.alpha * 0.10})`
+          ctx.strokeStyle = `rgba(161, 161, 170, ${r.alpha * 0.10})`
           ctx.stroke()
         }
       }
@@ -227,7 +227,7 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
       onPointerDown={handlePointerDown}
       className={`
         fixed inset-0 z-50
-        bg-[var(--bg-primary,#141210)]
+        bg-[#0A0A0B]
         select-none touch-none
         transition-opacity duration-500 ease-out
         ${visible ? 'opacity-100' : 'opacity-0'}
@@ -247,7 +247,7 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
             <button
               id="quiet-mode-return-btn"
               onClick={onClose}
-              className="text-xs uppercase tracking-widest text-[#9E988F] hover:text-[#E5E0D8] transition-colors cursor-pointer focus:outline-none flex items-center gap-1.5 py-1"
+              className="text-xs uppercase tracking-widest text-[#71717A] hover:text-[#E5E5E7] transition-colors cursor-pointer focus:outline-none flex items-center gap-1.5 py-1"
             >
               ← RETURN
             </button>
@@ -259,20 +259,20 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
               title={isPlayingAudio ? 'Pause ambient drone' : 'Play ambient drone'}
               className="
                 px-3 py-1.5 rounded-full
-                border border-neutral-800/80 bg-neutral-900/60 hover:bg-neutral-800/80 hover:border-neutral-700
-                font-sans text-[10px] tracking-[0.14em] uppercase text-neutral-400 hover:text-neutral-200
+                border border-[#222225] bg-[#141416] hover:bg-[#1E1E22] hover:border-[#3F3F46]
+                font-sans text-[10px] tracking-[0.14em] uppercase text-[#71717A] hover:text-[#E5E5E7]
                 transition-all duration-300 focus:outline-none cursor-pointer flex items-center gap-1.5 shadow-sm
               "
             >
               {isPlayingAudio ? (
                 <>
-                  <span className="text-[0.65rem] text-[#C9B99A] leading-none">◼</span>
+                  <span className="text-[0.65rem] text-[#E5E5E7] leading-none">◼</span>
                   <span>Pause Ambient</span>
                   <span className="text-[0.7rem] leading-none ml-0.5">🎧</span>
                 </>
               ) : (
                 <>
-                  <span className="text-[0.65rem] text-[#C9B99A] leading-none">▶</span>
+                  <span className="text-[0.65rem] text-[#E5E5E7] leading-none">▶</span>
                   <span>Play Ambient</span>
                   <span className="text-[0.7rem] leading-none ml-0.5">🎧</span>
                 </>
@@ -287,11 +287,11 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
               {/* Third concentric ring (~192px) */}
               <div className="w-48 h-48 rounded-full border border-white/[0.06] flex items-center justify-center">
                 {/* Second concentric ring (~128px) */}
-                <div className="w-32 h-32 rounded-full border border-[#C9B99A]/15 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border border-[#222225] flex items-center justify-center">
                   {/* Inner core circle (~70px) */}
-                  <div className="w-[70px] h-[70px] rounded-full border border-[#C9B99A]/25 bg-[#121216]/50 flex items-center justify-center shadow-2xl">
-                    {/* Soft breathing warm amber glowing center dot */}
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#E5D7BE] shadow-[0_0_14px_rgba(229,215,190,0.85)] animate-pulse" />
+                  <div className="w-[70px] h-[70px] rounded-full border border-[#3F3F46] bg-[#141416] flex items-center justify-center shadow-2xl">
+                    {/* Soft breathing bone silver glowing center dot */}
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#E5E5E7] shadow-[0_0_14px_rgba(229,229,231,0.85)] animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function QuietModeOverlay({ isOpen, onClose }: QuietModeOverlayPr
 
           {/* Bottom Center: Faint "TAP ANYWHERE" cue */}
           <div className="w-full flex justify-center text-center shrink-0">
-            <p className="text-[11px] tracking-widest text-[#5A5650] uppercase select-none">
+            <p className="text-[11px] tracking-widest text-[#52525B] uppercase select-none">
               TAP ANYWHERE
             </p>
           </div>

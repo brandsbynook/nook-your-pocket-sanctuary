@@ -170,14 +170,14 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         px-6 py-8
         flex flex-col justify-between
         overflow-hidden
-        bg-[var(--bg-primary,#0E0E0E)]
+        bg-[#0A0A0B]
         transition-opacity duration-800 ease-in-out
         ${isFinishing ? 'opacity-0' : 'opacity-100 animate-fade-in'}
       `}
     >
       {/* ── Top Progress Dots ───────────────────────────────── */}
       <div className="flex items-center justify-between w-full pt-2">
-        <span className="font-serif-nook text-[#E5E0D8] text-sm tracking-[0.2em] font-light">
+        <span className="font-serif-nook text-[#E5E5E7] text-sm tracking-[0.2em] font-light">
           nook.
         </span>
 
@@ -189,10 +189,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               className={`
                 block h-[3px] rounded-full transition-all duration-500
                 ${s === step
-                  ? 'w-6 bg-[#C9B99A]'
+                  ? 'w-6 bg-[#E5E5E7]'
                   : s < step
-                  ? 'w-2 bg-[#E5E0D8]/40'
-                  : 'w-2 bg-[#222222]'
+                  ? 'w-2 bg-[#E5E5E7]/40'
+                  : 'w-2 bg-[#222225]'
                 }
               `}
             />
@@ -206,7 +206,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* ── STEP 1: Nickname ── */}
         {step === 1 && (
           <div className="flex flex-col items-center text-center animate-lift-in">
-            <h1 className="font-serif-nook text-2xl font-light text-[#E5E0D8] tracking-wide">
+            <h1 className="font-serif-nook text-2xl font-light text-[#E5E5E7] tracking-wide">
               welcome to nook.
             </h1>
             <p className="text-sm text-[#71717A] mt-2 font-sans font-light">
@@ -226,9 +226,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 onChange={e => setNickname(e.target.value)}
                 placeholder="or leave blank to remain quiet"
                 className="
-                  w-full bg-transparent border-b border-[#333333] focus:border-[#E5E0D8]
-                  text-center text-lg py-2 outline-none text-[#E5E0D8] font-serif-nook
-                  placeholder:text-[#383838] placeholder:text-xs placeholder:font-sans
+                  w-full bg-transparent border-b border-[#222225] focus:border-[#E5E5E7]
+                  text-center text-lg py-2 outline-none text-[#E5E5E7] font-serif-nook
+                  placeholder:text-[#52525B] placeholder:text-xs placeholder:font-sans
                   transition-colors
                 "
                 autoFocus
@@ -240,7 +240,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* ── STEP 2: Choose Companion ── */}
         {step === 2 && (
           <div className="flex flex-col items-center text-center animate-lift-in">
-            <h2 className="font-serif-nook text-2xl font-light text-[#E5E0D8] tracking-wide">
+            <h2 className="font-serif-nook text-2xl font-light text-[#E5E5E7] tracking-wide">
               A Quiet Presence
             </h2>
             <p className="text-xs text-[#71717A] mt-1.5 font-sans font-light px-4">
@@ -259,8 +259,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                       w-full p-4 border rounded-xl flex items-center gap-4 text-left
                       transition-all duration-300 focus:outline-none
                       ${isSelected
-                        ? 'border-[#C9B99A]/60 bg-[#161412] text-[#E5E0D8]'
-                        : 'border-[#202020] bg-[#0E0E0E] text-[#71717A] hover:border-[#2C2C2C] hover:text-[#A1A1AA]'
+                        ? 'border-[#3F3F46] bg-[#141416] text-[#E5E5E7]'
+                        : 'border-[#222225] bg-[#0A0A0B] text-[#71717A] hover:border-[#3F3F46] hover:text-[#E5E5E7]'
                       }
                     `}
                   >
@@ -268,7 +268,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                       <IconComponent />
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-serif-nook text-base font-light text-[#E5E0D8]">
+                      <span className="font-serif-nook text-base font-light text-[#E5E5E7]">
                         {c.label}
                       </span>
                       <span className="font-sans text-[0.62rem] text-[#71717A] tracking-wide">
@@ -285,7 +285,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* ── STEP 3: Atmosphere Theme ── */}
         {step === 3 && (
           <div className="flex flex-col items-center text-center animate-lift-in">
-            <h2 className="font-serif-nook text-2xl font-light text-[#E5E0D8] tracking-wide">
+            <h2 className="font-serif-nook text-2xl font-light text-[#E5E5E7] tracking-wide">
               Atmosphere
             </h2>
             <p className="text-xs text-[#71717A] mt-1.5 font-sans font-light">
@@ -303,13 +303,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                       w-full p-4 border rounded-xl flex items-center justify-between text-left
                       transition-all duration-300 focus:outline-none
                       ${isSelected
-                        ? 'border-[#C9B99A]/60 bg-[#161412]'
-                        : 'border-[#202020] bg-[#0E0E0E] hover:border-[#2C2C2C]'
+                        ? 'border-[#3F3F46] bg-[#141416]'
+                        : 'border-[#222225] bg-[#0A0A0B] hover:border-[#3F3F46]'
                       }
                     `}
                   >
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-serif-nook text-base font-light text-[#E5E0D8]">
+                      <span className="font-serif-nook text-base font-light text-[#E5E5E7]">
                         {t.title}
                       </span>
                       <span className="font-sans text-[0.62rem] text-[#71717A]">
@@ -319,7 +319,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
                     {/* Color Swatch Preview */}
                     <span
-                      className="w-5 h-5 rounded-full border border-[#333333] shrink-0"
+                      className="w-5 h-5 rounded-full border border-[#222225] shrink-0"
                       style={{ backgroundColor: t.bg }}
                     />
                   </button>
@@ -334,8 +334,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           <div className="flex flex-col items-center text-center animate-lift-in py-4">
             {/* Delicate ambient sparkle glyph */}
             <div className="relative mb-6 flex items-center justify-center">
-              <div className="absolute w-28 h-28 rounded-full bg-[#C9B99A]/8 blur-xl pointer-events-none" />
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-[#C9B99A] animate-pulse">
+              <div className="absolute w-28 h-28 rounded-full bg-[#E5E5E7]/10 blur-xl pointer-events-none" />
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-[#E5E5E7] animate-pulse">
                 <path
                   d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
                   stroke="currentColor"
@@ -346,7 +346,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               </svg>
             </div>
 
-            <h2 className="font-serif-nook text-3xl font-light text-[#E5E0D8] tracking-wide">
+            <h2 className="font-serif-nook text-3xl font-light text-[#E5E5E7] tracking-wide">
               Your space is ready.
             </h2>
             <p className="text-sm text-[#71717A] mt-2 font-sans font-light">
@@ -363,9 +363,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             id={`onboarding-step-${step}-continue`}
             onClick={handleNextStep}
             className="
-              px-8 py-2.5 border border-[#2A2A2A] rounded-full
-              font-serif-nook text-[#E5E0D8] text-[1.05rem] font-light
-              hover:border-[#C9B99A]/50 hover:text-[#C9B99A]
+              px-8 py-2.5 border border-[#222225] rounded-full
+              font-serif-nook text-[#E5E5E7] text-[1.05rem] font-light
+              hover:border-[#3F3F46] hover:text-white
               transition-all duration-300 focus:outline-none
             "
           >
@@ -376,7 +376,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
             id="enter-nook-btn"
             onClick={handleNextStep}
             className="
-              px-9 py-3 bg-[#E5E0D8] hover:bg-[#F2EDE4] text-[#0E0E0E]
+              px-9 py-3 bg-[#E5E5E7] hover:bg-white text-[#0A0A0B]
               font-serif-nook text-lg font-normal rounded-full
               shadow-xl transition-all duration-300 focus:outline-none
               hover:scale-[1.02]
