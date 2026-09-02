@@ -1,18 +1,24 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { triggerHaptic } from '../../utils/haptics'
-import BottomControlsDock, { ActionPill } from './BottomControlsDock'
 
 export type DoodleMode = 'open' | 'symmetry'
-export type StrokeWeight = 'fine' | 'medium' | 'broad'
 
 interface DoodlingCanvasProps {
   initialMode?: DoodleMode
 }
 
-const WEIGHT_PRESETS: { id: StrokeWeight; label: string; width: number }[] = [
-  { id: 'fine',   label: 'FINE',   width: 2.0 },
-  { id: 'medium', label: 'MEDIUM', width: 4.5 },
-  { id: 'broad',  label: 'BROAD',  width: 8.0 },
+export type ColorId = 'bone' | 'sand' | 'charcoal'
+
+interface ColorSwatch {
+  id: ColorId
+  label: string
+  hex: string
+}
+
+const COLOR_SWATCHES: ColorSwatch[] = [
+  { id: 'bone',     label: 'Bone',     hex: '#E5E5E7' },
+  { id: 'sand',     label: 'Sand',     hex: '#D4C3A3' },
+  { id: 'charcoal', label: 'Charcoal', hex: '#3F3F46' },
 ]
 
 // Singleton lazy AudioContext helper
@@ -31,7 +37,8 @@ function getDoodleAudioContext(): AudioContext | null {
 }
 
 export default function DoodlingCanvas({ initialMode = 'open' }: DoodlingCanvasProps) {
-  const [strokeWeight, setStrokeWeight] = useState<StrokeWeight>('medium')
+  const [activeColor, setActiveColor] = useState<ColorId>('bone')
+  const [isEraser, setIsEraser] = useState<boolean>(false)
   const [isMuted, setIsMuted] = useState<boolean>(false)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -120,7 +127,7 @@ export default function DoodlingCanvas({ initialMode = 'open' }: DoodlingCanvasP
     }
   }, [isMuted, stopFrictionAudio])
 
-  // Dynamic Full-Bleed Canvas Resizer without Blur
+  // Dynamic Slate Canvas Resizer
   const initCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -147,7 +154,7 @@ export default function DoodlingCanvas({ initialMode = 'open' }: DoodlingCanvasP
       ctx.scale(dpr, dpr)
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
-      ctx.fillStyle = '#0C0C0C'
+      ctx.fillStyle = '#0D0D0E'
       ctx.fillRect(0, 0, width, height)
 
       if (tempCanvas.width > 0 && tempCanvas.height > 0) {
@@ -223,12 +230,17 @@ export default function DoodlingCanvas({ initialMode = 'open' }: DoodlingCanvasP
     if (!ctx) return
     const rect = canvas.getBoundingClientRect()
 
-    const baseWidth = WEIGHT_PRESETS.find(w => w.id === strokeWeight)?.width || 4.5
-    const taper = Math.max(0.85, Math.min(1.25, 1 + (velocity - 10) * 0.012))
-    const strokeWidth = baseWidth * taper
+    const activeSwatch = COLOR_SWATCHES.find(s => s.id === activeColor) || COLOR_SWATCHES[0]
 
-    ctx.strokeStyle = '#E5E0D8'
-    ctx.lineWidth = strokeWidth
+    if (isEraser) {
+      ctx.strokeStyle = '#0D0D0E'
+      ctx.lineWidth = 20
+    } else {
+      const baseWidth = 4.5
+      const taper = Math.max(0.85, Math.min(1.25, 1 + (velocity - 10) * 0.012))
+      ctx.strokeStyle = activeSwatch.hex
+      ctx.lineWidth = baseWidth * taper
+    }
 
     ctx.beginPath()
     ctx.moveTo(start.x, start.y)
@@ -256,7 +268,7 @@ export default function DoodlingCanvas({ initialMode = 'open' }: DoodlingCanvasP
     const parent = canvas.parentElement
     const width = parent ? parent.clientWidth : canvas.clientWidth
     const height = parent ? parent.clientHeight : canvas.clientHeight
-    ctx.fillStyle = '#0C0C0C'
+    ctx.fillStyle = '#0D0D0E'
     ctx.fillRect(0, 0, width, height)
   }
 
@@ -272,61 +284,95 @@ export default function DoodlingCanvas({ initialMode = 'open' }: DoodlingCanvasP
   }
 
   return (
-    <div className="relative w-full h-full flex-1 touch-none select-none bg-[#0C0C0C] flex items-center justify-center overflow-hidden animate-fade-in">
-      {/* ── Floating Top Header Bar ── */}
-      <div className="absolute top-16 left-4 right-4 z-20 flex items-center justify-between pointer-events-auto">
-        <span className="font-serif-nook text-xs text-[#8A847A] tracking-wider uppercase bg-[#0C0C0C]/60 backdrop-blur-sm px-2.5 py-1 rounded">
-          Charcoal Canvas
-        </span>
-
-        {/* Stroke Weight Pills */}
-        <div className="flex items-center gap-1 bg-[#101014]/80 backdrop-blur-sm p-1 rounded-full border border-[#23201C]">
-          {WEIGHT_PRESETS.map(w => (
-            <button
-              key={w.id}
-              onClick={() => {
-                setStrokeWeight(w.id)
-                triggerHaptic(10)
-              }}
-              className={`
-                px-2.5 py-1 rounded-full text-[0.62rem] font-sans tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none flex items-center gap-1.5
-                ${strokeWeight === w.id
-                  ? 'bg-[#23201C] text-[#EAE5DC] shadow-sm'
-                  : 'text-[#8A847A] hover:text-[#EAE5DC]'
-                }
-              `}
-            >
-              <span
-                className="rounded-full bg-current inline-block"
-                style={{ width: w.id === 'fine' ? 3 : w.id === 'medium' ? 5 : 7, height: w.id === 'fine' ? 3 : w.id === 'medium' ? 5 : 7 }}
+    <div className="flex-1 flex flex-col w-full h-full bg-[#0A0A0B] select-none touch-none animate-fade-in py-2 px-4">
+      {/* ── Top Controls Bar (Directly Above Canvas) ── */}
+      <div className="flex items-center justify-between mb-3 px-1 shrink-0">
+        {/* Left Side: 3 Circular Color Swatches */}
+        <div className="flex items-center gap-2.5">
+          {COLOR_SWATCHES.map(swatch => {
+            const isSelected = !isEraser && activeColor === swatch.id
+            return (
+              <button
+                key={swatch.id}
+                type="button"
+                onClick={() => {
+                  setIsEraser(false)
+                  setActiveColor(swatch.id)
+                  triggerHaptic(10)
+                }}
+                aria-label={`Select ${swatch.label} color`}
+                title={swatch.label}
+                className={`
+                  w-6 h-6 rounded-full border transition-all duration-200 cursor-pointer focus:outline-none
+                  ${isSelected
+                    ? 'border-[#E5E5E7] scale-110 shadow-sm ring-1 ring-[#E5E5E7]/50'
+                    : 'border-[#222225] hover:scale-105 opacity-80 hover:opacity-100'
+                  }
+                `}
+                style={{ backgroundColor: swatch.hex }}
               />
-              {w.label}
-            </button>
-          ))}
+            )
+          })}
+        </div>
+
+        {/* Right Side: Minimalist ERASER and CLEAR Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsEraser(prev => !prev)
+              triggerHaptic(10)
+            }}
+            className={`
+              text-xs tracking-widest border px-3 py-1 rounded transition-all duration-200 cursor-pointer focus:outline-none uppercase font-sans
+              ${isEraser
+                ? 'text-[#E5E5E7] border-[#3F3F46] bg-[#222225]'
+                : 'text-[#71717A] border-[#222225] hover:text-[#E5E5E7] hover:border-[#3F3F46]'
+              }
+            `}
+          >
+            ERASER
+          </button>
+
+          <button
+            type="button"
+            onClick={handleClear}
+            className="text-xs tracking-widest text-[#71717A] border border-[#222225] hover:text-[#E5E5E7] hover:border-[#3F3F46] px-3 py-1 rounded transition-all duration-200 cursor-pointer focus:outline-none uppercase font-sans"
+          >
+            CLEAR
+          </button>
         </div>
       </div>
 
-      {/* ── Full-Bleed Interactive Canvas Surface ── */}
-      <canvas
-        ref={canvasRef}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className="w-full h-full absolute inset-0 cursor-crosshair block touch-none select-none z-10"
-      />
+      {/* ── Canvas Frame (Framed Slate) ── */}
+      <div className="relative flex-1 w-full rounded-2xl border border-[#222225] bg-[#0D0D0E] overflow-hidden my-1">
+        <canvas
+          ref={canvasRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="w-full h-full absolute inset-0 cursor-crosshair block touch-none select-none z-10"
+        />
+      </div>
 
-      {/* ── Standardized Unified Bottom Controls Dock ── */}
-      <BottomControlsDock>
-        <ActionPill onClick={handleToggleMute}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isMuted ? 'bg-[#52525B]' : 'bg-[#C9B99A]'}`} />
-          {isMuted ? 'MUTE' : 'SOUND ON'}
-        </ActionPill>
+      {/* ── Bottom Row (Directly Below Canvas) ── */}
+      <div className="flex items-center justify-between mt-3 px-1 shrink-0">
+        {/* Left Side: Subtitle Italic Prompt */}
+        <span className="text-xs text-[#52525B] italic font-serif-nook">
+          "No lines have to make sense."
+        </span>
 
-        <ActionPill onClick={handleClear}>
-          Clear
-        </ActionPill>
-      </BottomControlsDock>
+        {/* Right Side: Unobtrusive Sound Toggle Button */}
+        <button
+          type="button"
+          onClick={handleToggleMute}
+          className="text-xs tracking-widest text-[#71717A] border border-[#222225] hover:text-[#E5E5E7] hover:border-[#3F3F46] px-3 py-1.5 rounded transition-all duration-200 cursor-pointer focus:outline-none uppercase font-sans"
+        >
+          SOUND: {isMuted ? 'OFF' : 'ON'}
+        </button>
+      </div>
     </div>
   )
 }
+
