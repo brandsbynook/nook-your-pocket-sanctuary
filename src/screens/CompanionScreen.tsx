@@ -271,7 +271,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
       id="companion-screen"
       className="
         h-[100dvh] w-full
-        px-6 pt-10 pb-6
+        px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
         flex flex-col justify-between
         bg-[#0A0A0B] text-[#E5E5E7]
         overflow-hidden select-none
@@ -301,7 +301,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
       />
 
       {/* ── 2. Minimalist Center Pomodoro Dial ────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center min-h-0 my-auto">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 my-auto max-w-[360px] mx-auto w-full">
         {/* Interactive Circular Dial Container */}
         <div
           id="focus-timer-ring-touch-target"

@@ -79,11 +79,11 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
   return (
     <main
       id="tune-down-screen"
-      className="h-[100dvh] w-full max-w-md mx-auto flex flex-col bg-[#0A0A0B] text-[#E5E5E7] px-5 pt-8 pb-6 overflow-hidden select-none"
+      className="h-[100dvh] w-full max-w-[360px] mx-auto flex flex-col bg-[#0A0A0B] text-[#E5E5E7] px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14 overflow-hidden select-none"
     >
       <div className="flex-1 flex flex-col min-h-0 w-full">
-        {/* ── Fixed Document-Flow Header with Breathing Room ── */}
-        <header className="flex items-center justify-between pb-4 shrink-0">
+        {/* ── Top Navigation Bar ────────────────────────────── */}
+        <div className="flex items-center justify-between shrink-0 w-full">
           <button
             id="tune-down-back"
             onClick={activePractice ? () => setActivePractice(null) : onBack}
@@ -99,19 +99,20 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
             {activePractice ? 'tools' : 'return'}
           </button>
 
-          <div className="flex flex-col items-center gap-[2px]">
-            <h1 className="font-serif-nook text-xl tracking-widest text-[#E5E5E7] leading-none">
-              {activeTitle}
-            </h1>
-            <p className="font-sans text-xs text-[#71717A] mt-1 text-center tracking-wide">
-              {activeSubtext}
-            </p>
-          </div>
-
           <div className="flex items-center justify-end min-w-[60px]">
             <HeaderAudioShortcut />
           </div>
-        </header>
+        </div>
+
+        {/* ── Decoupled Title Block ──────────────────────────── */}
+        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0">
+          <h1 className="font-serif-nook text-xl tracking-widest text-[#E5E5E7] leading-none">
+            {activeTitle}
+          </h1>
+          <p className="font-sans text-xs text-[#71717A] mt-1 text-center tracking-wide">
+            {activeSubtext}
+          </p>
+        </div>
 
       {/* ── View 1: 4 Primary Accordion Drawers ── */}
       {!activePractice ? (

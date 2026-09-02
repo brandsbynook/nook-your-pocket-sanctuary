@@ -56,7 +56,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         id="home-screen"
         className="
           min-h-[100dvh] w-full
-          px-6 pt-10 pb-6
+          px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
           flex flex-col justify-between
           overflow-y-auto
           bg-[#0A0A0B] select-none
@@ -64,7 +64,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         "
       >
         {/* ═══ Top Section (Brand Stack & Sub-row Cluster) ════════ */}
-        <div className="flex flex-col shrink-0">
+        <div className="flex flex-col shrink-0 max-w-[360px] mx-auto w-full">
           {/* ── 1. Centered Brand Header ─── */}
           <header className="flex flex-col items-center text-center w-full">
             <h1 className="font-serif-nook text-3xl sm:text-4xl text-[#E5E5E7] tracking-[0.14em] lowercase font-light leading-none">
@@ -83,7 +83,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         </div>
 
         {/* ═══ Lifted Center Content (Greeting & 5 Core Rooms) ═══ */}
-        <div className="flex-1 flex flex-col justify-start max-w-md mx-auto w-full px-1">
+        <div className="flex-1 flex flex-col justify-start max-w-[360px] mx-auto w-full px-1">
           {/* ── 3. Faded & Re-centered Dynamic Greeting ─────────── */}
           {showGreetingSetting && greeting ? (
             <div className="mt-8 pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
@@ -96,7 +96,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           )}
 
           {/* ── 4. Lifted 5-Room Navigation List ────────────────── */}
-          <nav aria-label="Sanctuary practices" className="flex flex-col w-full max-w-[300px] sm:max-w-[320px] mx-auto">
+          <nav aria-label="Sanctuary practices" className="flex flex-col w-full max-w-[360px] mx-auto">
             {PRIMARY_MENU.map((item, index) => (
               <div key={item.id} className="w-full">
                 <button
@@ -124,7 +124,7 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
         </div>
 
         {/* ═══ 4. Clean Footer ═════════════════════════════════════ */}
-        <div className="flex flex-col items-center mt-4 pb-4">
+        <div className="flex flex-col items-center mt-4 pb-4 max-w-[360px] mx-auto w-full">
           <footer className="w-full pt-4 border-t border-[#1F1F23] flex items-center justify-between px-2">
             <button
               onClick={() => onNavigate('cards')}

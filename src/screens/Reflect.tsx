@@ -254,16 +254,16 @@ export default function Reflect({ onBack }: ReflectProps) {
       id="reflect-screen"
       className="
         h-[100dvh] w-full
-        px-6 pt-10 pb-6
+        px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
         flex flex-col items-center justify-start
         overflow-hidden
         bg-[#0A0A0B] text-[#E5E5E7]
         animate-fade-in
       "
     >
-      <div className="flex flex-col flex-1 min-h-0 w-full max-w-2xl mx-auto">
-        {/* ── Top Bar ─────────────────────────────────────────── */}
-        <header className="flex items-center justify-between mb-5 shrink-0">
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-[360px] mx-auto">
+        {/* ── Top Navigation Bar ────────────────────────────── */}
+        <div className="flex items-center justify-between shrink-0 w-full">
           <button
             id="reflect-back"
             onClick={activeTab === 'library' && activePrompt ? () => setActivePrompt(null) : onBack}
@@ -279,19 +279,20 @@ export default function Reflect({ onBack }: ReflectProps) {
             {activeTab === 'library' && activePrompt ? 'library' : 'return'}
           </button>
 
-          <div className="flex-1 min-w-0 mx-2 text-center">
-            <h1 className="font-serif-nook text-[#E5E5E7] text-lg sm:text-xl font-light tracking-[0.18em] leading-none truncate">
-              Reflect
-            </h1>
-            <p className="font-sans text-[#71717A] text-[0.58rem] tracking-[0.06em] text-center mt-1 truncate">
-              A growing library of unhurried prompts for quiet clarity.
-            </p>
-          </div>
-
           <div className="flex items-center justify-end min-w-[60px]">
             <HeaderAudioShortcut />
           </div>
-        </header>
+        </div>
+
+        {/* ── Decoupled Title Block ──────────────────────────── */}
+        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-5 text-center shrink-0">
+          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
+            Reflect
+          </h1>
+          <p className="font-sans text-[#71717A] text-[0.58rem] tracking-[0.06em] text-center">
+            A growing library of unhurried prompts for quiet clarity.
+          </p>
+        </div>
 
         {/* ── Tabs (Guided Flow vs Prompt Library) ────────────── */}
         <div

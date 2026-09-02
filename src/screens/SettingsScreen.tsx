@@ -164,16 +164,16 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
       id="settings-screen"
       className="
         h-[100dvh] w-full
-        px-6 pt-10 pb-6
+        px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
         flex flex-col justify-between
         overflow-hidden
         bg-[#0A0A0B]
         animate-fade-in
       "
     >
-      <div className="flex flex-col flex-1 min-h-0">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-8 shrink-0">
+      <div className="flex flex-col flex-1 min-h-0 max-w-[360px] mx-auto w-full">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between shrink-0 w-full">
           <button
             id="settings-back"
             onClick={onBack}
@@ -182,21 +182,24 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
               font-sans text-[#52525B] text-[0.62rem]
               tracking-[0.14em] uppercase
               hover:text-[#E5E5E7] transition-colors
-              focus:outline-none
+              focus:outline-none cursor-pointer
             "
           >
             <span className="text-[0.8rem] leading-none">←</span>
             return
           </button>
 
-          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
-            Settings
-          </h1>
-
           <div className="flex items-center justify-end min-w-[60px]">
             <HeaderAudioShortcut />
           </div>
-        </header>
+        </div>
+
+        {/* Decoupled Title Block */}
+        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-6 text-center shrink-0">
+          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
+            Settings
+          </h1>
+        </div>
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto min-h-0 pb-4">
@@ -225,12 +228,6 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
               label="Show Home Greeting"
               checked={settings.showGreeting}
               onChange={v => update({ showGreeting: v })}
-            />
-            <ToggleRow
-              id="toggle-haptics"
-              label="Subtle Haptics"
-              checked={settings.haptics}
-              onChange={v => update({ haptics: v })}
             />
           </Section>
 
@@ -267,25 +264,21 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
             </div>
 
             <div className="border border-[#1F1F23] bg-[#141416] p-5 rounded-2xl flex flex-col gap-4">
-              <div className="font-serif-nook text-[#71717A] text-[0.92rem] font-light leading-relaxed space-y-3.5">
+              <div className="font-serif-nook text-sm text-[#E5E5E7]/90 leading-relaxed space-y-3.5 font-light">
                 <p className="italic text-[#E5E5E7]">
-                  I built nook because I needed it to exist.
+                  Nook was built simply because someone needed a quiet place to land.
                 </p>
 
                 <p>
-                  As someone with ADHD and Asperger’s, I know what it feels like when the world gets too loud, too demanding, and too fast. Most tools are built by neurotypical minds. Even with the best intentions, they rely on things that quietly overwhelm us: streaks that induce guilt, notifications that break focus, forced positivity, and endless pressure to optimize.
+                  It began as a gentle rebellion against the speed, noise, and pressure of a world that always asks for more. Where most tools push guilt-inducing streaks and endless optimization, Nook was crafted to offer the exact opposite: an unhurried, low-stimulation haven made from the inside out by someone who understands sensory overload firsthand.
                 </p>
 
                 <p>
-                  I wanted to create the kind of space I always needed but rarely found: a place built from the inside out, by someone who actually lives in those shoes.
-                </p>
-
-                <p>
-                  nook isn’t here to fix you, track you, or make you more productive. It exists simply to hold space when your mind is full, your senses are overloaded, or words are hard to find. Everything stays on your device. Nothing is saved to a cloud. Nothing is watching.
+                  Nook isn’t here to fix you, track you, or make you more productive. It exists simply to hold space when your mind is full, your senses are overloaded, or words are hard to find. A space for presence, creativity, and the quieter parts of being human.
                 </p>
 
                 <p className="italic text-[#E5E5E7]">
-                  Take what you need, leave what you don't.
+                  Take what you need, and leave the rest behind.
                 </p>
               </div>
 

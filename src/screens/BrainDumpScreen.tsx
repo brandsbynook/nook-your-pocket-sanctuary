@@ -24,17 +24,16 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
       id="brain-dump-screen"
       className="
         h-[100dvh] w-full
-        px-6 pt-10 pb-6
+        px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
         flex flex-col items-center
         overflow-hidden
         bg-[#0A0A0B]
         animate-fade-in
       "
     >
-      <div className="flex flex-col flex-1 min-h-0 w-full max-w-2xl mx-auto">
-        {/* ── Header ──────────────────────────────────── */}
-        <header className="flex items-center justify-between mb-8 shrink-0">
-          {/* Back button */}
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-[360px] mx-auto">
+        {/* ── Top Navigation Bar ────────────────────────────── */}
+        <div className="flex items-center justify-between shrink-0 w-full">
           <button
             id="brain-dump-back"
             onClick={onBack}
@@ -45,26 +44,24 @@ export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
               tracking-[0.14em] uppercase
               transition-colors duration-300
               hover:text-[#E5E5E7]
-              focus:outline-none
+              focus:outline-none cursor-pointer
             "
           >
             <span className="text-[0.8rem] leading-none" aria-hidden="true">←</span>
             return
           </button>
 
-          {/* Screen title */}
-          <h1 className="
-            font-serif-nook text-[#E5E5E7]
-            text-xl font-light tracking-[0.18em] leading-none
-          ">
-            Brain Dump
-          </h1>
-
-          {/* Right action area with ambient audio shortcut */}
           <div className="flex items-center justify-end min-w-[60px]">
             <HeaderAudioShortcut />
           </div>
-        </header>
+        </div>
+
+        {/* ── Decoupled Title Block ──────────────────────────── */}
+        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-5 text-center shrink-0">
+          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
+            Brain Dump
+          </h1>
+        </div>
 
         {/* ── Mode switcher (Softened Horizontal Sub-Tabs) ──────── */}
         <div
