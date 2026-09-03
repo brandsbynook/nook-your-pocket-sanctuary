@@ -109,7 +109,7 @@ function ActionRow({ id, label, destructive = false, onClick }: ActionRowProps) 
 
 interface SettingsScreenProps {
   onBack: () => void
-  onNavigate?: (tab: NavTabId) => void
+  onNavigate?: (tab: NavTabId | string) => void
 }
 
 export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenProps) {
@@ -245,6 +245,11 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
               onClick={handleExport}
             />
             <ActionRow
+              id="privacy-policy-btn"
+              label="Privacy Policy"
+              onClick={() => onNavigate?.('privacy')}
+            />
+            <ActionRow
               id="reset-app-btn"
               label="Reset App"
               destructive
@@ -287,9 +292,19 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
                 <span className="font-serif-nook text-[#E5E5E7] text-sm font-light italic">
                   — The Founder
                 </span>
-                <span className="font-sans text-[#52525B] text-[0.62rem] tracking-wider">
-                  v1.0.0 • Offline-first • Built with care
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    id="settings-privacy-link"
+                    onClick={() => onNavigate?.('privacy')}
+                    className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
+                  >
+                    Privacy
+                  </button>
+                  <span className="text-[#3F3F46] text-[0.55rem]">•</span>
+                  <span className="font-sans text-[#52525B] text-[0.62rem] tracking-wider">
+                    v1.0.0
+                  </span>
+                </div>
               </div>
             </div>
           </div>
