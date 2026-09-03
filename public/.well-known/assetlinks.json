@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.nook_sanctuary",
+        "sha256_cert_fingerprints": ["5B:77:CB:D8:D5:AE:FB:EA:CE:D1:CE:5B:07:29:13:11:4B:EF:0D:33:02:08:71:E0:21:34:F5:36:3F:4A:BE:33"]
+      }
+    }]
