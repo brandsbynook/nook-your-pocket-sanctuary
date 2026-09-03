@@ -120,10 +120,10 @@ export default function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps
                 Nook Studio Co.
               </p>
               <a
-                href="mailto:support@nookstudio.co"
+                href="mailto:brandsbynook@gmail.com"
                 className="font-sans text-xs text-[#71717A] hover:text-[#E5E5E7] underline transition-colors block"
               >
-                support@nookstudio.co
+                brandsbynook@gmail.com
               </a>
             </div>
           </div>
