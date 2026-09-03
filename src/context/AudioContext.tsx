@@ -15,6 +15,8 @@ import {
 } from '../utils/proceduralAudio'
 import { isSanctuaryUnlocked, setSanctuaryUnlocked } from '../utils/storage'
 
+import { checkPatronStatus } from '../services/revenuecat'
+
 interface AudioContextValue {
   isAudioPlaying: boolean
   activeTrack: TrackId
@@ -60,6 +62,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [mixerLevels, setMixerLevelsState] = useState<MixerLevels>(() =>
     proceduralAudio.getMixerLevels()
   )
+
+  useEffect(() => {
+    checkPatronStatus()
+      .then((unlocked) => {
+        if (unlocked) {
+          setIsUnlocked(true)
+          setSanctuaryUnlocked(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const openPaywall = useCallback(() => {
     setIsPaywallOpen(true)

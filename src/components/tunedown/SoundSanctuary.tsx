@@ -160,27 +160,27 @@ export default function SoundSanctuary() {
         </div>
       </div>
 
-      {/* ── Section 2: Atelier Soundscapes ───────────────────── */}
+      {/* ── Section 2: Patron Atelier Soundscapes ────────────── */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-1.5">
-            <span className="font-sans text-[0.58rem] tracking-[0.2em] uppercase text-[#E5E5E7]">
-              Atelier Tier
+            <span className="font-sans text-[0.58rem] tracking-[0.2em] uppercase text-[#E5E5E7] font-medium">
+              PATRON ATELIER
             </span>
-            <span className="text-[0.6rem] text-[#E5E5E7]">⚿</span>
+            <span className="text-[0.6rem] text-[#E5E5E7]">✦</span>
           </div>
 
           {!isUnlocked ? (
             <button
               id="sanctuary-key-unlock-badge"
               onClick={openPaywall}
-              className="font-sans text-[0.55rem] tracking-[0.14em] uppercase text-[#E5E5E7] hover:underline focus:outline-none"
+              className="font-sans text-[0.55rem] tracking-[0.14em] uppercase text-[#E5E5E7] hover:underline focus:outline-none cursor-pointer"
             >
-              Unlock with Key →
+              Become a Patron →
             </button>
           ) : (
-            <span className="font-sans text-[0.55rem] tracking-[0.14em] uppercase text-[#E5E5E7]/80">
-              ✦ Unlocked
+            <span className="font-sans text-[0.55rem] tracking-[0.14em] uppercase text-[#E5E5E7]">
+              ✦ UNLOCKED
             </span>
           )}
         </div>

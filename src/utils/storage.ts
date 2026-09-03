@@ -344,19 +344,25 @@ export function setEditorFont(font: EditorFont): void {
   window.dispatchEvent(new CustomEvent('nook:editor-font-changed', { detail: font }))
 }
 
-// ── Sanctuary Key (Atelier Tier Unlock) ───────────
-
+// ── Sanctuary Key & Patron Atelier Unlock ────────
+ 
 const SANCTUARY_KEY_UNLOCKED = 'nook_sanctuary_key_unlocked'
+const PATRON_UNLOCKED_KEY = 'nook_patron_unlocked'
 
 export function isSanctuaryUnlocked(): boolean {
-  return localStorage.getItem(SANCTUARY_KEY_UNLOCKED) === 'true'
+  return (
+    localStorage.getItem(SANCTUARY_KEY_UNLOCKED) === 'true' ||
+    localStorage.getItem(PATRON_UNLOCKED_KEY) === 'true'
+  )
 }
 
 export function setSanctuaryUnlocked(unlocked: boolean): void {
   if (unlocked) {
     localStorage.setItem(SANCTUARY_KEY_UNLOCKED, 'true')
+    localStorage.setItem(PATRON_UNLOCKED_KEY, 'true')
   } else {
     localStorage.removeItem(SANCTUARY_KEY_UNLOCKED)
+    localStorage.removeItem(PATRON_UNLOCKED_KEY)
   }
 }
 
