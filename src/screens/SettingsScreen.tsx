@@ -301,6 +301,14 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
                     Privacy
                   </button>
                   <span className="text-[#3F3F46] text-[0.55rem]">•</span>
+                  <button
+                    id="settings-banner-link"
+                    onClick={() => onNavigate?.('banner')}
+                    className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
+                  >
+                    Banner
+                  </button>
+                  <span className="text-[#3F3F46] text-[0.55rem]">•</span>
                   <span className="font-sans text-[#52525B] text-[0.62rem] tracking-wider">
                     v1.0.0
                   </span>

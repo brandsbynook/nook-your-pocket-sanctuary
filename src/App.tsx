@@ -10,6 +10,7 @@ import TuneDownScreen    from './screens/TuneDownScreen'
 import SoundscapesScreen from './screens/SoundscapesScreen'
 import OnboardingScreen  from './screens/OnboardingScreen'
 import PrivacyPolicyScreen from './screens/PrivacyPolicyScreen'
+import BannerScreen      from './screens/BannerScreen'
 
 import { AudioProvider } from './context/AudioContext'
 import QuickAudioSheet from './components/QuickAudioSheet'
@@ -27,6 +28,7 @@ export type Screen =
   | 'settings'
   | 'memory-chest'
   | 'privacy'
+  | 'banner'
 
 function getInitialScreen(): Screen {
   if (typeof window !== 'undefined') {
@@ -34,6 +36,9 @@ function getInitialScreen(): Screen {
     const hash = window.location.hash.toLowerCase()
     if (path === '/privacy' || hash === '#privacy') {
       return 'privacy'
+    }
+    if (path === '/banner' || hash === '#banner') {
+      return 'banner'
     }
   }
   return 'home'
@@ -49,8 +54,10 @@ function App() {
       const hash = window.location.hash.toLowerCase()
       if (path === '/privacy' || hash === '#privacy') {
         setScreen('privacy')
+      } else if (path === '/banner' || hash === '#banner') {
+        setScreen('banner')
       } else {
-        setScreen((prev) => (prev === 'privacy' ? 'home' : prev))
+        setScreen((prev) => (prev === 'privacy' || prev === 'banner' ? 'home' : prev))
       }
     }
 
@@ -73,8 +80,19 @@ function App() {
         }
       }
       setScreen('privacy')
+    } else if (target === 'banner') {
+      setPreviousScreen(screen === 'banner' ? 'home' : screen)
+      if (window.location.pathname !== '/banner') {
+        try {
+          window.history.pushState(null, '', '/banner')
+        } catch {
+          window.location.hash = '#banner'
+        }
+      }
+      setScreen('banner')
     } else {
-      if (window.location.pathname === '/privacy' || window.location.hash === '#privacy') {
+      if (window.location.pathname === '/privacy' || window.location.hash === '#privacy' ||
+          window.location.pathname === '/banner'  || window.location.hash === '#banner') {
         try {
           window.history.pushState(null, '', '/')
         } catch {
@@ -139,6 +157,20 @@ function App() {
                   }
                 }
                 setScreen(previousScreen === 'privacy' ? 'home' : previousScreen)
+              }}
+            />
+          )}
+          {screen === 'banner' && (
+            <BannerScreen
+              onBack={() => {
+                if (window.location.pathname === '/banner' || window.location.hash === '#banner') {
+                  try {
+                    window.history.pushState(null, '', '/')
+                  } catch {
+                    window.location.hash = ''
+                  }
+                }
+                setScreen(previousScreen === 'banner' ? 'home' : previousScreen)
               }}
             />
           )}

@@ -1,0 +1,47 @@
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const publicDir = path.resolve(__dirname, '../public')
+
+const svgContent = `<svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&amp;display=swap');
+      .heading {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 56px;
+        font-weight: 300;
+        fill: #E6E4DD;
+        letter-spacing: -0.02em;
+        text-anchor: middle;
+      }
+      .subtitle {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 22px;
+        font-style: italic;
+        font-weight: 300;
+        fill: #8C8A82;
+        text-anchor: middle;
+      }
+    </style>
+  </defs>
+  <!-- 1. Background: Deep Sanctuary Obsidian (#0A0A0B) -->
+  <rect width="1024" height="500" fill="#0A0A0B"/>
+
+  <!-- 2. Heading: nook. -->
+  <text x="512" y="240" class="heading">nook.</text>
+
+  <!-- 3. Subtitle: your pocket sanctuary (12px margin below heading) -->
+  <text x="512" y="284" class="subtitle">your pocket sanctuary</text>
+</svg>
+`
+
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true })
+}
+
+const svgPath = path.join(publicDir, 'nook-feature-graphic.svg')
+fs.writeFileSync(svgPath, svgContent, 'utf-8')
+console.log('✓ Generated public/nook-feature-graphic.svg (1024x500)')
