@@ -19,23 +19,20 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function(reg) {
+            console.log('SW registered successfully:', reg.scope);
+          })
+          .catch(function(err) {
+            console.error('SW registration failed:', err);
+          });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register('/sw.js')
-            .then((registration) => {
-              console.log('nook service worker registered with scope:', registration.scope);
-            })
-            .catch((error) => {
-              console.error('nook service worker registration failed:', error);
-            });
-        });
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
