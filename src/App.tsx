@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react'
-import HomeScreen        from './screens/HomeScreen'
-import BrainDumpScreen   from './screens/BrainDumpScreen'
-import Reflect           from './screens/Reflect'
-import CardsScreen       from './screens/CardsScreen'
-import SettingsScreen    from './screens/SettingsScreen'
+import HomeScreen from './screens/HomeScreen'
+import BrainDumpScreen from './screens/BrainDumpScreen'
+import Reflect from './screens/Reflect'
+import CardsScreen from './screens/CardsScreen'
+import SettingsScreen from './screens/SettingsScreen'
 import MemoryChestScreen from './screens/MemoryChestScreen'
-import CompanionScreen   from './screens/CompanionScreen'
-import TuneDownScreen    from './screens/TuneDownScreen'
+import CompanionScreen from './screens/CompanionScreen'
+import TuneDownScreen from './screens/TuneDownScreen'
 import SoundscapesScreen from './screens/SoundscapesScreen'
-import OnboardingScreen  from './screens/OnboardingScreen'
+import OnboardingScreen from './screens/OnboardingScreen'
 import PrivacyPolicyScreen from './screens/PrivacyPolicyScreen'
-import BannerScreen      from './screens/BannerScreen'
+import BannerScreen from './screens/BannerScreen'
 
 import { AudioProvider } from './context/AudioContext'
 import QuickAudioSheet from './components/QuickAudioSheet'
 import SanctuaryKeyModal from './components/SanctuaryKeyModal'
+import { PATRON_STORAGE_KEY } from './services/revenuecat'
 
 export type Screen =
   | 'onboarding'
@@ -46,60 +47,58 @@ function getInitialScreen(): Screen {
 
 function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen)
-  const [previousScreen, setPreviousScreen] = useState<Screen>('home')
 
+  // Check URL query parameters for Judge Bypass: ?passcode=SHIPATHON2026 or ?judge=true
   useEffect(() => {
-    function handleLocation() {
-      const path = window.location.pathname.toLowerCase().replace(/\/$/, '')
-      const hash = window.location.hash.toLowerCase()
-      if (path === '/privacy' || hash === '#privacy') {
-        setScreen('privacy')
-      } else if (path === '/banner' || hash === '#banner') {
-        setScreen('banner')
-      } else {
-        setScreen((prev) => (prev === 'privacy' || prev === 'banner' ? 'home' : prev))
-      }
-    }
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('passcode') || params.get('code')
+      const isJudge = params.get('judge') === 'true'
 
-    window.addEventListener('popstate', handleLocation)
-    window.addEventListener('hashchange', handleLocation)
-    return () => {
-      window.removeEventListener('popstate', handleLocation)
-      window.removeEventListener('hashchange', handleLocation)
+      if (isJudge || (code && code.toUpperCase() === 'SHIPATHON2026')) {
+        localStorage.setItem(PATRON_STORAGE_KEY, 'true')
+        console.info('[Nook] Judge bypass activated via link.')
+      }
     }
   }, [])
 
+  // Universal Hardware / Swipe Back Navigation Listener
+  useEffect(() => {
+    function handlePopState(e: PopStateEvent) {
+      const targetScreen = (e.state?.screen as Screen) || 'home'
+      setScreen(targetScreen)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   const navigateTo = (target: Screen | string) => {
-    if (target === 'privacy') {
-      setPreviousScreen(screen === 'privacy' ? 'home' : screen)
-      if (window.location.pathname !== '/privacy') {
-        try {
-          window.history.pushState(null, '', '/privacy')
-        } catch {
-          window.location.hash = '#privacy'
-        }
+    const nextScreen = target as Screen
+
+    if (nextScreen === screen) return
+
+    // Push entry to browser history so phone back button returns to previous screen
+    if (typeof window !== 'undefined') {
+      if (nextScreen === 'home') {
+        window.history.pushState({ screen: 'home' }, '', '/')
+      } else if (nextScreen === 'privacy') {
+        window.history.pushState({ screen: 'privacy' }, '', '/privacy')
+      } else if (nextScreen === 'banner') {
+        window.history.pushState({ screen: 'banner' }, '', '/banner')
+      } else {
+        window.history.pushState({ screen: nextScreen }, '', `/#${nextScreen}`)
       }
-      setScreen('privacy')
-    } else if (target === 'banner') {
-      setPreviousScreen(screen === 'banner' ? 'home' : screen)
-      if (window.location.pathname !== '/banner') {
-        try {
-          window.history.pushState(null, '', '/banner')
-        } catch {
-          window.location.hash = '#banner'
-        }
-      }
-      setScreen('banner')
+    }
+
+    setScreen(nextScreen)
+  }
+
+  const handleReturnToHome = () => {
+    if (window.history.length > 1) {
+      window.history.back()
     } else {
-      if (window.location.pathname === '/privacy' || window.location.hash === '#privacy' ||
-          window.location.pathname === '/banner'  || window.location.hash === '#banner') {
-        try {
-          window.history.pushState(null, '', '/')
-        } catch {
-          window.location.hash = ''
-        }
-      }
-      setScreen(target as Screen)
+      navigateTo('home')
     }
   }
 
@@ -114,64 +113,46 @@ function App() {
             <HomeScreen onNavigate={navigateTo} />
           )}
           {screen === 'brain-dump' && (
-            <BrainDumpScreen onBack={() => navigateTo('home')} />
+            <BrainDumpScreen onBack={handleReturnToHome} />
           )}
           {screen === 'reflect' && (
-            <Reflect onBack={() => navigateTo('home')} />
+            <Reflect onBack={handleReturnToHome} />
           )}
           {screen === 'companion' && (
-            <CompanionScreen onBack={() => navigateTo('home')} />
+            <CompanionScreen onBack={handleReturnToHome} />
           )}
           {screen === 'tune-down' && (
-            <TuneDownScreen onBack={() => navigateTo('home')} />
+            <TuneDownScreen onBack={handleReturnToHome} />
           )}
           {screen === 'soundscapes' && (
-            <SoundscapesScreen onBack={() => navigateTo('home')} />
+            <SoundscapesScreen onBack={handleReturnToHome} />
           )}
           {screen === 'cards' && (
             <CardsScreen
-              onBack={() => navigateTo('home')}
+              onBack={handleReturnToHome}
               onNavigate={tab => navigateTo(tab as Screen)}
             />
           )}
           {screen === 'memory-chest' && (
             <MemoryChestScreen
-              onBack={() => navigateTo('home')}
+              onBack={handleReturnToHome}
               onNavigate={tab => navigateTo(tab as Screen)}
             />
           )}
           {screen === 'settings' && (
             <SettingsScreen
-              onBack={() => navigateTo('home')}
+              onBack={handleReturnToHome}
               onNavigate={tab => navigateTo(tab as Screen)}
             />
           )}
           {screen === 'privacy' && (
             <PrivacyPolicyScreen
-              onBack={() => {
-                if (window.location.pathname === '/privacy' || window.location.hash === '#privacy') {
-                  try {
-                    window.history.pushState(null, '', '/')
-                  } catch {
-                    window.location.hash = ''
-                  }
-                }
-                setScreen(previousScreen === 'privacy' ? 'home' : previousScreen)
-              }}
+              onBack={handleReturnToHome}
             />
           )}
           {screen === 'banner' && (
             <BannerScreen
-              onBack={() => {
-                if (window.location.pathname === '/banner' || window.location.hash === '#banner') {
-                  try {
-                    window.history.pushState(null, '', '/')
-                  } catch {
-                    window.location.hash = ''
-                  }
-                }
-                setScreen(previousScreen === 'banner' ? 'home' : previousScreen)
-              }}
+              onBack={handleReturnToHome}
             />
           )}
         </main>
