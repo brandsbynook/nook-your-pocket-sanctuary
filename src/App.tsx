@@ -55,7 +55,7 @@ function App() {
       const code = params.get('passcode') || params.get('code')
       const isJudge = params.get('judge') === 'true'
 
-      if (isJudge || (code && code.toUpperCase() === 'SHIPATHON2026')) {
+     if (isJudge || (code && (code.toUpperCase() === 'SHIPATON2026' || code.toUpperCase() === 'SHIPATHON2026'))) {
         localStorage.setItem(PATRON_STORAGE_KEY, 'true')
         console.info('[Nook] Judge bypass activated via link.')
       }
