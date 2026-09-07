@@ -17,6 +17,23 @@ import QuickAudioSheet from './components/QuickAudioSheet'
 import SanctuaryKeyModal from './components/SanctuaryKeyModal'
 import { PATRON_STORAGE_KEY } from './services/revenuecat'
 
+// Synchronous judge bypass check: runs immediately before React renders any screen
+if (typeof window !== 'undefined') {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('passcode') || params.get('code')
+    const isJudge = params.get('judge') === 'true'
+
+    if (isJudge || (code && (code.toUpperCase() === 'SHIPATON2026' || code.toUpperCase() === 'SHIPATHON2026'))) {
+      localStorage.setItem(PATRON_STORAGE_KEY, 'true')
+      window.dispatchEvent(new Event('storage'))
+      console.info('[Nook] Synchronous Judge bypass activated.')
+    }
+  } catch (err) {
+    console.error('[Nook] Bypass check error:', err)
+  }
+}
+
 export type Screen =
   | 'onboarding'
   | 'home'
@@ -41,6 +58,9 @@ function getInitialScreen(): Screen {
     if (path === '/banner' || hash === '#banner') {
       return 'banner'
     }
+    if (hash === '#soundscapes') {
+      return 'soundscapes'
+    }
   }
   return 'home'
 }
@@ -48,16 +68,16 @@ function getInitialScreen(): Screen {
 function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen)
 
-  // Check URL query parameters for Judge Bypass: ?passcode=SHIPATHON2026 or ?judge=true
+  // Double-check inside useEffect to ensure any active contexts or listeners re-sync
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const code = params.get('passcode') || params.get('code')
       const isJudge = params.get('judge') === 'true'
 
-     if (isJudge || (code && (code.toUpperCase() === 'SHIPATON2026' || code.toUpperCase() === 'SHIPATHON2026'))) {
+      if (isJudge || (code && (code.toUpperCase() === 'SHIPATON2026' || code.toUpperCase() === 'SHIPATHON2026'))) {
         localStorage.setItem(PATRON_STORAGE_KEY, 'true')
-        console.info('[Nook] Judge bypass activated via link.')
+        window.dispatchEvent(new Event('storage'))
       }
     }
   }, [])
