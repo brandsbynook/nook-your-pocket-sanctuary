@@ -15,7 +15,7 @@ import BannerScreen from './screens/BannerScreen'
 import { AudioProvider } from './context/AudioContext'
 import QuickAudioSheet from './components/QuickAudioSheet'
 import SanctuaryKeyModal from './components/SanctuaryKeyModal'
-import { PATRON_STORAGE_KEY } from './services/revenuecat'
+import { PATRON_STORAGE_KEY, initPurchases } from './services/revenuecat'
 
 export type Screen =
   | 'onboarding'
@@ -48,8 +48,9 @@ function getInitialScreen(): Screen {
 function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen)
 
-  // Check URL query parameters for Judge Bypass: ?passcode=SHIPATHON2026 or ?judge=true
+  // Initialize Purchases and check URL query parameters for Judge Bypass: ?passcode=SHIPATHON2026 or ?judge=true
   useEffect(() => {
+    initPurchases()
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const code = params.get('passcode') || params.get('code')

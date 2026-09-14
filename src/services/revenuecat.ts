@@ -1,15 +1,43 @@
-import { Purchases, type Package, type CustomerInfo, type Offerings } from '@revenuecat/purchases-js'
+import { Capacitor } from '@capacitor/core'
+import {
+  Purchases as PurchasesCapacitor,
+  type PurchasesPackage,
+  type PurchasesOfferings,
+  type CustomerInfo as CapacitorCustomerInfo,
+} from '@revenuecat/purchases-capacitor'
+import {
+  Purchases as PurchasesJs,
+  type Package as JsPackage,
+  type CustomerInfo as JsCustomerInfo,
+  type Offerings as JsOfferings,
+} from '@revenuecat/purchases-js'
 
-export type { Package }
+export type UnifiedPackage = (JsPackage | PurchasesPackage) & {
+  rcBillingProduct?: {
+    currentPrice?: {
+      formattedPrice?: string
+    }
+  }
+  product?: {
+    priceString?: string
+  }
+}
+
+export type { UnifiedPackage as Package }
+
+export const REVENUECAT_GOOGLE_API_KEY =
+  import.meta.env.VITE_REVENUECAT_GOOGLE_API_KEY || 'goog_placeholder_api_key'
 
 export const REVENUECAT_PUBLIC_KEY =
   import.meta.env.VITE_REVENUECAT_PUBLIC_KEY || 'rcb_sb_test_store_key'
+
 export const OFFERING_ID = 'default'
 export const ENTITLEMENT_ID = 'nook_pro'
 export const PATRON_STORAGE_KEY = 'nook_patron_unlocked'
 export const ANONYMOUS_USER_ID_KEY = 'nook_rc_anonymous_id'
 
-let purchasesInstance: Purchases | null = null
+let jsPurchasesInstance: PurchasesJs | null = null
+let isNativeConfigured = false
 
 /**
  * Returns or generates a persistent anonymous user ID stored in localStorage.
@@ -31,53 +59,91 @@ export function getAnonymousUserId(): string {
 
 /**
  * Initializes Purchases instance using the anonymous persistent ID.
+ * Automatically delegates to @revenuecat/purchases-capacitor on native Android
+ * and @revenuecat/purchases-js in web browsers.
  */
-export function initPurchases(): Purchases | null {
-  if (typeof window === 'undefined') return null
-  if (purchasesInstance) return purchasesInstance
+export async function initPurchases(): Promise<boolean> {
+  if (typeof window === 'undefined') return false
 
   const appUserId = getAnonymousUserId()
-  const apiKey = REVENUECAT_PUBLIC_KEY
 
+  if (Capacitor.isNativePlatform()) {
+    if (isNativeConfigured) return true
+
+    const apiKey = REVENUECAT_GOOGLE_API_KEY
+    if (!apiKey || apiKey === 'goog_placeholder_api_key') {
+      console.info(
+        '[RevenueCat] Running native Capacitor with placeholder Google API key. Set VITE_REVENUECAT_GOOGLE_API_KEY for live store.'
+      )
+    }
+
+    try {
+      await PurchasesCapacitor.configure({
+        apiKey,
+        appUserID: appUserId,
+      })
+      isNativeConfigured = true
+      return true
+    } catch (err) {
+      console.warn('[RevenueCat] Native initialization deferred or error:', err)
+      return false
+    }
+  }
+
+  // Web (Purchases JS)
+  if (jsPurchasesInstance) return true
+
+  const apiKey = REVENUECAT_PUBLIC_KEY
   if (!apiKey || apiKey === 'rcb_sb_test_store_key') {
-    // In test/demo mode without configured key, log once
-    console.info('[RevenueCat] Running with test store key or placeholder. Set VITE_REVENUECAT_PUBLIC_KEY for live store.')
+    console.info(
+      '[RevenueCat] Running web with test store key or placeholder. Set VITE_REVENUECAT_PUBLIC_KEY for live store.'
+    )
   }
 
   try {
-    purchasesInstance = Purchases.configure({
+    jsPurchasesInstance = PurchasesJs.configure({
       apiKey,
       appUserId,
     })
-    return purchasesInstance
+    return true
   } catch (err) {
-    console.warn('[RevenueCat] Initialization deferred or error:', err)
-    return null
+    console.warn('[RevenueCat] Web initialization deferred or error:', err)
+    return false
   }
 }
 
 /**
  * Fetches package details from the "default" offering.
  */
-export async function getDefaultOfferingPackage(): Promise<Package | null> {
+export async function getDefaultOfferingPackage(): Promise<UnifiedPackage | null> {
   try {
-    const purchases = initPurchases()
-    if (!purchases) return null
+    await initPurchases()
 
-    const offerings: Offerings = await purchases.getOfferings()
-    const defaultOffering = offerings.all[OFFERING_ID] || offerings.current
-    if (!defaultOffering) {
+    if (Capacitor.isNativePlatform()) {
+      const offerings: PurchasesOfferings = await PurchasesCapacitor.getOfferings()
+      const defaultOffering = offerings.all?.[OFFERING_ID] || offerings.current
+      if (!defaultOffering) return null
+
+      if (defaultOffering.lifetime) {
+        return defaultOffering.lifetime as UnifiedPackage
+      }
+      if (defaultOffering.availablePackages && defaultOffering.availablePackages.length > 0) {
+        return defaultOffering.availablePackages[0] as UnifiedPackage
+      }
       return null
     }
 
+    if (!jsPurchasesInstance) return null
+    const offerings: JsOfferings = await jsPurchasesInstance.getOfferings()
+    const defaultOffering = offerings.all?.[OFFERING_ID] || offerings.current
+    if (!defaultOffering) return null
+
     if (defaultOffering.lifetime) {
-      return defaultOffering.lifetime
+      return defaultOffering.lifetime as UnifiedPackage
     }
-
     if (defaultOffering.availablePackages && defaultOffering.availablePackages.length > 0) {
-      return defaultOffering.availablePackages[0]
+      return defaultOffering.availablePackages[0] as UnifiedPackage
     }
-
     return null
   } catch (err) {
     console.warn('[RevenueCat] Error fetching package from default offering:', err)
@@ -87,31 +153,53 @@ export async function getDefaultOfferingPackage(): Promise<Package | null> {
 
 export interface PurchaseResultResponse {
   success: boolean
-  customerInfo?: CustomerInfo
+  customerInfo?: JsCustomerInfo | CapacitorCustomerInfo
   cancelled?: boolean
   error?: unknown
 }
 
 /**
  * Triggers the RevenueCat checkout flow for the Patron Atelier package.
+ * Invokes Purchases.purchasePackage on native Android or PurchasesJs.purchase on web.
  */
-export async function purchasePatronPackage(pkg?: Package | null): Promise<PurchaseResultResponse> {
+export async function purchasePatronPackage(pkg?: UnifiedPackage | null): Promise<PurchaseResultResponse> {
   try {
-    const purchases = initPurchases()
-    if (!purchases) {
-      throw new Error('RevenueCat Purchases is not configured. Please supply a valid Public API Key.')
-    }
+    await initPurchases()
 
     let targetPackage = pkg
     if (!targetPackage) {
       targetPackage = await getDefaultOfferingPackage()
     }
 
-    if (!targetPackage) {
-      throw new Error('No package found in the "default" offering.')
+    if (Capacitor.isNativePlatform()) {
+      if (!targetPackage) {
+        throw new Error('No package found in the default offering.')
+      }
+
+      const result = await PurchasesCapacitor.purchasePackage({
+        aPackage: targetPackage as PurchasesPackage,
+      })
+
+      const customerInfo = result.customerInfo
+      const isProActive = Boolean(customerInfo?.entitlements?.active?.[ENTITLEMENT_ID])
+
+      if (isProActive) {
+        localStorage.setItem(PATRON_STORAGE_KEY, 'true')
+        return { success: true, customerInfo }
+      } else {
+        return { success: false, customerInfo }
+      }
     }
 
-    const result = await purchases.purchase({ rcPackage: targetPackage })
+    // Web fallback using PurchasesJs
+    if (!jsPurchasesInstance) {
+      throw new Error('RevenueCat Purchases is not configured. Please supply a valid Public API Key.')
+    }
+    if (!targetPackage) {
+      throw new Error('No package found in the default offering.')
+    }
+
+    const result = await jsPurchasesInstance.purchase({ rcPackage: targetPackage as JsPackage })
     const customerInfo = result.customerInfo
     const isProActive = Boolean(customerInfo?.entitlements?.active?.[ENTITLEMENT_ID])
 
@@ -122,7 +210,12 @@ export async function purchasePatronPackage(pkg?: Package | null): Promise<Purch
       return { success: false, customerInfo }
     }
   } catch (err: any) {
-    if (err?.errorCode === 1 || err?.name === 'UserCancelledError' || String(err).includes('cancelled')) {
+    if (
+      err?.userCancelled ||
+      err?.errorCode === 1 ||
+      err?.name === 'UserCancelledError' ||
+      String(err?.message || err).toLowerCase().includes('cancel')
+    ) {
       return { success: false, cancelled: true }
     }
     console.error('[RevenueCat] Checkout error:', err)
@@ -139,10 +232,20 @@ export async function checkPatronStatus(): Promise<boolean> {
   }
 
   try {
-    const purchases = initPurchases()
-    if (!purchases) return false
+    await initPurchases()
 
-    const customerInfo = await purchases.getCustomerInfo()
+    if (Capacitor.isNativePlatform()) {
+      const { customerInfo } = await PurchasesCapacitor.getCustomerInfo()
+      const isProActive = Boolean(customerInfo?.entitlements?.active?.[ENTITLEMENT_ID])
+      if (isProActive) {
+        localStorage.setItem(PATRON_STORAGE_KEY, 'true')
+        return true
+      }
+      return false
+    }
+
+    if (!jsPurchasesInstance) return false
+    const customerInfo = await jsPurchasesInstance.getCustomerInfo()
     const isProActive = Boolean(customerInfo?.entitlements?.active?.[ENTITLEMENT_ID])
     if (isProActive) {
       localStorage.setItem(PATRON_STORAGE_KEY, 'true')

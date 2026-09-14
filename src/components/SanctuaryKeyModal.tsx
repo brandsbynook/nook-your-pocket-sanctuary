@@ -26,7 +26,10 @@ export default function SanctuaryKeyModal() {
 
   if (!isPaywallOpen) return null
 
-  const displayPrice = rcPackage?.rcBillingProduct?.currentPrice?.formattedPrice || '$4.99'
+  const displayPrice =
+    (rcPackage as any)?.product?.priceString ||
+    rcPackage?.rcBillingProduct?.currentPrice?.formattedPrice ||
+    '$4.99'
 
   async function handlePurchase() {
     setIsLoading(true)
