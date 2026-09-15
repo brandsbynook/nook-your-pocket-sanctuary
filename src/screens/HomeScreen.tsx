@@ -55,16 +55,16 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
       <main
         id="home-screen"
         className="
-          min-h-[100dvh] w-full
-          px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
+          h-full w-full
+          px-7 sm:px-8 pb-4
           flex flex-col justify-between
-          overflow-y-auto
+          overflow-hidden
           bg-[#0A0A0B] select-none
           animate-fade-in
         "
       >
-        {/* ═══ Top Section (Brand Stack & Sub-row Cluster) ════════ */}
-        <div className="flex flex-col shrink-0 max-w-[360px] mx-auto w-full">
+        {/* ═══ Unified Center Group (Header + Utility + Greeting + 5 Rooms) ═══ */}
+        <div className="flex-1 flex flex-col justify-center -translate-y-8 sm:-translate-y-10 w-full">
           {/* ── 1. Centered Brand Header ─── */}
           <header className="flex flex-col items-center text-center w-full">
             <h1 className="font-serif-nook text-3xl sm:text-4xl text-[#E5E5E7] tracking-[0.14em] lowercase font-light leading-none">
@@ -80,38 +80,33 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
             <QuietToggle active={isQuietModeOpen} onToggle={(active) => setIsQuietModeOpen(active)} />
             <DeadlineGlyph />
           </div>
-        </div>
 
-        {/* ═══ Lifted Center Content (Greeting & 5 Core Rooms) ═══ */}
-        <div className="flex-1 flex flex-col justify-start max-w-[360px] mx-auto w-full px-1">
-          {/* ── 3. Faded & Re-centered Dynamic Greeting ─────────── */}
+          {/* ── 3. Faded Dynamic Greeting ─────────── */}
           {showGreetingSetting && greeting ? (
-            <div className="mt-8 pb-5 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <div className="mt-0 mb-3 text-center animate-lift-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               <p className="font-serif-nook text-sm text-[#71717A] font-normal italic tracking-wide leading-relaxed text-center">
                 {greeting}
               </p>
             </div>
-          ) : (
-            <div className="pb-3" />
-          )}
+          ) : null}
 
-          {/* ── 4. Lifted 5-Room Navigation List ────────────────── */}
-          <nav aria-label="Sanctuary practices" className="flex flex-col w-full max-w-[360px] mx-auto">
+          {/* ── 4. 5-Room Navigation List ────────────────── */}
+          <nav aria-label="Sanctuary practices" className="flex flex-col w-full">
             {PRIMARY_MENU.map((item, index) => (
               <div key={item.id} className="w-full">
                 <button
                   id={`home-menu-${item.id}`}
                   onClick={() => onNavigate(item.id)}
                   className="
-                    w-full text-left py-5 flex flex-col items-start gap-[2px]
+                    w-full text-left py-3.5 sm:py-4.5 flex flex-col items-start gap-[2px]
                     group cursor-pointer transition-colors
                     focus:outline-none
                   "
                 >
-                  <h2 className="font-serif-nook text-xl text-[#E5E5E7] font-light tracking-wide group-hover:text-[#FFFFFF] group-active:text-[#FFFFFF] transition-colors">
+                  <h2 className="font-serif-nook text-[22px] sm:text-2xl text-[#E5E5E7] font-light tracking-wide group-hover:text-[#FFFFFF] group-active:text-[#FFFFFF] transition-colors">
                     {item.title}
                   </h2>
-                  <p className="font-sans text-[13px] text-[#71717A] tracking-normal mt-1 group-hover:text-[#A1A1AA] transition-colors">
+                  <p className="font-sans text-[13.5px] sm:text-sm text-[#71717A] tracking-normal mt-1 group-hover:text-[#A1A1AA] transition-colors">
                     {item.subtitle}
                   </p>
                 </button>
@@ -123,24 +118,24 @@ export default function HomeScreen({ onNavigate }: HomeScreenProps) {
           </nav>
         </div>
 
-        {/* ═══ 4. Clean Footer ═════════════════════════════════════ */}
-        <div className="flex flex-col items-center mt-4 pb-4 max-w-[360px] mx-auto w-full">
+        {/* ═══ Footer ═════════════════════════════════════ */}
+        <div className="flex flex-col items-center w-full shrink-0 pb-6 sm:pb-8">
           <footer className="w-full pt-4 border-t border-[#1F1F23] flex items-center justify-between px-2">
             <button
               onClick={() => onNavigate('cards')}
-              className="font-sans text-[10px] tracking-[0.2em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
+              className="font-sans text-[11px] tracking-[0.22em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
             >
               Cards
             </button>
             <button
               onClick={() => onNavigate('memory-chest')}
-              className="font-sans text-[10px] tracking-[0.2em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
+              className="font-sans text-[11px] tracking-[0.22em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
             >
               Memory Chest
             </button>
             <button
               onClick={() => onNavigate('settings')}
-              className="font-sans text-[10px] tracking-[0.2em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
+              className="font-sans text-[11px] tracking-[0.22em] text-[#52525B] uppercase hover:text-[#E5E5E7] transition-colors focus:outline-none"
             >
               Settings
             </button>

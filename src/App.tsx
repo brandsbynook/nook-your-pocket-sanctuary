@@ -105,7 +105,10 @@ function App() {
 
   return (
     <AudioProvider>
-      <div className="w-full h-[100dvh] bg-[#0A0A0B] flex justify-center overflow-hidden">
+      <div
+        className="w-full h-[100dvh] bg-[#0A0A0B] flex justify-center overflow-hidden"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <main className="w-full max-w-md h-full flex flex-col relative overflow-hidden bg-[#0A0A0B]">
           {screen === 'onboarding' && (
             <OnboardingScreen onComplete={() => navigateTo('home')} />

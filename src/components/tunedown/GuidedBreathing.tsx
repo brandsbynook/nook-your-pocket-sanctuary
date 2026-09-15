@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
 /* ─── Pattern Definitions (2 Essential Cadences) ─── */
 export type PatternId = 'soft' | 'box'
@@ -173,13 +173,47 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
                  : phase.name === 'Exhale' ? 'ease-in-out'
                  : 'linear'
     return {
-      transform: isActive ? `scale(${phase.scale})` : 'scale(1.0)',
+      transform: `${isActive ? `scale(${phase.scale})` : 'scale(1.0)'} translateZ(0)`,
       opacity: isActive ? phase.opacity : 0.3,
+      willChange: 'transform, opacity',
       transition: isActive
         ? `transform ${durMs}ms ${easing}, opacity ${durMs}ms ease-in-out`
         : 'transform 800ms ease-in-out, opacity 800ms ease-in-out',
     }
   }
+
+  /* ── Separate phase transition styles from 1-second countdown timer ── */
+  const orbStyle = useMemo(() => {
+    return currentPhase.kind === 'orb' ? orbTransitionStyle(currentPhase as OrbPhase) : {}
+  }, [currentPhase, isActive])
+
+  const ambientStyle = useMemo(() => {
+    if (currentPhase.kind !== 'orb') return {}
+    const phase = currentPhase as OrbPhase
+    const durMs = phase.duration * 1000
+    return {
+      transform: `${isActive ? `scale(${phase.scale * 1.15})` : 'scale(1)'} translateZ(0)`,
+      opacity: isActive ? phase.opacity * 0.6 : 0.1,
+      willChange: 'transform, opacity',
+      transition: isActive
+        ? `transform ${durMs}ms ease-in-out, opacity ${durMs}ms ease-in-out`
+        : 'all 800ms ease',
+    }
+  }, [currentPhase, isActive])
+
+  const ringStyle = useMemo(() => {
+    if (currentPhase.kind !== 'orb') return {}
+    const phase = currentPhase as OrbPhase
+    const durMs = phase.duration * 1000
+    return {
+      transform: `${isActive ? `scale(${phase.scale * 1.04})` : 'scale(1)'} translateZ(0)`,
+      opacity: isActive ? phase.opacity * 0.35 : 0.12,
+      willChange: 'transform, opacity',
+      transition: isActive
+        ? `transform ${durMs}ms ease-in-out, opacity ${durMs}ms ease-in-out`
+        : 'all 800ms ease',
+    }
+  }, [currentPhase, isActive])
 
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
@@ -304,29 +338,13 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
             {/* Ambient atmosphere */}
             <div
               className="absolute w-56 h-56 rounded-full bg-[#E5E5E7]/5 blur-3xl pointer-events-none"
-              style={{
-                transform: isActive
-                  ? `scale(${(currentPhase as OrbPhase).scale * 1.15})`
-                  : 'scale(1)',
-                opacity: isActive ? (currentPhase as OrbPhase).opacity * 0.6 : 0.1,
-                transition: isActive
-                  ? `transform ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out, opacity ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out`
-                  : 'all 800ms ease',
-              }}
+              style={ambientStyle}
             />
 
             {/* Outer breath ring */}
             <div
               className="absolute w-48 h-48 rounded-full border border-[#E5E5E7]/12 pointer-events-none"
-              style={{
-                transform: isActive
-                  ? `scale(${(currentPhase as OrbPhase).scale * 1.04})`
-                  : 'scale(1)',
-                opacity: isActive ? (currentPhase as OrbPhase).opacity * 0.35 : 0.12,
-                transition: isActive
-                  ? `transform ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out, opacity ${(currentPhase as OrbPhase).duration * 1000}ms ease-in-out`
-                  : 'all 800ms ease',
-              }}
+              style={ringStyle}
             />
 
             {/* Core breathing orb */}
@@ -339,7 +357,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
                 group-hover:border-[#3F3F46]
                 pointer-events-none
               "
-              style={orbTransitionStyle(currentPhase as OrbPhase)}
+              style={orbStyle}
             >
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
                 <span className="font-serif-nook text-sm text-[#A1A1AA] tracking-wider uppercase">

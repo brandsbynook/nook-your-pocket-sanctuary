@@ -79,7 +79,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
   return (
     <main
       id="tune-down-screen"
-      className="h-[100dvh] w-full max-w-[360px] mx-auto flex flex-col bg-[#0A0A0B] text-[#E5E5E7] px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14 overflow-hidden select-none"
+      className="h-[100dvh] w-full flex flex-col bg-[#0A0A0B] text-[#E5E5E7] px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14 overflow-hidden select-none"
     >
       <div className="flex-1 flex flex-col min-h-0 w-full">
         {/* ── Top Navigation Bar ────────────────────────────── */}
@@ -118,7 +118,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
       {/* ── View 1: 4 Primary Accordion Drawers ── */}
       {!activePractice ? (
-        <div className="flex-1 flex flex-col justify-start overflow-y-auto px-6 pb-8 animate-fade-in">
+        <div className="flex-1 flex flex-col justify-start overflow-y-auto pb-8 animate-fade-in">
             <div className="flex flex-col gap-y-3 mt-8 w-full">
               {/* ── 1. BREATHE ACCORDION ── */}
               <div className="rounded-2xl border border-[#222225] bg-[#141416] overflow-hidden transition-all duration-300">
