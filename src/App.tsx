@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { App as CapApp } from '@capacitor/app'
 import HomeScreen from './screens/HomeScreen'
 import BrainDumpScreen from './screens/BrainDumpScreen'
 import Reflect from './screens/Reflect'
@@ -74,15 +75,20 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
+  const BOTTOM_PANEL_TABS: Screen[] = ['settings', 'memory-chest', 'cards']
+
   const navigateTo = (target: Screen | string) => {
     const nextScreen = target as Screen
-
     if (nextScreen === screen) return
 
-    // Push entry to browser history so phone back button returns to previous screen
     if (typeof window !== 'undefined') {
-      if (nextScreen === 'home') {
-        window.history.pushState({ screen: 'home' }, '', '/')
+      const isBottomPanelSwitch =
+        BOTTOM_PANEL_TABS.includes(screen) && BOTTOM_PANEL_TABS.includes(nextScreen)
+
+      if (isBottomPanelSwitch) {
+        window.history.replaceState({ screen: nextScreen }, '', `/#${nextScreen}`)
+      } else if (nextScreen === 'home') {
+        window.history.replaceState({ screen: 'home' }, '', '/')
       } else if (nextScreen === 'privacy') {
         window.history.pushState({ screen: 'privacy' }, '', '/privacy')
       } else if (nextScreen === 'banner') {
@@ -96,12 +102,124 @@ function App() {
   }
 
   const handleReturnToHome = () => {
-    if (window.history.length > 1) {
-      window.history.back()
-    } else {
-      navigateTo('home')
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({ screen: 'home' }, '', '/')
     }
+    setScreen('home')
   }
+
+  // Android Native Hardware / Gesture Back Button Listener
+  useEffect(() => {
+    const backListener = CapApp.addListener('backButton', () => {
+      // 1. Quiet Mode Protection:
+      // Tapping back or using the Android back gesture inside Quiet Mode must gently return to 'home'.
+      // It must NEVER call CapApp.exitApp() or quit the app.
+      const quietOverlay = document.getElementById('quiet-mode-overlay')
+      if (quietOverlay) {
+        const quietReturnBtn = document.getElementById('quiet-mode-return-btn') as HTMLElement | null
+        if (quietReturnBtn) {
+          quietReturnBtn.click()
+        }
+        return
+      }
+
+      // 2. Global Overlays & Modals:
+      const paywallBackdrop = document.getElementById('sanctuary-key-backdrop') as HTMLElement | null
+      if (paywallBackdrop) {
+        paywallBackdrop.click()
+        return
+      }
+
+      const quickAudioBackdrop = document.getElementById('quick-audio-sheet-backdrop') as HTMLElement | null
+      if (quickAudioBackdrop) {
+        quickAudioBackdrop.click()
+        return
+      }
+
+      const fullscreenCard = document.getElementById('fullscreen-card') as HTMLElement | null
+      if (fullscreenCard) {
+        fullscreenCard.click()
+        return
+      }
+
+      const newCardModal = document.getElementById('new-card-title')
+      if (newCardModal) {
+        const cancelBtn = newCardModal.closest('.fixed')?.querySelector('button') as HTMLElement | null
+        if (cancelBtn) {
+          cancelBtn.click()
+          return
+        }
+      }
+
+      // 3. Respect Nested Sub-screens:
+      // In Tune Down: If an active practice/stim is open (e.g. Bubble Lattice, Stim Pad),
+      // the back button label is "tools". Click it to step back to the section's menu.
+      if (screen === 'tune-down') {
+        const tuneDownBack = document.getElementById('tune-down-back') as HTMLElement | null
+        if (tuneDownBack && tuneDownBack.textContent?.toLowerCase().includes('tools')) {
+          tuneDownBack.click()
+          return
+        }
+        handleReturnToHome()
+        return
+      }
+
+      // In Reflect: If an active prompt is open in library mode,
+      // the back button label is "library". Click it to return to the library menu.
+      if (screen === 'reflect') {
+        const reflectBack = document.getElementById('reflect-back') as HTMLElement | null
+        if (reflectBack && reflectBack.textContent?.toLowerCase().includes('library')) {
+          reflectBack.click()
+          return
+        }
+        handleReturnToHome()
+        return
+      }
+
+      // In Companion: Handle modal or exit friction
+      if (screen === 'companion') {
+        const compModal = document.querySelector('[role="dialog"][aria-labelledby="companion-modal-title"]') as HTMLElement | null
+        if (compModal) {
+          compModal.click()
+          return
+        }
+        const decelModal = document.querySelector('[role="dialog"][aria-labelledby="deceleration-modal-title"]') as HTMLElement | null
+        if (decelModal) {
+          decelModal.click()
+          return
+        }
+        handleReturnToHome()
+        return
+      }
+
+      // In Memory Chest: If in list view of notes jar, return to jar
+      if (screen === 'memory-chest') {
+        const drawFromJarBtn = Array.from(document.querySelectorAll('button')).find(btn =>
+          btn.textContent?.toLowerCase().includes('draw from jar')
+        )
+        if (drawFromJarBtn) {
+          drawFromJarBtn.click()
+          return
+        }
+        handleReturnToHome()
+        return
+      }
+
+      // 4. Any top-level room or panel screen ('brain-dump', 'settings', 'cards', 'soundscapes', 'privacy', 'banner'):
+      // Return directly to 'home'
+      if (screen !== 'home') {
+        handleReturnToHome()
+        return
+      }
+
+      // 5. Resting on 'home' with no overlays open: Exit app
+      CapApp.exitApp()
+    })
+
+    return () => {
+      backListener.then(listener => listener.remove())
+    }
+  }, [screen])
 
   return (
     <AudioProvider>

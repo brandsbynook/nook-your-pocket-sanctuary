@@ -141,26 +141,21 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       const width = rect.width || window.innerWidth
       const height = rect.height || window.innerHeight
 
-      // Continuous time clock
       timeRef.current += 0.008
-      const time = timeRef.current
+      const t = timeRef.current
 
-      // 1. Base Wander Target Calculation
-      const wanderX = Math.sin(time * 0.7) * 0.6 + Math.cos(time * 1.3) * 0.4
-      const wanderY = Math.cos(time * 0.5) * 0.6 + Math.sin(time * 1.1) * 0.4
+      // Continuous migratory wander path
+      const wanderX = (Math.sin(t * 0.6) * 0.7 + Math.cos(t * 1.1) * 0.3) * (width * 0.35)
+      const wanderY = (Math.cos(t * 0.45) * 0.7 + Math.sin(t * 0.9) * 0.3) * (height * 0.28)
 
-      let targetX = width / 2 + wanderX * (width * 0.36)
-      let targetY = height / 2 + wanderY * (height * 0.30)
+      let targetX = width / 2 + wanderX
+      let targetY = height / 2 + wanderY
 
-      // 2. Blend Pointer Attraction when active touch is present
       if (pointerRef.current.active) {
-        const px = pointerRef.current.x
-        const py = pointerRef.current.y
-        targetX = px * 0.85 + targetX * 0.15
-        targetY = py * 0.85 + targetY * 0.15
+        targetX = pointerRef.current.x
+        targetY = pointerRef.current.y
       }
 
-      // 3. Gravitational Attractor & Orbital Curve Physics
       const dx = targetX - posRef.current.x
       const dy = targetY - posRef.current.y
       const dist = Math.hypot(dx, dy) || 0.001
@@ -168,35 +163,40 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       const nx = dx / dist
       const ny = dy / dist
 
+      // Perpendicular centrifugal/orbital swirl
       const orthoX = -ny
       const orthoY = nx
+      const pull = Math.min(0.18, dist * 0.0025)
+      const orbital = Math.sin(t * 1.8) * 0.09 + 0.05
 
-      const pullForce = Math.min(0.24, dist * 0.003)
-      const orbitalForce = Math.sin(time * 2.2) * 0.04 * Math.min(1.2, dist * 0.008)
+      velRef.current.x += nx * pull + orthoX * orbital
+      velRef.current.y += ny * pull + orthoY * orbital
 
-      velRef.current.x += nx * pullForce + orthoX * orbitalForce
-      velRef.current.y += ny * pullForce + orthoY * orbitalForce
+      velRef.current.x *= 0.965
+      velRef.current.y *= 0.965
 
-      // 4. Damping & Speed Calibration
-      velRef.current.x *= 0.92
-      velRef.current.y *= 0.92
+      // Enforce steady meditative glide speed so it never stalls
+      const speed = Math.hypot(velRef.current.x, velRef.current.y)
+      const minSpeed = 0.8
+      const maxSpeed = 2.8
 
-      const maxSpeed = 3.5
-      const currentSpeed = Math.hypot(velRef.current.x, velRef.current.y)
-      if (currentSpeed > maxSpeed) {
-        velRef.current.x = (velRef.current.x / currentSpeed) * maxSpeed
-        velRef.current.y = (velRef.current.y / currentSpeed) * maxSpeed
+      if (speed < minSpeed) {
+        const factor = minSpeed / (speed || 0.001)
+        velRef.current.x *= factor
+        velRef.current.y *= factor
+      } else if (speed > maxSpeed) {
+        const factor = maxSpeed / speed
+        velRef.current.x *= factor
+        velRef.current.y *= factor
       }
 
       posRef.current.x += velRef.current.x
       posRef.current.y += velRef.current.y
 
-      // Screen boundary padding clamp
-      const pad = 24
+      const pad = 28
       posRef.current.x = Math.max(pad, Math.min(width - pad, posRef.current.x))
       posRef.current.y = Math.max(pad, Math.min(height - pad, posRef.current.y))
 
-      // Direct DOM update for 60fps performance
       if (dotElemRef.current) {
         dotElemRef.current.style.transform = `translate3d(${posRef.current.x}px, ${posRef.current.y}px, 0)`
       }
