@@ -206,16 +206,20 @@ export default function DecelerationModal({
 
         {/* Mode 1: 8-Second Hold Interactive Area */}
         {mode === 'hold' && (
-          <div className="flex flex-col items-center my-2">
+          <div className="flex flex-col items-center my-2 touch-none select-none [-webkit-touch-callout:none] [-webkit-user-select:none]">
             <div
               id="friction-hold-button"
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUpOrLeave}
               onPointerLeave={handlePointerUpOrLeave}
+              onTouchStart={(e) => { e.preventDefault(); handlePointerDown(); }}
+              onTouchEnd={(e) => { e.preventDefault(); handlePointerUpOrLeave(); }}
+              onTouchCancel={handlePointerUpOrLeave}
               onContextMenu={e => e.preventDefault()}
               className="
                 relative w-[130px] h-[130px] rounded-full flex items-center justify-center cursor-pointer select-none
                 transition-transform duration-200 touch-none active:scale-95
+                [-webkit-touch-callout:none] [-webkit-user-select:none]
               "
               role="button"
               tabIndex={0}

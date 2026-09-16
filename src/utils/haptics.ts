@@ -59,4 +59,8 @@ export const haptics = {
   notice: () => triggerHaptic([30, 40, 60]),
 }
 
+export const hapticLight = () => triggerHaptic('light')
+export const hapticMedium = () => triggerHaptic('medium')
+export const hapticTick = () => triggerHaptic(10)
+
 export default haptics

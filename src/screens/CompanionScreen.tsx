@@ -8,6 +8,7 @@ import ScreenHeader from '../components/ScreenHeader'
 import CompanionSelectorModal, { COMPANION_ROSTER } from '../components/CompanionSelectorModal'
 import DecelerationModal from '../components/DecelerationModal'
 import { triggerHaptic } from '../utils/haptics'
+import { App as CapApp } from '@capacitor/app'
 
 interface CompanionScreenProps {
   onBack: () => void
@@ -241,13 +242,41 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
   }, [])
 
   // Back Navigation Handler with Friction Intercept
-  const handleBackAttempt = () => {
-    if (isRunning && timeLeft < totalSessionSeconds - 3) {
+  const handleBackAttempt = useCallback(() => {
+    const isSessionStarted = isRunning || (timeLeft < totalSessionSeconds && !isCompleted)
+    if (isSessionStarted) {
       setIsDecelerationOpen(true)
     } else {
       onBack()
     }
-  }
+  }, [isRunning, timeLeft, totalSessionSeconds, isCompleted, onBack])
+
+  // Native Capacitor Back Button / Physical Gesture Listener
+  useEffect(() => {
+    const backListener = CapApp.addListener('backButton', () => {
+      // 1. If companion roster modal is open, close it
+      if (isSelectorModalOpen) {
+        setIsSelectorModalOpen(false)
+        return
+      }
+      // 2. If custom interval modal is open, close it
+      if (isCustomModalOpen) {
+        setIsCustomModalOpen(false)
+        return
+      }
+      // 3. If deceleration modal is already open, physical back dismisses it to stay in session
+      if (isDecelerationOpen) {
+        setIsDecelerationOpen(false)
+        return
+      }
+      // 4. Otherwise, intercept back navigation via mindful deceleration gateway
+      handleBackAttempt()
+    })
+
+    return () => {
+      backListener.then(l => l.remove())
+    }
+  }, [isSelectorModalOpen, isCustomModalOpen, isDecelerationOpen, handleBackAttempt])
 
   // Confirm Exit from Deceleration Modal
   const handleConfirmExit = () => {

@@ -209,6 +209,11 @@ function App() {
           decelModal.click()
           return
         }
+        const companionBack = document.getElementById('companion-screen-header-back') as HTMLElement | null
+        if (companionBack) {
+          companionBack.click()
+          return
+        }
         handleReturnToHome()
         return
       }

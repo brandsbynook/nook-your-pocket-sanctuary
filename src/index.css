@@ -57,7 +57,12 @@ html, body {
   html,
   body,
   #root {
-    height: 100%;
+    overflow: hidden !important;
+    height: 100% !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    overscroll-behavior: none !important;
     background-color: var(--bg-primary, #0A0A0B);
   }
 
