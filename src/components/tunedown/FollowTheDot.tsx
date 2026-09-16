@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { triggerHaptic } from '../../utils/haptics'
 import BottomControlsDock, { SegmentedPillGroup } from './BottomControlsDock'
 
-export type DotMovementPattern = 'dynamic' | 'bloom'
+export type DotMovementPattern = 'orbit' | 'bilateral' | 'pendulum' | 'bloom'
 
 interface Ripple {
   id: number
@@ -21,27 +21,42 @@ interface BloomRing {
   createdAt: number
 }
 
-export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPattern?: DotMovementPattern }) {
+interface TrailPoint {
+  x: number
+  y: number
+  opacity: number
+  scale: number
+}
+
+interface FollowTheDotProps {
+  initialPattern?: DotMovementPattern
+}
+
+export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotProps) {
   const [pattern, setPattern] = useState<DotMovementPattern>(initialPattern)
   const [ripples, setRipples] = useState<Ripple[]>([])
   const [bloomRipples, setBloomRipples] = useState<BloomRing[]>([])
-  const [now, setNow] = useState<number>(Date.now())
+  const [now, setNow] = useState(Date.now())
 
   const containerRef = useRef<HTMLDivElement | null>(null)
-
-  // Physics state refs (uncontrolled for 60fps smoothness)
   const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const velRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const timeRef = useRef<number>(0)
-
-  // Active touch/pointer target
   const pointerRef = useRef<{ x: number; y: number; active: boolean }>({ x: 0, y: 0, active: false })
+  const timeRef = useRef<number>(0)
   const dotElemRef = useRef<HTMLDivElement | null>(null)
+
+  // Motion tracks and ghost wake refs
+  const trailRef = useRef<TrailPoint[]>([])
+  const trailElemsRef = useRef<(HTMLDivElement | null)[]>([])
+  const orbitEllipseRef = useRef<SVGEllipseElement | null>(null)
 
   // Pattern switch handler
   function handleSelectPattern(p: DotMovementPattern) {
     setPattern(p)
-    if (p === 'dynamic') {
+    trailRef.current = []
+    trailElemsRef.current.forEach(el => {
+      if (el) el.style.display = 'none'
+    })
+    if (p !== 'bloom') {
       triggerHaptic(12)
     }
   }
@@ -118,16 +133,20 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
     return () => clearInterval(timer)
   }, [ripples.length, bloomRipples.length])
 
-  // Main 60fps Physics & Wander Engine for Dynamic Flow mode
+  // Main 60fps Physics & Wander Engine for motion modes
   useEffect(() => {
-    if (pattern !== 'dynamic') return
+    if (pattern === 'bloom') return
 
     let animId: number
+    trailRef.current = []
+    trailElemsRef.current.forEach(el => {
+      if (el) el.style.display = 'none'
+    })
 
     const container = containerRef.current
     if (container) {
       const rect = container.getBoundingClientRect()
-      posRef.current = { x: rect.width / 2, y: rect.height / 2 }
+      posRef.current = { x: rect.width / 2, y: rect.height * 0.42 }
     }
 
     const updatePhysics = () => {
@@ -140,65 +159,103 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
       const rect = container.getBoundingClientRect()
       const width = rect.width || window.innerWidth
       const height = rect.height || window.innerHeight
+      const visualCenterY = height * 0.42
 
-      timeRef.current += 0.008
+      timeRef.current += 0.0075
       const t = timeRef.current
 
-      // Continuous migratory wander path
-      const wanderX = (Math.sin(t * 0.6) * 0.7 + Math.cos(t * 1.1) * 0.3) * (width * 0.35)
-      const wanderY = (Math.cos(t * 0.45) * 0.7 + Math.sin(t * 0.9) * 0.3) * (height * 0.28)
+      let driftX = width / 2
+      let driftY = visualCenterY
 
-      let targetX = width / 2 + wanderX
-      let targetY = height / 2 + wanderY
+      if (pattern === 'orbit') {
+        // Precessing Keplerian Ellipse
+        const orbitAngle = t * 0.06
+        const a = width * 0.38
+        const b = height * 0.27
+        const rawX = Math.cos(t) * a
+        const rawY = Math.sin(t) * b
+        driftX = (width / 2) + (rawX * Math.cos(orbitAngle) - rawY * Math.sin(orbitAngle))
+        driftY = visualCenterY + (rawX * Math.sin(orbitAngle) + rawY * Math.cos(orbitAngle))
 
-      if (pointerRef.current.active) {
-        targetX = pointerRef.current.x
-        targetY = pointerRef.current.y
+        // Update faint planetary track SVG ellipse
+        if (orbitEllipseRef.current) {
+          orbitEllipseRef.current.setAttribute('cx', String(width / 2))
+          orbitEllipseRef.current.setAttribute('cy', String(visualCenterY))
+          orbitEllipseRef.current.setAttribute('rx', String(a))
+          orbitEllipseRef.current.setAttribute('ry', String(b))
+          orbitEllipseRef.current.style.transformOrigin = `${width / 2}px ${visualCenterY}px`
+          orbitEllipseRef.current.style.transform = `rotate(${orbitAngle}rad)`
+        }
+      } else if (pattern === 'bilateral') {
+        // EMDR-style horizontal sweep with smooth turnaround decelerations (Lemniscate)
+        const rx = width * 0.42
+        const ry = height * 0.32
+        driftX = (width / 2) + Math.sin(t) * rx
+        driftY = visualCenterY + (Math.sin(t * 2) / 1.4) * ry
+      } else if (pattern === 'pendulum') {
+        // Resonant buoyancy / pendulum arc through screen center
+        const swingAngle = Math.sin(t * 1.5) * 0.85
+        const pivotY = visualCenterY - (height * 0.12)
+        const length = height * 0.42
+        driftX = (width / 2) + Math.sin(swingAngle) * length
+        driftY = pivotY + Math.cos(swingAngle) * length
       }
+
+      const targetX = pointerRef.current.active ? pointerRef.current.x : driftX
+      const targetY = pointerRef.current.active ? pointerRef.current.y : driftY
 
       const dx = targetX - posRef.current.x
       const dy = targetY - posRef.current.y
       const dist = Math.hypot(dx, dy) || 0.001
 
-      const nx = dx / dist
-      const ny = dy / dist
-
-      // Perpendicular centrifugal/orbital swirl
-      const orthoX = -ny
-      const orthoY = nx
-      const pull = Math.min(0.18, dist * 0.0025)
-      const orbital = Math.sin(t * 1.8) * 0.09 + 0.05
-
-      velRef.current.x += nx * pull + orthoX * orbital
-      velRef.current.y += ny * pull + orthoY * orbital
-
-      velRef.current.x *= 0.965
-      velRef.current.y *= 0.965
-
-      // Enforce steady meditative glide speed so it never stalls
-      const speed = Math.hypot(velRef.current.x, velRef.current.y)
-      const minSpeed = 0.8
-      const maxSpeed = 2.8
-
-      if (speed < minSpeed) {
-        const factor = minSpeed / (speed || 0.001)
-        velRef.current.x *= factor
-        velRef.current.y *= factor
-      } else if (speed > maxSpeed) {
-        const factor = maxSpeed / speed
-        velRef.current.x *= factor
-        velRef.current.y *= factor
+      if (pointerRef.current.active) {
+        const step = Math.min(dist * 0.045, 3.2)
+        posRef.current.x += (dx / dist) * step
+        posRef.current.y += (dy / dist) * step
+      } else {
+        posRef.current.x += dx * 0.06
+        posRef.current.y += dy * 0.06
       }
 
-      posRef.current.x += velRef.current.x
-      posRef.current.y += velRef.current.y
-
-      const pad = 28
+      // Safe bounds padding
+      const pad = 30
       posRef.current.x = Math.max(pad, Math.min(width - pad, posRef.current.x))
       posRef.current.y = Math.max(pad, Math.min(height - pad, posRef.current.y))
 
       if (dotElemRef.current) {
         dotElemRef.current.style.transform = `translate3d(${posRef.current.x}px, ${posRef.current.y}px, 0)`
+      }
+
+      // Fading ghost wake update for Bilateral and Pendulum
+      if (pattern === 'bilateral' || pattern === 'pendulum') {
+        trailRef.current = [
+          { x: posRef.current.x, y: posRef.current.y, opacity: 0.4, scale: 0.95 },
+          ...trailRef.current.map(p => ({ ...p, opacity: p.opacity * 0.86, scale: p.scale * 0.95 }))
+        ].filter(p => p.opacity > 0.02).slice(0, 14)
+
+        for (let i = 0; i < 14; i++) {
+          const el = trailElemsRef.current[i]
+          if (!el) continue
+          const p = trailRef.current[i]
+          if (p) {
+            const size = 18 * p.scale
+            el.style.display = 'block'
+            el.style.width = `${size}px`
+            el.style.height = `${size}px`
+            el.style.opacity = String(p.opacity)
+            el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`
+          } else {
+            el.style.display = 'none'
+          }
+        }
+      } else {
+        if (trailRef.current.length > 0) {
+          trailRef.current = []
+        }
+        for (let i = 0; i < 14; i++) {
+          const el = trailElemsRef.current[i]
+          if (el) el.style.display = 'none'
+        }
       }
 
       animId = requestAnimationFrame(updatePhysics)
@@ -209,15 +266,18 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
   }, [pattern])
 
   const PATTERN_LABELS: { id: DotMovementPattern; label: string }[] = [
-    { id: 'dynamic', label: 'Dynamic Flow' },
-    { id: 'bloom',   label: 'Bloom' },
+    { id: 'orbit', label: 'Orbit' },
+    { id: 'bilateral', label: 'Bilateral' },
+    { id: 'pendulum', label: 'Pendulum' },
   ]
 
   return (
     <div className="w-full h-full flex flex-col flex-1 min-h-0 bg-[#0A0A0B] animate-fade-in select-none">
       {/* Fixed Header Area (outside interactive canvas) */}
       <div className="flex flex-col items-center text-center px-6 pt-4 pb-2 select-none pointer-events-none shrink-0">
-        <h1 className="font-serif text-xl sm:text-2xl text-[#E5E5E7] tracking-tight">Ripple & Flow</h1>
+        <h1 className="font-serif text-xl sm:text-2xl text-[#E5E5E7] tracking-tight">
+          {pattern === 'bloom' ? 'Bloom' : 'Dynamic Flow'}
+        </h1>
         <p className="text-xs sm:text-sm text-[#71717A] tracking-wider mt-1">fluid touch & soft gaze</p>
         <p className="font-serif text-sm sm:text-base text-[#A1A1AA] italic font-normal tracking-wide leading-relaxed mt-3 max-w-xs">
           {pattern === 'bloom'
@@ -235,8 +295,8 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
         onPointerCancel={handlePointerUp}
         className="flex-1 w-full relative touch-none overflow-hidden flex items-center justify-center"
       >
-        {/* Dynamic Flow Mode Ripples */}
-        {pattern === 'dynamic' && ripples.map(r => (
+        {/* Motion Mode Ripples */}
+        {pattern !== 'bloom' && ripples.map(r => (
           <div
             key={r.id}
             className="absolute rounded-full border border-[#E5E5E7]/25 pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
@@ -283,27 +343,55 @@ export default function FollowTheDot({ initialPattern = 'dynamic' }: { initialPa
           )
         })}
 
-        {/* Solid Flat Circle (Rendered ONLY in Dynamic Flow mode) */}
-        {pattern === 'dynamic' && (
+        {/* Orbit faint planetary track */}
+        {pattern === 'orbit' && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            <ellipse
+              ref={orbitEllipseRef}
+              fill="none"
+              stroke="rgba(229, 229, 231, 0.08)"
+              strokeWidth="1"
+            />
+          </svg>
+        )}
+
+        {/* Fading ghost wake circles (Bilateral & Pendulum, positioned behind dot) */}
+        {(pattern === 'bilateral' || pattern === 'pendulum') && (
+          Array.from({ length: 14 }).map((_, i) => (
+            <div
+              key={i}
+              ref={el => {
+                trailElemsRef.current[i] = el
+              }}
+              className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full bg-[#E5E5E7]"
+              style={{ display: 'none' }}
+            />
+          ))
+        )}
+
+        {/* Solid Flat Circle (Rendered when pattern !== 'bloom') */}
+        {pattern !== 'bloom' && (
           <div
             ref={dotElemRef}
             className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
             style={{
-              transform: 'translate3d(50vw, 50vh, 0)',
+              transform: 'translate3d(50vw, 42vh, 0)',
             }}
           >
             <div className="w-[18px] h-[18px] rounded-full bg-[#E5E5E7]" />
           </div>
         )}
 
-        {/* Standardized Unified Bottom Controls Dock */}
-        <BottomControlsDock>
-          <SegmentedPillGroup
-            options={PATTERN_LABELS}
-            value={pattern}
-            onChange={handleSelectPattern}
-          />
-        </BottomControlsDock>
+        {/* Standardized Unified Bottom Controls Dock (Dynamic Flow only) */}
+        {pattern !== 'bloom' && (
+          <BottomControlsDock>
+            <SegmentedPillGroup
+              options={PATTERN_LABELS}
+              value={pattern}
+              onChange={handleSelectPattern}
+            />
+          </BottomControlsDock>
+        )}
       </div>
     </div>
   )

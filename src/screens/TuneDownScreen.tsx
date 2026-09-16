@@ -19,7 +19,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
   const [openSection, setOpenSection] = useState<AccordionSectionId | null>(null)
   const [activePractice, setActivePractice] = useState<PracticeId | null>(initialPractice)
   const [breathePattern, setBreathePattern] = useState<PatternId>('soft')
-  const [dotPattern, setDotPattern] = useState<DotMovementPattern>('dynamic')
+  const [dotPattern, setDotPattern] = useState<DotMovementPattern>('orbit')
   const [doodleMode, setDoodleMode] = useState<DoodleMode>('open')
 
   function handleToggleSection(section: AccordionSectionId) {
@@ -224,7 +224,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                 {openSection === 'follow-dot' && (
                   <div className="flex flex-col animate-fade-in">
                     <button
-                      onClick={() => handleLaunchDot('dynamic')}
+                      onClick={() => handleLaunchDot('orbit')}
                       className="py-3 px-4 border-t border-[#1F1F23] flex items-center justify-between cursor-pointer transition-colors group/opt focus:outline-none hover:bg-[#1A1A1E] text-left"
                     >
                       <div className="flex flex-col items-start">
