@@ -69,11 +69,8 @@ function getInitialScreen(): Screen {
 function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen)
 
-<<<<<<< HEAD
   // Initialize Purchases and check URL query parameters for Judge Bypass: ?passcode=SHIPATHON2026 or ?judge=true
-=======
   // Double-check inside useEffect to ensure any active contexts or listeners re-sync
->>>>>>> 19ce7f801fa6d9bd5da8308d7dfdfc0dd51e898f
   useEffect(() => {
     initPurchases()
     if (typeof window !== 'undefined') {
