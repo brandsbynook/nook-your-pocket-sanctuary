@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { useIdleDim } from '../hooks/useIdleDim'
 import BubbleLattice from '../components/tunedown/BubbleLattice'
-import StimPad        from '../components/tunedown/StimPad'
+import StimPad from '../components/tunedown/StimPad'
 import FollowTheDot, { type DotMovementPattern } from '../components/tunedown/FollowTheDot'
 import DoodlingCanvas, { type DoodleMode } from '../components/tunedown/DoodlingCanvas'
 import GuidedBreathing, { type PatternId } from '../components/tunedown/GuidedBreathing'
@@ -22,9 +21,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
   const [breathePattern, setBreathePattern] = useState<PatternId>('soft')
   const [dotPattern, setDotPattern] = useState<DotMovementPattern>('orbit')
   const [doodleMode, setDoodleMode] = useState<DoodleMode>('open')
-
-  const isDimmablePractice = activePractice === 'breathe' || activePractice === 'follow-dot'
-  const { isControlsVisible } = useIdleDim(3500, isDimmablePractice)
+  const [isBreatheControlsVisible, setIsBreatheControlsVisible] = useState(true)
 
   function handleToggleSection(section: AccordionSectionId) {
     triggerHaptic(10)
@@ -35,6 +32,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
     triggerHaptic(15)
     setBreathePattern(pattern)
     setActivePractice('breathe')
+    setIsBreatheControlsVisible(true)
   }
 
   function handleLaunchDot(pattern: DotMovementPattern) {
@@ -58,27 +56,30 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
     activePractice === 'bubble-lattice'
       ? 'Bubble Lattice'
       : activePractice === 'stim-pad'
-      ? 'Resonant Surface'
-      : activePractice === 'follow-dot'
-      ? 'Ripple & Flow'
-      : activePractice === 'doodle'
-      ? 'Doodle'
-      : activePractice === 'breathe'
-      ? 'Breathe'
-      : 'Tune Down'
+        ? 'Resonant Surface'
+        : activePractice === 'follow-dot'
+          ? 'Ripple & Flow'
+          : activePractice === 'doodle'
+            ? 'Doodle'
+            : activePractice === 'breathe'
+              ? 'Breathe'
+              : 'Tune Down'
 
   const activeSubtext =
     activePractice === 'bubble-lattice'
       ? 'tactile popping & discrete sensory release'
       : activePractice === 'stim-pad'
-      ? 'continuous kinetic glide & acoustic anchor'
-      : activePractice === 'follow-dot'
-      ? 'fluid touch & soft gaze'
-      : activePractice === 'doodle'
-      ? 'quiet drawing & mark-making'
-      : activePractice === 'breathe'
-      ? 'somatic pacing & rhythm'
-      : 'sensory regulation & stillness'
+        ? 'continuous kinetic glide & acoustic anchor'
+        : activePractice === 'follow-dot'
+          ? 'fluid touch & soft gaze'
+          : activePractice === 'doodle'
+            ? 'quiet drawing & mark-making'
+            : activePractice === 'breathe'
+              ? 'somatic pacing & rhythm'
+              : 'sensory regulation & stillness'
+
+  // Header and tools navigation stay 100% visible unless breathe's 5s idle timer fires
+  const isChromeVisible = activePractice === 'breathe' ? isBreatheControlsVisible : true
 
   return (
     <main
@@ -87,10 +88,13 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
     >
       <div className="flex-1 flex flex-col min-h-0 w-full">
         {/* ── Top Navigation Bar ────────────────────────────── */}
-        <div className={`flex items-center justify-between shrink-0 w-full transition-opacity duration-1000 ease-out ${(!isDimmablePractice || isControlsVisible) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div
+          className={`flex items-center justify-between shrink-0 w-full transition-opacity duration-1000 ease-out ${isChromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+        >
           <button
             id="tune-down-back"
-            onClick={activePractice ? () => setActivePractice(null) : onBack}
+            onClick={activePractice ? () => { setActivePractice(null); setIsBreatheControlsVisible(true); } : onBack}
             className="
               flex items-center gap-1.5
               font-sans text-[#52525B] text-[0.62rem]
@@ -110,7 +114,10 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
         {/* ── Decoupled Title Block ──────────────────────────── */}
         {activePractice !== 'follow-dot' && (
-          <div className={`flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0 transition-opacity duration-1000 ease-out ${(!isDimmablePractice || isControlsVisible) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div
+            className={`flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0 transition-opacity duration-1000 ease-out ${isChromeVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+          >
             <h1 className="font-serif-nook text-xl tracking-widest text-[#E5E5E7] leading-none">
               {activeTitle}
             </h1>
@@ -120,9 +127,9 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
           </div>
         )}
 
-      {/* ── View 1: 4 Primary Accordion Drawers ── */}
-      {!activePractice ? (
-        <div className="flex-1 flex flex-col justify-start overflow-y-auto pb-8 animate-fade-in">
+        {/* ── View 1: 4 Primary Accordion Drawers ── */}
+        {!activePractice ? (
+          <div className="flex-1 flex flex-col justify-start overflow-y-auto pb-8 animate-fade-in">
             <div className="flex flex-col gap-y-3 mt-8 w-full">
               {/* ── 1. BREATHE ACCORDION ── */}
               <div className="rounded-2xl border border-[#222225] bg-[#141416] overflow-hidden transition-all duration-300">
@@ -367,7 +374,6 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
                 {openSection === 'stim' && (
                   <div className="flex flex-col animate-fade-in">
-                    {/* Tool 1: Bubble Lattice */}
                     <button
                       id="stim-bubble-lattice"
                       onClick={() => handleLaunchStim('bubble-lattice')}
@@ -386,7 +392,6 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                       </span>
                     </button>
 
-                    {/* Tool 2: Resonant Surface */}
                     <button
                       id="stim-stim-pad"
                       onClick={() => handleLaunchStim('stim-pad')}
@@ -405,7 +410,6 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
                       </span>
                     </button>
 
-                    {/* Footnote */}
                     <div className="pt-3 pb-1 text-center font-serif italic text-xs text-[#71717A]">
                       more unfolding soon
                     </div>
@@ -422,11 +426,16 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
         ) : (
           /* ── View 2: Full-Frame Active Practice Exercise ─── */
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden animate-fade-in">
-            {activePractice === 'breathe'        && <GuidedBreathing initialPattern={breathePattern} />}
-            {activePractice === 'follow-dot'     && <FollowTheDot initialPattern={dotPattern} />}
-            {activePractice === 'doodle'         && <DoodlingCanvas initialMode={doodleMode} />}
+            {activePractice === 'breathe' && (
+              <GuidedBreathing
+                initialPattern={breathePattern}
+                onControlsVisibleChange={setIsBreatheControlsVisible}
+              />
+            )}
+            {activePractice === 'follow-dot' && <FollowTheDot initialPattern={dotPattern} />}
+            {activePractice === 'doodle' && <DoodlingCanvas initialMode={doodleMode} />}
             {activePractice === 'bubble-lattice' && <BubbleLattice />}
-            {activePractice === 'stim-pad'       && <StimPad />}
+            {activePractice === 'stim-pad' && <StimPad />}
           </div>
         )}
       </div>

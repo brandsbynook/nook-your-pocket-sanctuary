@@ -105,8 +105,6 @@ function playCompletionChime() {
 }
 
 export default function CompanionScreen({ onBack }: CompanionScreenProps) {
-  const { isControlsVisible } = useIdleDim(3500)
-
   // Companion state persisted in localStorage
   const [selectedCompanionId, setSelectedCompanionId] = useState<CompanionId>(() => getCompanionChoice())
   const [isSelectorModalOpen, setIsSelectorModalOpen] = useState(false)
@@ -130,6 +128,9 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
   const [timeLeft, setTimeLeft] = useState(() => totalSessionSeconds)
   const [isRunning, setIsRunning] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
+
+  const isSessionActive = Boolean(selectedCompanionId) && isRunning && !isCompleted
+  const { isControlsVisible } = useIdleDim(isSessionActive, 5000)
 
   // Mindful Friction-Exit Intercept Modal
   const [isDecelerationOpen, setIsDecelerationOpen] = useState(false)

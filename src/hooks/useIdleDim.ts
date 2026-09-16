@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 /**
- * Adaptive Ambient Dimming Hook
+ * Adaptive Ambient Dimming Hook (Intentional & State-Gated)
  * 
- * Automatically dims chrome controls after a period of inactivity (`idleTimeout` ms)
- * and wakes them immediately on user interaction ('pointerdown', 'touchstart', 'keydown').
+ * When `enabled` is false:
+ * - Controls remain strictly visible (`isControlsVisible: true`).
+ * - No inactivity timers are started, and event listeners are bypassed/cleaned up.
+ * 
+ * When `enabled` is true:
+ * - Automatically dims chrome controls after `idleTimeout` (default 5000ms) of inactivity.
+ * - Resets on user interaction ('pointerdown', 'touchstart', 'keydown').
  */
-export function useIdleDim(idleTimeout = 3500, enabled = true) {
+export function useIdleDim(enabled = true, idleTimeout = 5000) {
   const [isControlsVisible, setIsControlsVisible] = useState(true)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -34,7 +39,7 @@ export function useIdleDim(idleTimeout = 3500, enabled = true) {
       return
     }
 
-    // Start initial timer
+    // Begin countdown on idle when enabled
     wake()
 
     const handleActivity = () => {

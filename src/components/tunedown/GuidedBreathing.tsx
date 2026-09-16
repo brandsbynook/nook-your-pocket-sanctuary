@@ -45,10 +45,10 @@ const PATTERNS: Pattern[] = [
     label: 'Box Breathing (4-4-4-4)',
     subline: 'equal-sided focus & still anchor',
     phases: [
-      { kind: 'box', name: 'Inhale', duration: 4, edge: 'top'    },
-      { kind: 'box', name: 'Hold',   duration: 4, edge: 'right'  },
+      { kind: 'box', name: 'Inhale', duration: 4, edge: 'top' },
+      { kind: 'box', name: 'Hold', duration: 4, edge: 'right' },
       { kind: 'box', name: 'Exhale', duration: 4, edge: 'bottom' },
-      { kind: 'box', name: 'Hold',   duration: 4, edge: 'left'   },
+      { kind: 'box', name: 'Hold', duration: 4, edge: 'left' },
     ],
   },
 ]
@@ -65,16 +65,31 @@ const PHYSIOLOGICAL_CUES = [
 
 interface GuidedBreathingProps {
   initialPattern?: PatternId
+  onActiveChange?: (active: boolean) => void
+  onControlsVisibleChange?: (visible: boolean) => void
 }
 
-export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreathingProps) {
-  const { isControlsVisible } = useIdleDim(3500)
-
-  // Default active technique
+export default function GuidedBreathing({
+  initialPattern = 'soft',
+  onActiveChange,
+  onControlsVisibleChange,
+}: GuidedBreathingProps) {
   const [patternId, setPatternId] = useState<PatternId>(initialPattern)
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState(4)
   const [isActive, setIsActive] = useState(false)
+
+  // Single authoritative 5-second idle timer
+  const { isControlsVisible } = useIdleDim(isActive, 5000)
+
+  useEffect(() => {
+    onActiveChange?.(isActive)
+  }, [isActive, onActiveChange])
+
+  // Propagate visibility to parent screen so all chrome fades at the exact same millisecond
+  useEffect(() => {
+    onControlsVisibleChange?.(isControlsVisible)
+  }, [isControlsVisible, onControlsVisibleChange])
 
   // Physiological cue state with 15s cross-fade
   const [cueIndex, setCueIndex] = useState(() => Math.floor(Math.random() * PHYSIOLOGICAL_CUES.length))
@@ -88,13 +103,11 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
   const activePattern = PATTERNS.find(p => p.id === patternId) || PATTERNS[0]
   const currentPhase = activePattern.phases[phaseIndex]
 
-  // Keep refs in sync
   phaseIndexRef.current = phaseIndex
   secondsLeftRef.current = secondsLeft
   isActiveRef.current = isActive
   patternRef.current = activePattern
 
-  // 15-second gentle cross-fade rotation
   useEffect(() => {
     const interval = setInterval(() => {
       setCueVisible(false)
@@ -128,7 +141,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
         secondsLeftRef.current = next
         setSecondsLeft(next)
       } else {
-        // Advance to next phase
         const nextIndex = (prevIndex + 1) % pattern.phases.length
         const nextDuration = pattern.phases[nextIndex].duration
         phaseIndexRef.current = nextIndex
@@ -139,7 +151,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
     }, 1000)
   }, [stopTick])
 
-  /* ── isActive toggle ──────────────────────────────────────── */
   useEffect(() => {
     if (isActive) {
       startTick()
@@ -149,7 +160,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
     return stopTick
   }, [isActive, startTick, stopTick])
 
-  /* ── Pattern switch ───────────────────────────────────────── */
   function handleSelectPattern(id: PatternId) {
     if (id === patternId) return
     stopTick()
@@ -163,18 +173,16 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
     setIsActive(false)
   }
 
-  /* ── Tap toggle ───────────────────────────────────────────── */
   function handleTogglePlay(e: React.MouseEvent) {
     e.stopPropagation()
     setIsActive(prev => !prev)
   }
 
-  /* ── Orb CSS transition duration (tied to phase duration) ─── */
   function orbTransitionStyle(phase: OrbPhase) {
     const durMs = phase.duration * 1000
     const easing = phase.name === 'Inhale' ? 'ease-out'
-                 : phase.name === 'Exhale' ? 'ease-in-out'
-                 : 'linear'
+      : phase.name === 'Exhale' ? 'ease-in-out'
+        : 'linear'
     return {
       transform: `${isActive ? `scale(${phase.scale})` : 'scale(1.0)'} translateZ(0)`,
       opacity: isActive ? phase.opacity : 0.3,
@@ -185,7 +193,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
     }
   }
 
-  /* ── Separate phase transition styles from 1-second countdown timer ── */
   const orbStyle = useMemo(() => {
     return currentPhase.kind === 'orb' ? orbTransitionStyle(currentPhase as OrbPhase) : {}
   }, [currentPhase, isActive])
@@ -220,10 +227,13 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
 
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
-      {/* ── 1. Top Document Flow (Pills & Mantra) ── */}
-      <div className={`w-full flex flex-col items-center shrink-0 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      {/* ── 1. Top Document Flow ── */}
+      <div className="w-full flex flex-col items-center shrink-0">
         {/* Row of Pill Buttons */}
-        <div className="flex items-center gap-2">
+        <div
+          className={`flex items-center gap-2 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+        >
           <button
             type="button"
             id="pattern-pill-soft"
@@ -251,7 +261,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
           </button>
         </div>
 
-        {/* Physiological Cue */}
+        {/* Physiological Cue: Always visible */}
         <p
           className="font-serif-nook text-sm sm:text-base text-[#A1A1AA] italic font-normal tracking-wide text-center mt-3 transition-opacity duration-700"
           style={{ opacity: cueVisible ? 1 : 0 }}
@@ -260,8 +270,11 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
         </p>
       </div>
 
-      {/* ── 2. Central Interactive Visualizer Float in Center ── */}
-      <div className={`relative my-auto flex flex-col items-center justify-center min-h-[240px] transition-all duration-1000 ease-out transform ${isControlsVisible ? 'scale-100 translate-y-0' : 'scale-105 -translate-y-5 sm:-translate-y-8'}`}>
+      {/* ── 2. Central Interactive Visualizer Float ── */}
+      <div
+        className={`relative my-auto flex flex-col items-center justify-center min-h-[240px] transition-all duration-1000 ease-out transform ${isControlsVisible ? 'scale-100 translate-y-0' : 'scale-105 -translate-y-4 sm:-translate-y-6'
+          }`}
+      >
         {patternId === 'box' ? (
           /* ── 2D BOX: SVG Square ── */
           <div
@@ -277,7 +290,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               height="220"
               className="absolute inset-0 block overflow-visible"
             >
-              {/* Base track */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
@@ -287,7 +299,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
                 strokeWidth="1.5"
               />
 
-              {/* Progressive stroke fill */}
               <rect
                 x="10" y="10"
                 width="200" height="200"
@@ -312,7 +323,6 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
               />
             </svg>
 
-            {/* Center Dynamic Phase Display */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center gap-0.5 pointer-events-none">
               {!isActive && phaseIndex === 0 && secondsLeft === activePattern.phases[0].duration ? (
                 <span className="font-serif-nook text-sm text-[#A1A1AA] tracking-wider uppercase transition-colors duration-200">
@@ -331,26 +341,23 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
             </div>
           </div>
         ) : (
-          /* ── ORB: Phase-Driven Expansion / Hold / Contraction ── */
+          /* ── ORB: Phase-Driven Expansion / Contraction ── */
           <div
             onClick={handleTogglePlay}
             className="relative flex items-center justify-center w-64 h-64 cursor-pointer group"
             role="button"
             aria-label={isActive ? 'Pause breathing' : 'Start breathing'}
           >
-            {/* Ambient atmosphere */}
             <div
               className="absolute w-56 h-56 rounded-full bg-[#E5E5E7]/5 blur-3xl pointer-events-none"
               style={ambientStyle}
             />
 
-            {/* Outer breath ring */}
             <div
               className="absolute w-48 h-48 rounded-full border border-[#E5E5E7]/12 pointer-events-none"
               style={ringStyle}
             />
 
-            {/* Core breathing orb */}
             <div
               className="
                 w-36 h-36 rounded-full
@@ -383,4 +390,3 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
     </div>
   )
 }
-

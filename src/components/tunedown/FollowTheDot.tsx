@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useIdleDim } from '../../hooks/useIdleDim'
 import { triggerHaptic } from '../../utils/haptics'
 import BottomControlsDock, { SegmentedPillGroup } from './BottomControlsDock'
 
@@ -34,7 +33,6 @@ interface FollowTheDotProps {
 }
 
 export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotProps) {
-  const { isControlsVisible } = useIdleDim(3500)
   const [pattern, setPattern] = useState<DotMovementPattern>(initialPattern)
   const [ripples, setRipples] = useState<Ripple[]>([])
   const [bloomRipples, setBloomRipples] = useState<BloomRing[]>([])
@@ -72,13 +70,11 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
     const py = e.clientY - rect.top
 
     if (pattern === 'bloom') {
-      // Fix header clipping: clamp py so ripple center never renders under fixed top header bar
       const clampedY = Math.max(80, py)
       const nowTime = Date.now()
 
-      // 3-ring staggered sequence per tap (Ring 1: 0ms/0.60, Ring 2: 220ms/0.45, Ring 3: 440ms/0.30)
       const newSequence: BloomRing[] = [
-        { id: nowTime + Math.random(),     x: px, y: clampedY, delayMs: 0,   peakOpacity: 0.60, createdAt: nowTime },
+        { id: nowTime + Math.random(), x: px, y: clampedY, delayMs: 0, peakOpacity: 0.60, createdAt: nowTime },
         { id: nowTime + 1 + Math.random(), x: px, y: clampedY, delayMs: 220, peakOpacity: 0.45, createdAt: nowTime },
         { id: nowTime + 2 + Math.random(), x: px, y: clampedY, delayMs: 440, peakOpacity: 0.30, createdAt: nowTime },
       ]
@@ -87,7 +83,6 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
       pointerRef.current = { x: px, y: py, active: true }
       triggerHaptic(8)
 
-      // Spawn 1px faint expanding ripple ring on tap in dynamic mode
       const newRipple: Ripple = {
         id: Date.now() + Math.random(),
         x: px,
@@ -170,7 +165,6 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
       let driftY = visualCenterY
 
       if (pattern === 'orbit') {
-        // Precessing Keplerian Ellipse
         const orbitAngle = t * 0.06
         const a = width * 0.38
         const b = height * 0.27
@@ -179,7 +173,6 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
         driftX = (width / 2) + (rawX * Math.cos(orbitAngle) - rawY * Math.sin(orbitAngle))
         driftY = visualCenterY + (rawX * Math.sin(orbitAngle) + rawY * Math.cos(orbitAngle))
 
-        // Update faint planetary track SVG ellipse
         if (orbitEllipseRef.current) {
           orbitEllipseRef.current.setAttribute('cx', String(width / 2))
           orbitEllipseRef.current.setAttribute('cy', String(visualCenterY))
@@ -189,13 +182,11 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
           orbitEllipseRef.current.style.transform = `rotate(${orbitAngle}rad)`
         }
       } else if (pattern === 'bilateral') {
-        // EMDR-style horizontal sweep with smooth turnaround decelerations (Lemniscate)
         const rx = width * 0.42
         const ry = height * 0.32
         driftX = (width / 2) + Math.sin(t) * rx
         driftY = visualCenterY + (Math.sin(t * 2) / 1.4) * ry
       } else if (pattern === 'pendulum') {
-        // Resonant buoyancy / pendulum arc through screen center
         const swingAngle = Math.sin(t * 1.5) * 0.85
         const pivotY = visualCenterY - (height * 0.12)
         const length = height * 0.42
@@ -219,7 +210,6 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
         posRef.current.y += dy * 0.06
       }
 
-      // Safe bounds padding
       const pad = 30
       posRef.current.x = Math.max(pad, Math.min(width - pad, posRef.current.x))
       posRef.current.y = Math.max(pad, Math.min(height - pad, posRef.current.y))
@@ -228,7 +218,6 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
         dotElemRef.current.style.transform = `translate3d(${posRef.current.x}px, ${posRef.current.y}px, 0)`
       }
 
-      // Fading ghost wake update for Bilateral and Pendulum
       if (pattern === 'bilateral' || pattern === 'pendulum') {
         trailRef.current = [
           { x: posRef.current.x, y: posRef.current.y, opacity: 0.4, scale: 0.95 },
@@ -275,8 +264,8 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
 
   return (
     <div className="w-full h-full flex flex-col flex-1 min-h-0 bg-[#0A0A0B] animate-fade-in select-none">
-      {/* Fixed Header Area (outside interactive canvas) */}
-      <div className={`flex flex-col items-center text-center px-6 pt-4 pb-2 select-none pointer-events-none shrink-0 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      {/* Fixed Header Area */}
+      <div className="flex flex-col items-center text-center px-6 pt-4 pb-2 select-none pointer-events-none shrink-0">
         <h1 className="font-serif text-xl sm:text-2xl text-[#E5E5E7] tracking-tight">
           {pattern === 'bloom' ? 'Bloom' : 'Dynamic Flow'}
         </h1>
@@ -288,14 +277,14 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
         </p>
       </div>
 
-      {/* Interactive Touch Container (starts below header) */}
+      {/* Interactive Touch Container */}
       <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`flex-1 w-full relative touch-none overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${isControlsVisible ? 'scale-100 translate-y-0' : 'scale-105 -translate-y-4 sm:-translate-y-6'}`}
+        className="flex-1 w-full relative touch-none overflow-hidden flex items-center justify-center"
       >
         {/* Motion Mode Ripples */}
         {pattern !== 'bloom' && ripples.map(r => (
@@ -312,18 +301,16 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
           />
         ))}
 
-        {/* Bloom Mode Water-Ripple Touch Effect (3-ring staggered sequence per tap) */}
+        {/* Bloom Mode Water-Ripple Touch Effect */}
         {pattern === 'bloom' && bloomRipples.map(r => {
           const ringElapsed = Math.max(0, now - (r.createdAt + r.delayMs))
           if (now < r.createdAt + r.delayMs) return null
           if (ringElapsed >= 3000) return null
 
           const progress = Math.min(1, ringElapsed / 3000)
-          // Ease-out timing (fast at first, slowing down to ~180px radius)
           const eased = 1 - Math.pow(1 - progress, 3)
           const radius = eased * 180
 
-          // Opacity drops faster in first 2/3 and completes fully by 85% of duration (2550ms)
           const fadeProgress = Math.min(1, progress / 0.85)
           const opacity = Math.max(0, r.peakOpacity * Math.pow(1 - fadeProgress, 1.4))
 
@@ -357,7 +344,7 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
           </svg>
         )}
 
-        {/* Fading ghost wake circles (Bilateral & Pendulum, positioned behind dot) */}
+        {/* Fading ghost wake circles */}
         {(pattern === 'bilateral' || pattern === 'pendulum') && (
           Array.from({ length: 14 }).map((_, i) => (
             <div
@@ -371,7 +358,7 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
           ))
         )}
 
-        {/* Solid Flat Circle (Rendered when pattern !== 'bloom') */}
+        {/* Solid Flat Circle */}
         {pattern !== 'bloom' && (
           <div
             ref={dotElemRef}
@@ -384,17 +371,15 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
           </div>
         )}
 
-        {/* Standardized Unified Bottom Controls Dock (Dynamic Flow only) */}
+        {/* Bottom Controls Dock */}
         {pattern !== 'bloom' && (
-          <div className={`transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <BottomControlsDock>
-              <SegmentedPillGroup
-                options={PATTERN_LABELS}
-                value={pattern}
-                onChange={handleSelectPattern}
-              />
-            </BottomControlsDock>
-          </div>
+          <BottomControlsDock>
+            <SegmentedPillGroup
+              options={PATTERN_LABELS}
+              value={pattern}
+              onChange={handleSelectPattern}
+            />
+          </BottomControlsDock>
         )}
       </div>
     </div>
