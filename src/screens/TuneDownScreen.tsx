@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useIdleDim } from '../hooks/useIdleDim'
 import BubbleLattice from '../components/tunedown/BubbleLattice'
 import StimPad        from '../components/tunedown/StimPad'
 import FollowTheDot, { type DotMovementPattern } from '../components/tunedown/FollowTheDot'
@@ -21,6 +22,9 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
   const [breathePattern, setBreathePattern] = useState<PatternId>('soft')
   const [dotPattern, setDotPattern] = useState<DotMovementPattern>('orbit')
   const [doodleMode, setDoodleMode] = useState<DoodleMode>('open')
+
+  const isDimmablePractice = activePractice === 'breathe' || activePractice === 'follow-dot'
+  const { isControlsVisible } = useIdleDim(3500, isDimmablePractice)
 
   function handleToggleSection(section: AccordionSectionId) {
     triggerHaptic(10)
@@ -83,7 +87,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
     >
       <div className="flex-1 flex flex-col min-h-0 w-full">
         {/* ── Top Navigation Bar ────────────────────────────── */}
-        <div className="flex items-center justify-between shrink-0 w-full">
+        <div className={`flex items-center justify-between shrink-0 w-full transition-opacity duration-1000 ease-out ${(!isDimmablePractice || isControlsVisible) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <button
             id="tune-down-back"
             onClick={activePractice ? () => setActivePractice(null) : onBack}
@@ -106,7 +110,7 @@ export default function TuneDownScreen({ onBack, initialPractice = null }: TuneD
 
         {/* ── Decoupled Title Block ──────────────────────────── */}
         {activePractice !== 'follow-dot' && (
-          <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0">
+          <div className={`flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-4 text-center shrink-0 transition-opacity duration-1000 ease-out ${(!isDimmablePractice || isControlsVisible) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <h1 className="font-serif-nook text-xl tracking-widest text-[#E5E5E7] leading-none">
               {activeTitle}
             </h1>

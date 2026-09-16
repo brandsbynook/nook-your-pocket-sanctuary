@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useIdleDim } from '../../hooks/useIdleDim'
 
 /* ─── Pattern Definitions (2 Essential Cadences) ─── */
 export type PatternId = 'soft' | 'box'
@@ -67,6 +68,8 @@ interface GuidedBreathingProps {
 }
 
 export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreathingProps) {
+  const { isControlsVisible } = useIdleDim(3500)
+
   // Default active technique
   const [patternId, setPatternId] = useState<PatternId>(initialPattern)
   const [phaseIndex, setPhaseIndex] = useState(0)
@@ -218,7 +221,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
   return (
     <div className="flex flex-col items-center justify-between flex-1 py-2 animate-fade-in text-center min-h-0 w-full select-none">
       {/* ── 1. Top Document Flow (Pills & Mantra) ── */}
-      <div className="w-full flex flex-col items-center shrink-0">
+      <div className={`w-full flex flex-col items-center shrink-0 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         {/* Row of Pill Buttons */}
         <div className="flex items-center gap-2">
           <button
@@ -258,7 +261,7 @@ export default function GuidedBreathing({ initialPattern = 'soft' }: GuidedBreat
       </div>
 
       {/* ── 2. Central Interactive Visualizer Float in Center ── */}
-      <div className="relative my-auto flex flex-col items-center justify-center min-h-[240px]">
+      <div className={`relative my-auto flex flex-col items-center justify-center min-h-[240px] transition-all duration-1000 ease-out transform ${isControlsVisible ? 'scale-100 translate-y-0' : 'scale-105 -translate-y-5 sm:-translate-y-8'}`}>
         {patternId === 'box' ? (
           /* ── 2D BOX: SVG Square ── */
           <div

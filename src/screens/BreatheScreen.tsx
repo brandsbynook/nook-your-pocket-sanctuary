@@ -1,11 +1,14 @@
 import GuidedBreathing from '../components/tunedown/GuidedBreathing'
 import ScreenHeader from '../components/ScreenHeader'
+import { useIdleDim } from '../hooks/useIdleDim'
 
 interface BreatheScreenProps {
   onBack: () => void
 }
 
 export default function BreatheScreen({ onBack }: BreatheScreenProps) {
+  const { isControlsVisible } = useIdleDim(3500)
+
   return (
     <main
       id="breathe-screen"
@@ -24,6 +27,7 @@ export default function BreatheScreen({ onBack }: BreatheScreenProps) {
           title="Breathe"
           subtitle="gentle somatic pacing"
           onBack={onBack}
+          className={`mb-6 shrink-0 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         />
         <div className="flex-1 flex flex-col min-h-0">
           <GuidedBreathing />

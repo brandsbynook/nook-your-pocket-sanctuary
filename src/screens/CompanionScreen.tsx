@@ -9,6 +9,7 @@ import CompanionSelectorModal, { COMPANION_ROSTER } from '../components/Companio
 import DecelerationModal from '../components/DecelerationModal'
 import { triggerHaptic } from '../utils/haptics'
 import { App as CapApp } from '@capacitor/app'
+import { useIdleDim } from '../hooks/useIdleDim'
 
 interface CompanionScreenProps {
   onBack: () => void
@@ -104,6 +105,8 @@ function playCompletionChime() {
 }
 
 export default function CompanionScreen({ onBack }: CompanionScreenProps) {
+  const { isControlsVisible } = useIdleDim(3500)
+
   // Companion state persisted in localStorage
   const [selectedCompanionId, setSelectedCompanionId] = useState<CompanionId>(() => getCompanionChoice())
   const [isSelectorModalOpen, setIsSelectorModalOpen] = useState(false)
@@ -313,6 +316,7 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         title="C o m p a n i o n"
         subtitle="a quiet presence while you work"
         onBack={handleBackAttempt}
+        className={`mb-6 shrink-0 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         rightElement={
           timeLeft < totalSessionSeconds && !isRunning ? (
             <button
@@ -329,163 +333,169 @@ export default function CompanionScreen({ onBack }: CompanionScreenProps) {
         }
       />
 
-      {/* ── 2. Minimalist Center Pomodoro Dial ────────────────── */}
+      {/* ── 2. Minimalist Center Pomodoro Dial & Presence ──────── */}
       <div className="flex-1 flex flex-col items-center justify-center min-h-0 my-auto max-w-[360px] mx-auto w-full">
-        {/* Interactive Circular Dial Container */}
-        <div
-          id="focus-timer-ring-touch-target"
-          onClick={handleRingTap}
-          role="button"
-          tabIndex={0}
-          aria-label={isRunning ? 'Pause focus session' : 'Start focus session'}
-          className="relative flex items-center justify-center cursor-pointer select-none group"
-          style={{ width: dialSize, height: dialSize }}
-        >
-          {/* Subtle Ambient Radial Glow */}
+        {/* Central Companion Presence / Glyph Container */}
+        <div className={`flex flex-col items-center transition-all duration-1000 ease-out transform ${isControlsVisible ? 'scale-100 translate-y-0' : 'scale-105 -translate-y-8'}`}>
+          {/* Interactive Circular Dial Container */}
           <div
-            className={`
-              absolute inset-0 rounded-full pointer-events-none transition-opacity duration-1000
-              ${isRunning ? 'opacity-100' : 'opacity-35'}
-            `}
-            style={{
-              background: 'radial-gradient(ellipse at center, rgba(229,229,231,0.06) 0%, rgba(229,229,231,0.01) 60%, transparent 80%)',
-            }}
-          />
-
-          {/* Tap Feedback Ripple */}
-          {isRippling && (
-            <div
-              key={tapRippleKey}
-              className="absolute inset-0 rounded-full pointer-events-none animate-companion-tap-glow"
-              style={{
-                background: 'radial-gradient(ellipse at center, rgba(229,229,231,0.2) 0%, rgba(229,229,231,0.04) 55%, transparent 80%)',
-              }}
-            />
-          )}
-
-          {/* ── Circular Progress Ring Track (SVG) ── */}
-          <svg
-            width={dialSize}
-            height={dialSize}
-            className="absolute inset-0 pointer-events-none -rotate-90"
+            id="focus-timer-ring-touch-target"
+            onClick={handleRingTap}
+            role="button"
+            tabIndex={0}
+            aria-label={isRunning ? 'Pause focus session' : 'Start focus session'}
+            className="relative flex items-center justify-center cursor-pointer select-none group"
+            style={{ width: dialSize, height: dialSize }}
           >
-            {/* Dark Muted Ring Track */}
-            <circle
-              cx={dialSize / 2}
-              cy={dialSize / 2}
-              r={radius}
-              stroke="rgba(255, 255, 255, 0.08)"
-              strokeWidth={trackStrokeWidth}
-              fill="none"
-            />
-
-            {/* Smooth Foreground Arc Depleting Toward Zero */}
-            <circle
-              cx={dialSize / 2}
-              cy={dialSize / 2}
-              r={radius}
-              stroke="#E5E5E7"
-              strokeWidth={trackStrokeWidth}
-              fill="none"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-[stroke-dashoffset] duration-1000 ease-linear"
-            />
-          </svg>
-
-          {/* ── Centered Selected Companion with 4s Breathing Animation & Image Fallback ── */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <img
-              src={activeCompanion.imagePath || activeCompanion.image}
-              alt={activeCompanion.name}
-              className="w-40 h-40 sm:w-44 sm:h-44 object-contain pointer-events-none select-none drop-shadow-md animate-companion-breathe-4s"
-              onError={e => {
-                e.currentTarget.onerror = null
-                e.currentTarget.src = '/companions/cat.png'
+            {/* Subtle Ambient Radial Glow */}
+            <div
+              className={`
+                absolute inset-0 rounded-full pointer-events-none transition-opacity duration-1000
+                ${isRunning ? 'opacity-100' : 'opacity-35'}
+              `}
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(229,229,231,0.06) 0%, rgba(229,229,231,0.01) 60%, transparent 80%)',
               }}
             />
+
+            {/* Tap Feedback Ripple */}
+            {isRippling && (
+              <div
+                key={tapRippleKey}
+                className="absolute inset-0 rounded-full pointer-events-none animate-companion-tap-glow"
+                style={{
+                  background: 'radial-gradient(ellipse at center, rgba(229,229,231,0.2) 0%, rgba(229,229,231,0.04) 55%, transparent 80%)',
+                }}
+              />
+            )}
+
+            {/* ── Circular Progress Ring Track (SVG) ── */}
+            <svg
+              width={dialSize}
+              height={dialSize}
+              className="absolute inset-0 pointer-events-none -rotate-90"
+            >
+              {/* Dark Muted Ring Track */}
+              <circle
+                cx={dialSize / 2}
+                cy={dialSize / 2}
+                r={radius}
+                stroke="rgba(255, 255, 255, 0.08)"
+                strokeWidth={trackStrokeWidth}
+                fill="none"
+              />
+
+              {/* Smooth Foreground Arc Depleting Toward Zero */}
+              <circle
+                cx={dialSize / 2}
+                cy={dialSize / 2}
+                r={radius}
+                stroke="#E5E5E7"
+                strokeWidth={trackStrokeWidth}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+              />
+            </svg>
+
+            {/* ── Centered Selected Companion with 4s Breathing Animation & Image Fallback ── */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <img
+                src={activeCompanion.imagePath || activeCompanion.image}
+                alt={activeCompanion.name}
+                className="w-40 h-40 sm:w-44 sm:h-44 object-contain pointer-events-none select-none drop-shadow-md animate-companion-breathe-4s"
+                onError={e => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = '/companions/cat.png'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* ── 3. Subtle Remaining Time Readout in Serif Italics ──── */}
+          <div className="flex flex-col items-center mt-5 gap-1">
+            <button
+              id="focus-timer-time-readout"
+              onClick={() => {
+                if (!isRunning) setIsCustomModalOpen(true)
+              }}
+              disabled={isRunning}
+              title={!isRunning ? 'Tap to adjust custom duration' : undefined}
+              className="font-serif-nook text-2xl sm:text-3xl text-[#E5E5E7] font-light italic tracking-wider leading-none select-none focus:outline-none cursor-pointer disabled:cursor-default"
+            >
+              {formatTimeRemaining(timeLeft)}
+            </button>
+
+            <p className="font-serif-nook italic text-xs text-[#71717A] font-normal tracking-wide mt-1">
+              {isCompleted
+                ? 'Session Completed · Rest Well'
+                : isRunning
+                ? 'In Flow · Tap Ring to Pause'
+                : timeLeft < totalSessionSeconds
+                ? 'Paused · Tap Ring to Resume'
+                : 'Tap Ring to Begin'}
+            </p>
           </div>
         </div>
 
-        {/* ── 3. Subtle Remaining Time Readout in Serif Italics ──── */}
-        <div className="flex flex-col items-center mt-5 gap-1">
-          <button
-            id="focus-timer-time-readout"
-            onClick={() => {
-              if (!isRunning) setIsCustomModalOpen(true)
-            }}
-            disabled={isRunning}
-            title={!isRunning ? 'Tap to adjust custom duration' : undefined}
-            className="font-serif-nook text-2xl sm:text-3xl text-[#E5E5E7] font-light italic tracking-wider leading-none select-none focus:outline-none cursor-pointer disabled:cursor-default"
+        {/* ── Bottom Action Chips ────────────────────────────────── */}
+        <div className={`w-full flex flex-col items-center transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          {/* ── 4. Quiet Horizontal Focus Preset Selector ──────────── */}
+          <div
+            className={`
+              mt-4 flex items-center justify-center gap-1.5 transition-all duration-500
+              ${isRunning ? 'opacity-0 pointer-events-none -translate-y-1' : 'opacity-100 translate-y-0'}
+            `}
           >
-            {formatTimeRemaining(timeLeft)}
-          </button>
+            {PRESETS.map(p => {
+              const isSelected = activePreset === p.id
+              return (
+                <button
+                  key={p.id}
+                  id={`preset-btn-${p.id.replace('/', '-')}`}
+                  onClick={() => handleSelectPreset(p.id)}
+                  className={`
+                    px-3 py-1 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-200 focus:outline-none cursor-pointer
+                    ${isSelected
+                      ? 'bg-[#141416] text-[#E5E5E7] border border-[#222225] shadow-sm'
+                      : 'bg-transparent text-[#71717A] border border-[#1F1F23] hover:text-[#E5E5E7]'
+                    }
+                  `}
+                >
+                  {p.id === 'custom' ? `Custom (${customWorkMinutes}m)` : p.label}
+                </button>
+              )
+            })}
+          </div>
 
-          <p className="font-serif-nook italic text-xs text-[#71717A] font-normal tracking-wide mt-1">
-            {isCompleted
-              ? 'Session Completed · Rest Well'
-              : isRunning
-              ? 'In Flow · Tap Ring to Pause'
-              : timeLeft < totalSessionSeconds
-              ? 'Paused · Tap Ring to Resume'
-              : 'Tap Ring to Begin'}
-          </p>
-        </div>
+          {/* ── 5. Quiet Companion Selector Trigger ────────────────── */}
+          <div className="mt-5 flex items-center justify-center">
+            <button
+              id="open-companion-selector-btn"
+              onClick={() => setIsSelectorModalOpen(true)}
+              className="
+                flex items-center gap-2.5 px-4 py-1.5 rounded-full
+                bg-[#141416] border border-[#222225] hover:border-[#3F3F46] hover:bg-[#1A1A1E]
+                transition-all duration-300 focus:outline-none cursor-pointer group shadow-sm
+              "
+              aria-label="Change companion"
+            >
+              {/* Miniature companion active dot */}
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E5E5E7] group-hover:scale-110 transition-transform" />
 
-        {/* ── 4. Quiet Horizontal Focus Preset Selector ──────────── */}
-        <div
-          className={`
-            mt-4 flex items-center justify-center gap-1.5 transition-all duration-500
-            ${isRunning ? 'opacity-0 pointer-events-none -translate-y-1' : 'opacity-100 translate-y-0'}
-          `}
-        >
-          {PRESETS.map(p => {
-            const isSelected = activePreset === p.id
-            return (
-              <button
-                key={p.id}
-                id={`preset-btn-${p.id.replace('/', '-')}`}
-                onClick={() => handleSelectPreset(p.id)}
-                className={`
-                  px-3 py-1 rounded-full font-serif-nook text-xs tracking-wide transition-all duration-200 focus:outline-none cursor-pointer
-                  ${isSelected
-                    ? 'bg-[#141416] text-[#E5E5E7] border border-[#222225] shadow-sm'
-                    : 'bg-transparent text-[#71717A] border border-[#1F1F23] hover:text-[#E5E5E7]'
-                  }
-                `}
-              >
-                {p.id === 'custom' ? `Custom (${customWorkMinutes}m)` : p.label}
-              </button>
-            )
-          })}
-        </div>
+              <span className="font-serif-nook text-sm text-[#E5E5E7] group-hover:text-[#FFFFFF] tracking-wide">
+                {activeCompanion.name}
+              </span>
 
-        {/* ── 5. Quiet Companion Selector Trigger ────────────────── */}
-        <div className="mt-5 flex items-center justify-center">
-          <button
-            id="open-companion-selector-btn"
-            onClick={() => setIsSelectorModalOpen(true)}
-            className="
-              flex items-center gap-2.5 px-4 py-1.5 rounded-full
-              bg-[#141416] border border-[#222225] hover:border-[#3F3F46] hover:bg-[#1A1A1E]
-              transition-all duration-300 focus:outline-none cursor-pointer group shadow-sm
-            "
-            aria-label="Change companion"
-          >
-            {/* Miniature companion active dot */}
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E5E5E7] group-hover:scale-110 transition-transform" />
-
-            <span className="font-serif-nook text-sm text-[#E5E5E7] group-hover:text-[#FFFFFF] tracking-wide">
-              {activeCompanion.name}
-            </span>
-
-            {/* Subtle gear / switch glyph */}
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-[#71717A] group-hover:text-[#E5E5E7] transition-colors">
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
+              {/* Subtle gear / switch glyph */}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-[#71717A] group-hover:text-[#E5E5E7] transition-colors">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 

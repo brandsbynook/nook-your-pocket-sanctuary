@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useIdleDim } from '../../hooks/useIdleDim'
 import { triggerHaptic } from '../../utils/haptics'
 import BottomControlsDock, { SegmentedPillGroup } from './BottomControlsDock'
 
@@ -33,6 +34,7 @@ interface FollowTheDotProps {
 }
 
 export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotProps) {
+  const { isControlsVisible } = useIdleDim(3500)
   const [pattern, setPattern] = useState<DotMovementPattern>(initialPattern)
   const [ripples, setRipples] = useState<Ripple[]>([])
   const [bloomRipples, setBloomRipples] = useState<BloomRing[]>([])
@@ -274,7 +276,7 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
   return (
     <div className="w-full h-full flex flex-col flex-1 min-h-0 bg-[#0A0A0B] animate-fade-in select-none">
       {/* Fixed Header Area (outside interactive canvas) */}
-      <div className="flex flex-col items-center text-center px-6 pt-4 pb-2 select-none pointer-events-none shrink-0">
+      <div className={`flex flex-col items-center text-center px-6 pt-4 pb-2 select-none pointer-events-none shrink-0 transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <h1 className="font-serif text-xl sm:text-2xl text-[#E5E5E7] tracking-tight">
           {pattern === 'bloom' ? 'Bloom' : 'Dynamic Flow'}
         </h1>
@@ -293,7 +295,7 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className="flex-1 w-full relative touch-none overflow-hidden flex items-center justify-center"
+        className={`flex-1 w-full relative touch-none overflow-hidden flex items-center justify-center transition-all duration-1000 ease-out transform ${isControlsVisible ? 'scale-100 translate-y-0' : 'scale-105 -translate-y-4 sm:-translate-y-6'}`}
       >
         {/* Motion Mode Ripples */}
         {pattern !== 'bloom' && ripples.map(r => (
@@ -384,13 +386,15 @@ export default function FollowTheDot({ initialPattern = 'orbit' }: FollowTheDotP
 
         {/* Standardized Unified Bottom Controls Dock (Dynamic Flow only) */}
         {pattern !== 'bloom' && (
-          <BottomControlsDock>
-            <SegmentedPillGroup
-              options={PATTERN_LABELS}
-              value={pattern}
-              onChange={handleSelectPattern}
-            />
-          </BottomControlsDock>
+          <div className={`transition-opacity duration-1000 ease-out ${isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <BottomControlsDock>
+              <SegmentedPillGroup
+                options={PATTERN_LABELS}
+                value={pattern}
+                onChange={handleSelectPattern}
+              />
+            </BottomControlsDock>
+          </div>
         )}
       </div>
     </div>
