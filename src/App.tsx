@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { App as CapApp } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
+import { Purchases } from '@revenuecat/purchases-capacitor'
 import HomeScreen from './screens/HomeScreen'
 import BrainDumpScreen from './screens/BrainDumpScreen'
 import Reflect from './screens/Reflect'
@@ -16,7 +18,7 @@ import BannerScreen from './screens/BannerScreen'
 import { AudioProvider } from './context/AudioContext'
 import QuickAudioSheet from './components/QuickAudioSheet'
 import SanctuaryKeyModal from './components/SanctuaryKeyModal'
-import { PATRON_STORAGE_KEY, initPurchases } from './services/revenuecat'
+import { PATRON_STORAGE_KEY, initPurchases, REVENUECAT_GOOGLE_API_KEY } from './services/revenuecat'
 
 // Synchronous judge bypass check: runs immediately before React renders any screen
 if (typeof window !== 'undefined') {
@@ -69,9 +71,15 @@ function getInitialScreen(): Screen {
 function App() {
   const [screen, setScreen] = useState<Screen>(getInitialScreen)
 
-  // Initialize Purchases and check URL query parameters for Judge Bypass: ?passcode=SHIPATHON2026 or ?judge=true
-  // Double-check inside useEffect to ensure any active contexts or listeners re-sync
+  // Initialize Purchases on mount using the RevenueCat Google API key
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        Purchases.configure({ apiKey: REVENUECAT_GOOGLE_API_KEY })
+      } catch (err) {
+        console.warn('[RevenueCat] Native Purchases configure error:', err)
+      }
+    }
     initPurchases()
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
@@ -145,6 +153,12 @@ function App() {
       }
 
       // 2. Global Overlays & Modals:
+      const tipJarBackdrop = document.getElementById('tip-jar-backdrop') as HTMLElement | null
+      if (tipJarBackdrop) {
+        tipJarBackdrop.click()
+        return
+      }
+
       const paywallBackdrop = document.getElementById('sanctuary-key-backdrop') as HTMLElement | null
       if (paywallBackdrop) {
         paywallBackdrop.click()

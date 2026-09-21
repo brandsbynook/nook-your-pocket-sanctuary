@@ -3,13 +3,15 @@ import { useAudio } from '../context/AudioContext'
 import {
   getDefaultOfferingPackage,
   purchasePatronPackage,
+  restorePatronPurchases,
   type Package,
 } from '../services/revenuecat'
 
 export default function SanctuaryKeyModal() {
-  const { isPaywallOpen, isUnlocked, closePaywall, unlockSanctuaryKey, lockSanctuaryKey } = useAudio()
+  const { isPaywallOpen, closePaywall, unlockSanctuaryKey } = useAudio()
   const [rcPackage, setRcPackage] = useState<Package | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isRestoring, setIsRestoring] = useState<boolean>(false)
   const [isSuccess, setIsSuccess] = useState<boolean>(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -17,10 +19,15 @@ export default function SanctuaryKeyModal() {
     if (isPaywallOpen) {
       setIsSuccess(false)
       setErrorMessage(null)
-      // Attempt to load package details from default offering
-      getDefaultOfferingPackage().then(pkg => {
-        if (pkg) setRcPackage(pkg)
-      }).catch(() => {})
+      setIsLoading(false)
+      setIsRestoring(false)
+
+      // Pre-fetch package details from active offering
+      getDefaultOfferingPackage()
+        .then(pkg => {
+          if (pkg) setRcPackage(pkg)
+        })
+        .catch(() => {})
     }
   }, [isPaywallOpen])
 
@@ -36,7 +43,9 @@ export default function SanctuaryKeyModal() {
     setErrorMessage(null)
 
     try {
-      const result = await purchasePatronPackage(rcPackage)
+      // If the package wasn't cached yet, fetch it on the fly
+      const packageToBuy = rcPackage || (await getDefaultOfferingPackage())
+      const result = await purchasePatronPackage(packageToBuy)
 
       if (result.success) {
         setIsSuccess(true)
@@ -45,11 +54,15 @@ export default function SanctuaryKeyModal() {
           closePaywall()
         }, 2200)
       } else if (result.cancelled) {
-        // User closed or cancelled checkout
+        // User closed or dismissed Google Play sheet
         setIsLoading(false)
       } else {
-        // Handle checkout error or fall back to simulation if unconfigured
-        const errorText = result.error instanceof Error ? result.error.message : 'Checkout unavailable'
+        const errorText =
+          result.error instanceof Error
+            ? result.error.message
+            : typeof result.error === 'string'
+            ? result.error
+            : 'Unable to complete transaction. Please try again.'
         setErrorMessage(errorText)
         setIsLoading(false)
       }
@@ -58,6 +71,28 @@ export default function SanctuaryKeyModal() {
       setIsLoading(false)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function handleRestore() {
+    setIsRestoring(true)
+    setErrorMessage(null)
+
+    try {
+      const result = await restorePatronPurchases()
+      if (result.success) {
+        setIsSuccess(true)
+        unlockSanctuaryKey()
+        setTimeout(() => {
+          closePaywall()
+        }, 2200)
+      } else {
+        setErrorMessage('No previous Patron purchase found for this account.')
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Unable to restore purchases at this time.')
+    } finally {
+      setIsRestoring(false)
     }
   }
 
@@ -142,7 +177,7 @@ export default function SanctuaryKeyModal() {
             <button
               id="unlock-sanctuary-btn"
               onClick={handlePurchase}
-              disabled={isLoading}
+              disabled={isLoading || isRestoring}
               className="
                 w-full py-3.5 rounded-xl border border-[#222225]
                 font-serif-nook text-[#E5E5E7] text-[1.05rem] font-normal tracking-wide
@@ -162,21 +197,20 @@ export default function SanctuaryKeyModal() {
             </button>
           )}
 
-          {/* Dev / Testing Simulated Unlock toggle */}
+          {/* Secondary Footer Actions: Restore & Close */}
           <div className="flex items-center justify-between pt-1 px-1">
-            <button
-              id="simulate-unlock-toggle-btn"
-              onClick={() => {
-                if (isUnlocked) {
-                  lockSanctuaryKey()
-                } else {
-                  unlockSanctuaryKey()
-                }
-              }}
-              className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#71717A] hover:text-[#E5E5E7] transition-colors focus:outline-none cursor-pointer"
-            >
-              {isUnlocked ? '✦ Re-lock Key (Test Mode)' : '✦ Simulate Instant Unlock (Dev Test)'}
-            </button>
+            {!isSuccess ? (
+              <button
+                id="restore-purchases-btn"
+                onClick={handleRestore}
+                disabled={isLoading || isRestoring}
+                className="font-sans text-[0.62rem] tracking-[0.12em] uppercase text-[#8E8E93] hover:text-[#E5E5E7] transition-colors focus:outline-none cursor-pointer disabled:opacity-40"
+              >
+                {isRestoring ? 'Restoring...' : 'Restore'}
+              </button>
+            ) : (
+              <div />
+            )}
 
             <button
               id="sanctuary-key-close-btn"

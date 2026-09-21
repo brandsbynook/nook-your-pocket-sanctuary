@@ -72,6 +72,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => {})
+
+    function handleStorageSync() {
+      if (isSanctuaryUnlocked()) {
+        setIsUnlocked(true)
+      }
+    }
+    window.addEventListener('storage', handleStorageSync)
+    return () => window.removeEventListener('storage', handleStorageSync)
   }, [])
 
   const openPaywall = useCallback(() => {

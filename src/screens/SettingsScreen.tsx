@@ -9,6 +9,7 @@ import {
 } from '../utils/storage'
 import FooterNav, { type NavTabId } from '../components/FooterNav'
 import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
+import TipJarModal from '../components/TipJarModal'
 
 // ── Section wrapper ───────────────────────────────
 
@@ -116,6 +117,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
   const [settings, setSettings] = useState<NookSettings>(() => loadSettings())
   const [nickname, setNickname] = useState<string>(() => getUserNickname())
   const [resetDone, setResetDone] = useState(false)
+  const [isTipJarOpen, setIsTipJarOpen] = useState(false)
 
   function update(patch: Partial<NookSettings>) {
     const next = { ...settings, ...patch }
@@ -231,6 +233,15 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
             />
           </Section>
 
+          {/* Support & Independence */}
+          <Section label="Support nook">
+            <ActionRow
+              id="settings-support-nook-btn"
+              label="Support Nook (Tip Jar)"
+              onClick={() => setIsTipJarOpen(true)}
+            />
+          </Section>
+
           {/* Privacy & Storage */}
           <Section label="Privacy & Storage">
             <div className="px-4 py-4 border-b border-[#1F1F23]">
@@ -294,6 +305,14 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
+                    id="settings-support-nook-link"
+                    onClick={() => setIsTipJarOpen(true)}
+                    className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
+                  >
+                    Support Nook
+                  </button>
+                  <span className="text-[#3F3F46] text-[0.55rem]">•</span>
+                  <button
                     id="settings-privacy-link"
                     onClick={() => onNavigate?.('privacy')}
                     className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
@@ -310,7 +329,7 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
                   </button>
                   <span className="text-[#3F3F46] text-[0.55rem]">•</span>
                   <span className="font-sans text-[#52525B] text-[0.62rem] tracking-wider">
-                    v1.0.0
+                    v1.0.1
                   </span>
                 </div>
               </div>
@@ -328,6 +347,12 @@ export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenPro
 
       {/* Footer Navigation */}
       <FooterNav active="settings" onSelect={onNavigate} />
+
+      {/* Tip Jar Modal */}
+      <TipJarModal
+        isOpen={isTipJarOpen}
+        onClose={() => setIsTipJarOpen(false)}
+      />
     </main>
   )
 }
