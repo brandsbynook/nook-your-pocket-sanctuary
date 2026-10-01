@@ -1,0 +1,110 @@
+import { useState } from 'react'
+import TextDump   from '../components/braindump/TextDump'
+import VoiceDump  from '../components/braindump/VoiceDump'
+import TodaysNote from '../components/braindump/TodaysNote'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
+
+type Tab = 'text' | 'voice' | 'note'
+
+interface BrainDumpScreenProps {
+  onBack: () => void
+}
+
+const tabs: { id: Tab; label: string }[] = [
+  { id: 'text',  label: 'Text Dump'    },
+  { id: 'voice', label: 'Voice Dump'   },
+  { id: 'note',  label: "Today's Note" },
+]
+
+export default function BrainDumpScreen({ onBack }: BrainDumpScreenProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('text')
+
+  return (
+    <main
+      id="brain-dump-screen"
+      className="
+        h-[100dvh] w-full
+        px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
+        flex flex-col items-center
+        overflow-hidden
+        bg-[#0A0A0B]
+        animate-fade-in
+      "
+    >
+      <div className="flex flex-col flex-1 min-h-0 w-full max-w-[360px] mx-auto">
+        {/* ── Top Navigation Bar ────────────────────────────── */}
+        <div className="flex items-center justify-between shrink-0 w-full">
+          <button
+            id="brain-dump-back"
+            onClick={onBack}
+            aria-label="Return to home"
+            className="
+              flex items-center gap-1.5
+              font-sans text-[#52525B] text-[0.62rem]
+              tracking-[0.14em] uppercase
+              transition-colors duration-300
+              hover:text-[#E5E5E7]
+              focus:outline-none cursor-pointer
+            "
+          >
+            <span className="text-[0.8rem] leading-none" aria-hidden="true">←</span>
+            return
+          </button>
+
+          <div className="flex items-center justify-end min-w-[60px]">
+            <HeaderAudioShortcut />
+          </div>
+        </div>
+
+        {/* ── Decoupled Title Block ──────────────────────────── */}
+        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-5 text-center shrink-0">
+          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
+            Brain Dump
+          </h1>
+        </div>
+
+        {/* ── Mode switcher (Softened Horizontal Sub-Tabs) ──────── */}
+        <div
+          role="tablist"
+          aria-label="Brain dump modes"
+          className="flex items-center justify-between mb-6 border-b border-[#1F1F23] pb-2.5 shrink-0"
+        >
+          {tabs.map(tab => {
+            const isActive = tab.id === activeTab
+            return (
+              <button
+                key={tab.id}
+                id={`tab-${tab.id}`}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`panel-${tab.id}`}
+                onClick={() => setActiveTab(tab.id)}
+                className="
+                  flex-1 text-center font-mono text-[11px] tracking-widest uppercase
+                  transition-colors duration-200 focus:outline-none cursor-pointer
+                "
+              >
+                <span className={isActive ? 'text-[#E5E5E7] font-medium' : 'text-[#52525B] hover:text-[#71717A] font-normal'}>
+                  {tab.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* ── Tab panels with gentle fade ─────────────────────── */}
+        <div
+          id={`panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTab}`}
+          className="flex flex-col flex-1 min-h-0 animate-fade-in justify-start pt-3 sm:pt-6"
+          key={activeTab}   /* remount panel on tab switch to reset state */
+        >
+          {activeTab === 'text'  && <TextDump />}
+          {activeTab === 'voice' && <VoiceDump />}
+          {activeTab === 'note'  && <TodaysNote />}
+        </div>
+      </div>
+    </main>
+  )
+}

@@ -1,0 +1,358 @@
+import { useState } from 'react'
+import {
+  loadSettings,
+  saveSettings,
+  resetApp,
+  getUserNickname,
+  setUserNickname,
+  type NookSettings,
+} from '../utils/storage'
+import FooterNav, { type NavTabId } from '../components/FooterNav'
+import HeaderAudioShortcut from '../components/HeaderAudioShortcut'
+import TipJarModal from '../components/TipJarModal'
+
+// ── Section wrapper ───────────────────────────────
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-7">
+      <p className="
+        font-sans text-[#52525B] text-[0.58rem]
+        tracking-[0.2em] uppercase mb-3
+      ">
+        {label}
+      </p>
+      <div className="flex flex-col gap-0 border border-[#1F1F23]">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// ── Toggle row ────────────────────────────────────
+
+interface ToggleRowProps {
+  id: string
+  label: string
+  checked: boolean
+  onChange: (val: boolean) => void
+}
+
+function ToggleRow({ id, label, checked, onChange }: ToggleRowProps) {
+  return (
+    <div className="flex items-center justify-between px-4 py-4 border-b border-[#1F1F23] last:border-0">
+      <span className="font-sans text-[#E5E5E7] text-[0.78rem] tracking-wide">
+        {label}
+      </span>
+      <button
+        id={id}
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className="flex items-center shrink-0 focus:outline-none group cursor-pointer"
+        aria-label={label}
+      >
+        <span
+          className={`
+            w-11 h-6 rounded-full p-0.5 transition-colors duration-300 ease-in-out relative flex items-center shrink-0
+            ${checked
+              ? 'bg-[#222225] border border-[#3F3F46]'
+              : 'bg-[#141416] border border-[#222225]'
+            }
+          `}
+        >
+          <span
+            className={`
+              w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out
+              ${checked ? 'translate-x-5 bg-[#E5E5E7]' : 'translate-x-0 bg-[#52525B]'}
+            `}
+          />
+        </span>
+      </button>
+    </div>
+  )
+}
+
+// ── Action row ────────────────────────────────────
+
+interface ActionRowProps {
+  id: string
+  label: string
+  destructive?: boolean
+  onClick: () => void
+}
+
+function ActionRow({ id, label, destructive = false, onClick }: ActionRowProps) {
+  return (
+    <button
+      id={id}
+      onClick={onClick}
+      className={`
+        w-full flex items-center justify-between
+        px-4 py-4
+        border-b border-[#1F1F23] last:border-0
+        font-sans text-[0.78rem] tracking-wide
+        transition-colors duration-300
+        focus:outline-none text-left
+        ${destructive
+          ? 'text-[#71717A] hover:text-[#E5E5E7]'
+          : 'text-[#E5E5E7] hover:text-[#FFFFFF]'
+        }
+      `}
+    >
+      {label}
+      <span className="text-[#52525B] text-sm" aria-hidden="true">›</span>
+    </button>
+  )
+}
+
+// ── Main SettingsScreen ───────────────────────────
+
+interface SettingsScreenProps {
+  onBack: () => void
+  onNavigate?: (tab: NavTabId | string) => void
+}
+
+export default function SettingsScreen({ onBack, onNavigate }: SettingsScreenProps) {
+  const [settings, setSettings] = useState<NookSettings>(() => loadSettings())
+  const [nickname, setNickname] = useState<string>(() => getUserNickname())
+  const [resetDone, setResetDone] = useState(false)
+  const [isTipJarOpen, setIsTipJarOpen] = useState(false)
+
+  function update(patch: Partial<NookSettings>) {
+    const next = { ...settings, ...patch }
+    setSettings(next)
+    saveSettings(next)
+  }
+
+  function handleNicknameChange(val: string) {
+    setNickname(val)
+    setUserNickname(val)
+  }
+
+  function handleReset() {
+    if (!window.confirm('Reset nook? All local data will be cleared.')) return
+    resetApp()
+    setResetDone(true)
+    setTimeout(() => window.location.reload(), 1200)
+  }
+
+  function handleExport() {
+    const data = {
+      dumps:              JSON.parse(localStorage.getItem('nook:dumps')                  ?? '[]'),
+      reflections:        JSON.parse(localStorage.getItem('nook:reflections')            ?? '[]'),
+      guidedReflections:  JSON.parse(localStorage.getItem('nook:guided-reflection-steps') ?? '{}'),
+      libraryReflections: JSON.parse(localStorage.getItem('nook:library-reflection-drafts') ?? '{}'),
+      cards:              JSON.parse(localStorage.getItem('nook:custom-cards')           ?? '[]'),
+      deadlines:          JSON.parse(localStorage.getItem('nook_deadlines')              ?? '[]'),
+      settings:           JSON.parse(localStorage.getItem('nook:settings')               ?? '{}'),
+      companion:          localStorage.getItem('nook_companion')                         ?? 'cat',
+      nickname:           localStorage.getItem('nook_nickname')                          ?? '',
+      exportedAt:         new Date().toISOString(),
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = 'nook-sanctuary-backup.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <main
+      id="settings-screen"
+      className="
+        h-[100dvh] w-full
+        px-7 sm:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14
+        flex flex-col justify-between
+        overflow-hidden
+        bg-[#0A0A0B]
+        animate-fade-in
+      "
+    >
+      <div className="flex flex-col flex-1 min-h-0 max-w-[360px] mx-auto w-full">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between shrink-0 w-full">
+          <button
+            id="settings-back"
+            onClick={onBack}
+            className="
+              flex items-center gap-1.5
+              font-sans text-[#52525B] text-[0.62rem]
+              tracking-[0.14em] uppercase
+              hover:text-[#E5E5E7] transition-colors
+              focus:outline-none cursor-pointer
+            "
+          >
+            <span className="text-[0.8rem] leading-none">←</span>
+            return
+          </button>
+
+          <div className="flex items-center justify-end min-w-[60px]">
+            <HeaderAudioShortcut />
+          </div>
+        </div>
+
+        {/* Decoupled Title Block */}
+        <div className="flex flex-col items-center gap-1.5 mt-8 sm:mt-10 mb-6 text-center shrink-0">
+          <h1 className="font-serif-nook text-[#E5E5E7] text-xl font-light tracking-[0.18em] leading-none">
+            Settings
+          </h1>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto min-h-0 pb-4">
+
+          {/* Preferences */}
+          <Section label="Preferences">
+            {/* Sanctuary Name / Nickname */}
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#1F1F23]">
+              <span className="font-sans text-[#E5E5E7] text-[0.78rem] tracking-wide">
+                Your Name
+              </span>
+              <input
+                id="settings-nickname-input"
+                type="text"
+                value={nickname}
+                onChange={e => handleNicknameChange(e.target.value)}
+                placeholder="What should nook call you?"
+                className="
+                  bg-transparent border-b border-[#1F1F23] text-right font-serif-nook text-sm text-[#E5E5E7]
+                  placeholder:text-[#52525B] placeholder:text-xs placeholder:font-sans focus:outline-none focus:border-[#3F3F46] py-0.5 max-w-[170px]
+                "
+              />
+            </div>
+            <ToggleRow
+              id="toggle-greeting"
+              label="Show Home Greeting"
+              checked={settings.showGreeting}
+              onChange={v => update({ showGreeting: v })}
+            />
+          </Section>
+
+          {/* Support & Independence */}
+          <Section label="Support nook">
+            <ActionRow
+              id="settings-support-nook-btn"
+              label="Support Nook (Tip Jar)"
+              onClick={() => setIsTipJarOpen(true)}
+            />
+          </Section>
+
+          {/* Privacy & Storage */}
+          <Section label="Privacy & Storage">
+            <div className="px-4 py-4 border-b border-[#1F1F23]">
+              <p className="font-sans text-[#71717A] text-[0.7rem] leading-relaxed tracking-wide">
+                All data stays on this device.
+                No accounts, no telemetry.
+              </p>
+            </div>
+            <ActionRow
+              id="export-data-btn"
+              label="Export Data"
+              onClick={handleExport}
+            />
+            <ActionRow
+              id="privacy-policy-btn"
+              label="Privacy Policy"
+              onClick={() => onNavigate?.('privacy')}
+            />
+            <ActionRow
+              id="reset-app-btn"
+              label="Reset App"
+              destructive
+              onClick={handleReset}
+            />
+          </Section>
+
+          {/* About nook & Founder's Note */}
+          <div className="mb-7">
+            <div className="flex items-baseline justify-between mb-3">
+              <h3 className="font-serif-nook text-[#E5E5E7] text-lg font-light tracking-wide">
+                About nook
+              </h3>
+              <span className="font-sans text-[0.58rem] tracking-[0.14em] uppercase text-[#71717A]">
+                A note from the founder
+              </span>
+            </div>
+
+            <div className="border border-[#1F1F23] bg-[#141416] p-5 rounded-2xl flex flex-col gap-4">
+              <div className="font-serif-nook text-sm text-[#E5E5E7]/90 leading-relaxed space-y-3.5 font-light">
+                <p className="italic text-[#E5E5E7]">
+                  Nook was built simply because someone needed a quiet place to land.
+                </p>
+
+                <p>
+                  It began as a gentle rebellion against the speed, noise, and pressure of a world that always asks for more. Where most tools push guilt-inducing streaks and endless optimization, Nook was crafted to offer the exact opposite: an unhurried, low-stimulation haven made from the inside out by someone who understands sensory overload firsthand.
+                </p>
+
+                <p>
+                  Nook isn’t here to fix you, track you, or make you more productive. It exists simply to hold space when your mind is full, your senses are overloaded, or words are hard to find. A space for presence, creativity, and the quieter parts of being human.
+                </p>
+
+                <p className="italic text-[#E5E5E7]">
+                  Take what you need, and leave the rest behind.
+                </p>
+              </div>
+
+              {/* Sign-off */}
+              <div className="pt-2 border-t border-[#1F1F23] flex items-center justify-between">
+                <span className="font-serif-nook text-[#E5E5E7] text-sm font-light italic">
+                  — The Founder
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    id="settings-support-nook-link"
+                    onClick={() => setIsTipJarOpen(true)}
+                    className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
+                  >
+                    Support Nook
+                  </button>
+                  <span className="text-[#3F3F46] text-[0.55rem]">•</span>
+                  <button
+                    id="settings-privacy-link"
+                    onClick={() => onNavigate?.('privacy')}
+                    className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
+                  >
+                    Privacy
+                  </button>
+                  <span className="text-[#3F3F46] text-[0.55rem]">•</span>
+                  <button
+                    id="settings-banner-link"
+                    onClick={() => onNavigate?.('banner')}
+                    className="font-sans text-[#71717A] hover:text-[#E5E5E7] underline text-[0.62rem] tracking-wider transition-colors cursor-pointer"
+                  >
+                    Banner
+                  </button>
+                  <span className="text-[#3F3F46] text-[0.55rem]">•</span>
+                  <span className="font-sans text-[#52525B] text-[0.62rem] tracking-wider">
+                    v1.0.1
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reset confirmation */}
+          {resetDone && (
+            <p className="font-sans text-[#E5E5E7] text-[0.6rem] tracking-[0.2em] uppercase text-center mt-2 animate-fade-in">
+              Resetting…
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Footer Navigation */}
+      <FooterNav active="settings" onSelect={onNavigate} />
+
+      {/* Tip Jar Modal */}
+      <TipJarModal
+        isOpen={isTipJarOpen}
+        onClose={() => setIsTipJarOpen(false)}
+      />
+    </main>
+  )
+}

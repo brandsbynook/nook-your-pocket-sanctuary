@@ -1,0 +1,35 @@
+import GuidedBreathing from '../components/tunedown/GuidedBreathing'
+import ScreenHeader from '../components/ScreenHeader'
+
+interface BreatheScreenProps {
+  onBack: () => void
+}
+
+export default function BreatheScreen({ onBack }: BreatheScreenProps) {
+  return (
+    <main
+      id="breathe-screen"
+      className="
+        h-[100dvh] w-full
+        px-6 pt-10 pb-6
+        flex flex-col justify-between
+        overflow-hidden
+        bg-[var(--bg-primary,#0E0E0E)] text-[#E5E0D8]
+        animate-fade-in
+      "
+    >
+      <div className="flex flex-col flex-1 min-h-0">
+        <ScreenHeader
+          id="breathe-screen-header"
+          title="Breathe"
+          subtitle="gentle somatic pacing"
+          onBack={onBack}
+          className="mb-6 shrink-0"
+        />
+        <div className="flex-1 flex flex-col min-h-0">
+          <GuidedBreathing />
+        </div>
+      </div>
+    </main>
+  )
+}
